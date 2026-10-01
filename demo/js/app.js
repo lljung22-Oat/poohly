@@ -1,4 +1,4 @@
-const KEY = "mu-pms-demo-v2";
+const KEY = "mu-pms-demo-v3";
 const C = PAScore;
 
 const USER = {
@@ -165,8 +165,8 @@ function defaultGroups() {
 function defaultState() {
   return {
     loggedIn: false,
-    year: "2568",
-    round: "รอบประเมินปีงบประมาณ 2568",
+    year: "2570",
+    round: "รอบประเมินปีงบประมาณ 2570",
     view: "login",
     paStatus: "draft",
     paReject: "",
@@ -186,7 +186,7 @@ function defaultState() {
     idpDisagree: "",
     idp: [{
       id: uid(), competency: "SFC02 ทักษะการวิจัย", behavior: "จัดทำข้อเสนอโครงการวิจัยและตีพิมพ์ผลงาน",
-      method: "70", detail: "เป็นนักวิจัยร่วมในโครงการของภาควิชา", start: "2025-10-01", end: "2026-09-30",
+      method: "70", detail: "เป็นนักวิจัยร่วมในโครงการของภาควิชา", start: "2026-10-01", end: "2027-09-30",
       budget: "0", approved: "wait", report: "", file: "", result: ""
     }],
     idpEvalNote: "",
@@ -254,11 +254,49 @@ function resetDemo() {
   toast("เริ่มเดโมใหม่แล้ว");
 }
 
-function deskLabel() {
-  if (S.desk === "ratee") return "ผู้รับการประเมิน";
-  if (S.desk === "eval") return "ผู้ประเมิน";
-  if (S.desk === "admin") return "Admin";
-  return "หน้าโปรแกรมรวม";
+function yearOptions() {
+  return ["2570", "2569"].map((y) =>
+    `<option value="${y}" ${String(S.year) === y ? "selected" : ""}>${y}</option>`
+  ).join("");
+}
+
+function setYear(y) {
+  S.year = String(y);
+  S.round = "รอบประเมินปีงบประมาณ " + S.year;
+}
+
+function ico(name) {
+  const common = 'xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="#3d5a80" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';
+  if (name === "person") return `<svg ${common}><circle cx="24" cy="16" r="7"/><path d="M10 38c2-8 8-12 14-12s12 4 14 12"/></svg>`;
+  if (name === "leave") return `<svg ${common}><rect x="10" y="12" width="28" height="24" rx="3"/><path d="M10 20h28M18 8v8M30 8v8"/><circle cx="24" cy="28" r="2.2" fill="#3d5a80" stroke="none"/></svg>`;
+  if (name === "clock") return `<svg ${common}><circle cx="24" cy="24" r="14"/><path d="M24 16v9l6 4"/></svg>`;
+  if (name === "clip") return `<svg ${common}><rect x="14" y="12" width="20" height="26" rx="3"/><path d="M18 12V9h12v3M18 22h12M18 28h8"/></svg>`;
+  if (name === "grad") return `<svg ${common}><path d="M8 20l16-8 16 8-16 8-16-8z"/><path d="M16 24v8c4 3 12 3 16 0v-8"/><path d="M40 20v10"/></svg>`;
+  if (name === "target") return `<svg ${common}><circle cx="24" cy="24" r="14"/><circle cx="24" cy="24" r="7"/><circle cx="24" cy="24" r="2" fill="#c2410c" stroke="#c2410c"/><path d="M24 10v4M38 24h-4M24 38v-4M10 24h4" stroke="#c2410c"/></svg>`;
+  return `<svg ${common}><path d="M10 32l8-10 6 6 8-12 8 16H10z"/><path d="M10 36h28"/></svg>`;
+}
+
+function flowTabs() {
+  const pa = ["period", "profile", "rounds", "formset", "modules", "pa", "paReport", "competency", "ack", "report"].includes(S.view);
+  const idp = ["idp", "idpReport", "idpEval", "idpAck"].includes(S.view);
+  if (!pa && !idp) return "";
+  const items = pa ? [
+    ["period", "ปีงบประมาณ"],
+    ["profile", "ประวัติ"],
+    ["modules", "วงจร PMS"],
+    ["pa", "ข้อตกลง PA"],
+    ["paReport", "รายงานผล"],
+    ["competency", "สมรรถนะ"],
+    ["ack", "รับทราบ"]
+  ] : [
+    ["idp", "จัดทำ IDP"],
+    ["idpReport", "รายงาน IDP"],
+    ["idpEval", "ประเมิน IDP"],
+    ["idpAck", "รับทราบ IDP"]
+  ];
+  return `<nav class="flow">${items.map(([id, t]) =>
+    `<button type="button" class="flow-a ${S.view === id ? "on" : ""}" data-go="${id}">${esc(t)}</button>`
+  ).join("")}</nav>`;
 }
 
 function paLocked() {
@@ -559,65 +597,25 @@ function ackIdp(ok) {
 
 /* ---------- chrome ---------- */
 function chrome(inner) {
-  const rateeNav = `
-        <div class="sec">1. ผู้รับการประเมิน</div>
-        <button class="nav ${S.view === "period" ? "on" : ""}" type="button" data-go="period">เลือกปีงบประมาณ / รอบ</button>
-        <button class="nav ${S.view === "profile" ? "on" : ""}" type="button" data-go="profile">ยืนยันประวัติ</button>
-        <button class="nav ${S.view === "rounds" ? "on" : ""}" type="button" data-go="rounds">รอบการประเมิน</button>
-        <button class="nav ${S.view === "formset" ? "on" : ""}" type="button" data-go="formset">ชุดประเมินของฉัน</button>
-        <button class="nav ${S.view === "modules" ? "on" : ""}" type="button" data-go="modules">วงจร 9 โมดูล</button>
-        <button class="nav ${S.view === "pa" ? "on" : ""}" type="button" data-go="pa">จัดทำข้อตกลง PA</button>
-        <button class="nav ${S.view === "paReport" ? "on" : ""}" type="button" data-go="paReport">รายงานผล PA</button>
-        <button class="nav ${S.view === "competency" ? "on" : ""}" type="button" data-go="competency">ประเมินตนเอง CC/FC</button>
-        <button class="nav ${S.view === "ack" ? "on" : ""}" type="button" data-go="ack">รับทราบผล PA/CC</button>
-        <button class="nav ${S.view === "idp" ? "on" : ""}" type="button" data-go="idp">จัดทำ IDP</button>
-        <button class="nav ${S.view === "idpReport" ? "on" : ""}" type="button" data-go="idpReport">รายงานผล IDP</button>
-        <button class="nav ${S.view === "idpAck" ? "on" : ""}" type="button" data-go="idpAck">รับทราบผล IDP</button>
-        <button class="nav ${S.view === "report" ? "on" : ""}" type="button" data-go="report">รายงานของฉัน</button>`;
-  const evalNav = `
-        <div class="sec">2. ผู้ประเมิน</div>
-        <button class="nav ${S.view === "evalHome" ? "on" : ""}" type="button" data-go="evalHome">รายชื่อผู้รับการประเมิน</button>
-        <button class="nav ${S.view === "pa" ? "on" : ""}" type="button" data-go="pa">ประธานอนุมัติข้อตกลง PA</button>
-        <button class="nav ${S.view === "competency" ? "on" : ""}" type="button" data-go="competency">กรรมการ / ประธานให้คะแนน</button>
-        <button class="nav ${S.view === "idp" ? "on" : ""}" type="button" data-go="idp">ประธานอนุมัติ IDP</button>
-        <button class="nav ${S.view === "idpEval" ? "on" : ""}" type="button" data-go="idpEval">ประเมิน IDP ตามที่คาดหวัง</button>
-        <button class="nav ${S.view === "report" ? "on" : ""}" type="button" data-go="report">รายงานภาพรวม</button>`;
-  const adminNav = `
-        <div class="sec">3. Admin</div>
-        <button class="nav ${S.view === "adminHome" ? "on" : ""}" type="button" data-go="adminHome">หน้าที่ Admin</button>
-        <button class="nav ${S.view === "adminPeople" ? "on" : ""}" type="button" data-go="adminPeople">โครงสร้าง / บุคลากร</button>
-        <button class="nav ${S.view === "adminRound" ? "on" : ""}" type="button" data-go="adminRound">รอบและปฏิทิน</button>
-        <button class="nav ${S.view === "formset" ? "on" : ""}" type="button" data-go="formset">ชุดประเมิน PA CC IDP FC</button>
-        <button class="nav ${S.view === "report" ? "on" : ""}" type="button" data-go="report">ติดตามรายงาน</button>`;
-  let extra = "";
-  if (S.desk === "ratee") extra = rateeNav;
-  else if (S.desk === "eval") extra = evalNav;
-  else if (S.desk === "admin") extra = adminNav;
-  else extra = rateeNav + evalNav + adminNav;
+  const home = S.view === "home";
   return `
-  <div class="app">
+  <div class="app ${home ? "app-home" : ""}">
     <header class="topbar">
-      <div class="brand">
-        <div class="mark">MU</div>
-        <div>
-          <b>มหาวิทยาลัยมหิดล</b>
-          <small>ระบบบริหารผลงาน (PMS) · เดโมทั้งระบบ</small>
-        </div>
-      </div>
+      <div class="brand-text">ระบบสารสนเทศเพื่อการบริหารจัดการบุคลากร</div>
       <div class="who">
-        <div class="avatar">พ</div>
-        <div>${esc(USER.full)}<div style="font-weight:600;font-size:14px;opacity:.85">${esc(USER.position)} · ${esc(deskLabel())}</div></div>
-        <button type="button" id="btnReset">เริ่มใหม่</button>
+        <span class="uname">${esc(USER.full)}</span>
+        <span class="uline">(${esc(USER.type)})</span>
+        <span class="sep">|</span>
+        <button type="button" data-go="profile">ข้อมูลส่วนตัว</button>
         <button type="button" id="btnOut">ออกจากระบบ</button>
       </div>
     </header>
-    <div class="shell">
-      <aside class="side">
-        <button class="nav ${S.view === "home" ? "on" : ""}" type="button" data-go="home">หน้าโปรแกรมรวม</button>
-        ${extra}
-      </aside>
-      <main class="main">${inner}</main>
-    </div>
+    ${home ? "" : `<div class="subbar">
+      <button type="button" class="back" data-go="home">← กลับหน้าหลักระบบงาน</button>
+      <span class="year-chip">ปีงบประมาณ ${esc(S.year)}</span>
+      <button type="button" id="btnReset">เริ่มเดโมใหม่</button>
+    </div>`}
+    <main class="main ${home ? "main-home" : ""}">${home ? "" : flowTabs()}${inner}</main>
   </div>`;
 }
 
@@ -647,8 +645,8 @@ function viewLogin() {
   <div class="login-wrap">
     <div class="login-head">
       <div class="login-logo">MU</div>
-      <h1>Mahidol University</h1>
-      <p>ระบบบริหารผลการปฏิบัติงาน (PMS)</p>
+      <h1>มหาวิทยาลัยมหิดล</h1>
+      <p>ระบบสารสนเทศเพื่อการบริหารจัดการบุคลากร</p>
     </div>
     <form class="login-box" id="loginForm">
       <h2>เข้าสู่ระบบ</h2>
@@ -656,62 +654,60 @@ function viewLogin() {
       <input name="user" value="porntipa.c" autocomplete="username" />
       <label>รหัสผ่าน</label>
       <input name="pass" type="password" value="demo" autocomplete="current-password" />
-      <p class="hint">Internet Account รูปแบบ ชื่อ.นามสกุลอังกฤษ 3 ตัว · เดโมใช้น.ส.พรทิพา เซี่ยงฉิน</p>
+      <p class="hint">Internet Account รูปแบบ ชื่อ.นามสกุลอังกฤษ 3 ตัว · เดโมใช้น.ส.พรทิพา เซี่ยงฉิน · ปีงบประมาณ ${esc(S.year)}</p>
       <button class="btn-navy full" type="submit">Log in</button>
     </form>
   </div>`;
 }
 
 function viewHome() {
+  const cards = [
+    { go: "profile", ico: "person", title: "ข้อมูลบุคลากร", sub: "ประวัติและข้อมูลส่วนบุคคล" },
+    { go: "leave", ico: "leave", title: "ข้อมูลวันลา", sub: "สถิติและการขออนุมัติวันลา" },
+    { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" },
+    { go: "paSupport", ico: "clip", title: "PA ประเมินภาระงาน", sub: "(สายสนับสนุน / บุคลากรทั่วไป)" },
+    { go: "period", ico: "grad", title: "PA ภาระงานอาจารย์", sub: "(สายวิชาการ / กรอบแบบฟอร์ม Matrix)", cream: true },
+    { go: "competency", ico: "target", title: "Functional Competency", sub: "ประเมินสมรรถนะเฉพาะงาน", linkish: true },
+    { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคล" }
+  ];
   return chrome(`
-    <p class="crumb">หน้าหลักระบบงาน (Dashboard)</p>
-    <h1 class="page-title">หน้าโปรแกรมรวม</h1>
-    <div class="card">
-      <p><b>เดโมทั้งระบบ PMS</b> ตามคู่มือ myPMS — คนหนึ่งมีหลายแบบประเมิน (PA / CC / IDP / FC) ไม่ใช่หน้าเดียว</p>
-      <p>เขียนด้วย <b>HTML + CSS + JavaScript</b> เปิดในเบราว์เซอร์ · ฐานข้อมูลเดโมคือ <b>localStorage ในเครื่อง</b> ไม่มีเซิร์ฟเวอร์ ไม่มี SQL / MySQL / Google Sheet</p>
-    </div>
-    <div class="role-grid">
-      <section class="role-col ratee">
-        <span class="role-num">1</span>
-        <h2>ผู้รับการประเมิน</h2>
-        <p>น.ส.พรทิพา เซี่ยงฉิน · อาจารย์</p>
-        <ul>
-          <li>เลือกปีงบประมาณ / ยืนยันประวัติ</li>
-          <li>จัดทำข้อตกลง PA น้ำหนักรวม 100</li>
-          <li>รายงานผล + ประเมินตนเอง (ส่งแล้วแก้ไม่ได้)</li>
-          <li>ประเมินตนเอง CC 7 ข้อ และ FC</li>
-          <li>รับทราบผล หรือไม่เห็นด้วย</li>
-          <li>จัดทำ / รายงาน / รับทราบ IDP</li>
-        </ul>
-        <button class="btn-navy" type="button" data-go="rateeHome">เข้าเมนูผู้รับการประเมิน</button>
-      </section>
-      <section class="role-col eval">
-        <span class="role-num">2</span>
-        <h2>ผู้ประเมิน</h2>
-        <p>ประธานกรรมการ / กรรมการ</p>
-        <ul>
-          <li>อนุมัติหรือไม่อนุมัติข้อตกลง PA</li>
-          <li>กรรมการให้ความเห็นรายข้อ</li>
-          <li>ประธานให้คะแนน PA 80 + CC 20</li>
-          <li>ส่งคะแนนแล้วแก้ไม่ได้</li>
-          <li>อนุมัติ IDP และประเมินตาม/ไม่ตามที่คาดหวัง</li>
-        </ul>
-        <button class="btn-navy" type="button" data-go="evalHome">เข้าเมนูผู้ประเมิน</button>
-      </section>
-      <section class="role-col admin">
-        <span class="role-num">3</span>
-        <h2>Admin</h2>
-        <p>Admin มหาวิทยาลัย / Admin ส่วนงาน</p>
-        <ul>
-          <li>นำเข้าโครงสร้างส่วนงาน บุคลากร ผู้บังคับบัญชา</li>
-          <li>สร้างรอบประเมินและปฏิทิน</li>
-          <li>ตรวจชุดประเมิน PA CC IDP FC MC ให้ครบตามตำแหน่ง</li>
-          <li>นำเข้ากรรมการ</li>
-          <li>ติดตามสถานะตามปฏิทิน / รายงาน</li>
-        </ul>
-        <button class="btn-navy" type="button" data-go="adminHome">เข้าเมนู Admin</button>
-      </section>
+    <div class="dash">
+      <h1>หน้าหลักระบบงาน (Dashboard)</h1>
+      <div class="year-pick">
+        <label for="yearSel">ปีงบประมาณ</label>
+        <select id="yearSel">${yearOptions()}</select>
+        <button type="button" id="btnReset">เริ่มเดโมใหม่</button>
+      </div>
+      <div class="dash-grid">
+        ${cards.map((c) => `
+          <button class="dash-card${c.cream ? " cream" : ""}" type="button" data-go="${c.go}">
+            <div class="ico">${ico(c.ico)}</div>
+            <b>${esc(c.title)}</b>
+            <small class="${c.linkish ? "linkish" : ""}">${esc(c.sub)}</small>
+          </button>`).join("")}
+      </div>
     </div>`);
+}
+
+function viewSoon(title, sub) {
+  return chrome(`
+    <p class="crumb">หน้าหลักระบบงาน</p>
+    <h1 class="page-title">${esc(title)}</h1>
+    <div class="card">
+      <p>${esc(sub)}</p>
+      <p class="hint">โมดูลนี้เป็นส่วนของระบบบุคลากรตามหน้าหลัก · เดโมคณะสังคมฯ สายวิชาการใช้งานจริงที่การ์ด <b>PA ภาระงานอาจารย์</b>, Functional Competency และ IDP</p>
+      <button class="btn-navy" type="button" data-go="home">กลับหน้าหลัก</button>
+    </div>`);
+}
+
+function viewLeave() {
+  return viewSoon("ข้อมูลวันลา", "สถิติและการขออนุมัติวันลา");
+}
+function viewTime() {
+  return viewSoon("ข้อมูลเวลาเข้า-ออกงาน", "ลงเวลาปฏิบัติงานประจำวัน");
+}
+function viewPaSupport() {
+  return viewSoon("PA ประเมินภาระงาน (สายสนับสนุน)", "ผู้ใช้เดโมนี้เป็นสายวิชาการ จึงใช้การ์ด PA ภาระงานอาจารย์ (กรอบแบบฟอร์ม Matrix) ตามประกาศคณะ");
 }
 
 function viewEvalHome() {
@@ -784,11 +780,11 @@ function viewAdminRound() {
       <table class="data">
         <thead><tr><th>กิจกรรม</th><th>เริ่ม</th><th>สิ้นสุด</th></tr></thead>
         <tbody>
-          <tr><td>จัดทำข้อตกลง PA</td><td>1 ต.ค. 2568</td><td>31 ต.ค. 2568</td></tr>
-          <tr><td>รายงานผลและประเมินตนเอง</td><td>1 ก.ย. 2569</td><td>15 ก.ย. 2569</td></tr>
-          <tr><td>กรรมการ / ประธานให้คะแนน</td><td>16 ก.ย. 2569</td><td>30 ก.ย. 2569</td></tr>
-          <tr><td>รับทราบผล</td><td>1 ต.ค. 2569</td><td>15 ต.ค. 2569</td></tr>
-          <tr><td>จัดทำ IDP</td><td>16 ต.ค. 2569</td><td>31 ต.ค. 2569</td></tr>
+          <tr><td>จัดทำข้อตกลง PA</td><td>1 ต.ค. 2569</td><td>31 ต.ค. 2569</td></tr>
+          <tr><td>รายงานผลและประเมินตนเอง</td><td>1 ก.ย. 2570</td><td>15 ก.ย. 2570</td></tr>
+          <tr><td>กรรมการ / ประธานให้คะแนน</td><td>16 ก.ย. 2570</td><td>30 ก.ย. 2570</td></tr>
+          <tr><td>รับทราบผล</td><td>1 ต.ค. 2570</td><td>15 ต.ค. 2570</td></tr>
+          <tr><td>จัดทำ IDP</td><td>16 ต.ค. 2570</td><td>31 ต.ค. 2570</td></tr>
         </tbody>
       </table>
       <p class="hint">ข้าราชการ/ลูกจ้าง 2 รอบต่อปี · พนักงานมหาวิทยาลัย 1 รอบ</p>
@@ -801,8 +797,8 @@ function viewPeriod() {
     <h1 class="page-title">ปีงบประมาณและรอบการประเมิน</h1>
     <div class="card">
       <label><b>ปีงบประมาณ</b></label>
-      <select id="yearSel"><option>2568</option><option>2567</option></select>
-      <p class="hint">ข้าราชการ/ลูกจ้าง มี 2 รอบต่อปี · พนักงานมหาวิทยาลัย/พนักงานส่วนงาน มี 1 รอบ</p>
+      <select id="yearSel">${yearOptions()}</select>
+      <p class="hint">ใช้ปีงบประมาณ 2570 (ค่าเริ่มต้น) หรือ 2569 · ข้าราชการ/ลูกจ้าง มี 2 รอบต่อปี · พนักงานมหาวิทยาลัย/พนักงานส่วนงาน มี 1 รอบ</p>
       <button class="btn-navy" type="button" id="goProfile" style="margin-top:16px">ถัดไป · ยืนยันประวัติ</button>
     </div>`);
 }
@@ -813,7 +809,7 @@ function viewProfile() {
     <h1 class="page-title">ข้อมูลส่วนบุคคล</h1>
     <div class="card">${profileBox()}
       <p class="hint">ตรวจชื่อ ตำแหน่ง สังกัดให้ถูกต้องก่อนจัดทำข้อตกลง</p>
-      <button class="btn-navy" type="button" data-go="rounds" style="margin-top:12px">ยืนยันและเข้าสู่รอบประเมิน</button>
+      <button class="btn-navy" type="button" data-go="modules" style="margin-top:12px">ยืนยันและเข้าวงจรประเมิน</button>
     </div>`);
 }
 
@@ -898,17 +894,19 @@ function viewModules() {
   return chrome(`
     <div class="pms-home">
       <div class="left">
-        <h1>PMS</h1>
-        <p>ระบบบริหารผลการปฏิบัติงาน</p>
-        <p class="hint" style="margin-top:18px">${esc(USER.full)} · ${esc(USER.position)}<br>${esc(USER.faculty)}</p>
+        <h1>PA</h1>
+        <p>ภาระงานอาจารย์ · วงจร PMS</p>
+        <p class="hint" style="margin-top:18px">${esc(USER.full)} · ${esc(USER.position)}<br>${esc(USER.faculty)}<br>ปีงบประมาณ ${esc(S.year)}</p>
         <p>PA ${statusPill(S.paStatus)} · IDP ${statusPill(S.idpStatus)}</p>
       </div>
       <div class="mods">${cards}</div>
     </div>
     <div class="card">
-      <h3>ชุดประเมินของรอบนี้</h3>
-      <p>เข้าจากวงจรด้านบน หรือจากตารางชุดประเมิน PA / CC / IDP / FC</p>
+      <h3>ชุดประเมินของรอบปีงบประมาณ ${esc(S.year)}</h3>
+      <p>วงจร 9 โมดูลอยู่ในการ์ด PA ภาระงานอาจารย์ ไม่ปนกับหน้าหลักระบบงาน</p>
       <button class="btn-navy" type="button" data-go="formset">เปิดชุดประเมิน</button>
+      <button class="btn-ghost" type="button" data-go="evalHome">หน้าที่ผู้ประเมิน</button>
+      <button class="btn-ghost" type="button" data-go="adminHome">หน้าที่ผู้ดูแลระบบ</button>
     </div>`);
 }
 
@@ -1031,10 +1029,10 @@ function viewPA() {
     </table></div>
     <div class="footbar">
       <button class="btn-navy" type="button" id="btnSave" ${lock ? "disabled" : ""}>บันทึกฉบับร่าง</button>
-      <button class="btn-ghost" type="button" data-go="formset">ยกเลิก</button>
+      <button class="btn-ghost" type="button" data-go="modules">ยกเลิก</button>
       <button class="btn-navy" type="button" id="btnAsk" ${lock ? "disabled" : ""}>ขออนุมัติ</button>
     </div>
-    <p class="hint">ช่องหน่วยภาระงานและคะแนนประเมินตนเองคำนวณอัตโนมัติจากประกาศคณะฯ พ.ศ. 2568 สายวิชาการ (ฐาน 1,820 หน่วย · PA 80 + CC 20)</p>
+    <p class="hint">ช่องหน่วยภาระงานและคะแนนประเมินตนเองคำนวณอัตโนมัติจากประกาศคณะฯ พ.ศ. 2568 สายวิชาการ (ฐาน 1,820 หน่วย · PA 80 + CC 20) · ปีงบประมาณ ${esc(S.year)}</p>
   `);
 }
 
@@ -1368,7 +1366,8 @@ function render() {
     formset: viewFormset, modules: viewModules, pa: viewPA, paReport: viewPaReport,
     competency: viewCompetency, ack: viewAck, idp: viewIdp, idpReport: viewIdpReport,
     idpEval: viewIdpEval, idpAck: viewIdpAck, report: viewReport,
-    evalHome: viewEvalHome, adminHome: viewAdminHome, adminPeople: viewAdminPeople, adminRound: viewAdminRound
+    evalHome: viewEvalHome, adminHome: viewAdminHome, adminPeople: viewAdminPeople, adminRound: viewAdminRound,
+    leave: viewLeave, time: viewTime, paSupport: viewPaSupport
   };
   root.innerHTML = (map[v] || viewHome)();
   bind();
@@ -1423,9 +1422,19 @@ function bind() {
   }
   const yp = document.getElementById("goProfile");
   if (yp) yp.addEventListener("click", () => {
-    S.year = document.getElementById("yearSel").value;
+    const sel = document.getElementById("yearSel");
+    if (sel) setYear(sel.value);
+    persist();
     go("profile");
   });
+  const ys = document.getElementById("yearSel");
+  if (ys) {
+    ys.addEventListener("change", () => {
+      setYear(ys.value);
+      persist();
+      toast("ใช้ปีงบประมาณ " + S.year);
+    });
+  }
   const out = document.getElementById("btnOut");
   if (out) out.addEventListener("click", logout);
   const rst = document.getElementById("btnReset");
