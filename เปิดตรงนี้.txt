@@ -1,0 +1,3 @@
+เปิดโปรแกรม: ดับเบิลคลิก demo/index.html
+เข้าด้วย porntipa.c
+หรือเปิด PA/demo/index.html

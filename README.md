@@ -1,7 +1,7 @@
-# poohly
+# เปิดโปรแกรมตรงนี้
 
-เดโมระบบ PMS อยู่ที่ **`PA/demo/index.html`**
+ดับเบิลคลิก **`demo/index.html`**
 
-เปิดไฟล์นั้นในเบราว์เซอร์ แล้วเข้าด้วย `porntipa.c`
+เข้าสู่ระบบด้วย `porntipa.c` (น.ส.พรทิพา เซี่ยงฉิน)
 
-รายละเอียดใน `PA/README.md`
+ชุดเดียวกันอยู่ที่ `PA/demo/index.html` และแพ็ก zip ที่ `PA/pms-demo.zip`
