@@ -1,4 +1,4 @@
-const KEY = "mu-pms-demo-v1";
+const KEY = "mu-pms-demo-v2";
 const C = PAScore;
 
 const USER = {
@@ -180,6 +180,7 @@ function defaultState() {
     develop: "",
     suggest: "",
     chairSent: false,
+    desk: "home",
     idpStatus: "draft",
     idpReject: "",
     idpDisagree: "",
@@ -246,10 +247,18 @@ function resetDemo() {
   if (!confirm("ล้างข้อมูลเดโมแล้วเริ่มใหม่?")) return;
   S = defaultState();
   S.loggedIn = true;
-  S.view = "modules";
+  S.view = "home";
+  S.desk = "home";
   persist();
   render();
   toast("เริ่มเดโมใหม่แล้ว");
+}
+
+function deskLabel() {
+  if (S.desk === "ratee") return "ผู้รับการประเมิน";
+  if (S.desk === "eval") return "ผู้ประเมิน";
+  if (S.desk === "admin") return "Admin";
+  return "หน้าโปรแกรมรวม";
 }
 
 function paLocked() {
@@ -550,10 +559,41 @@ function ackIdp(ok) {
 
 /* ---------- chrome ---------- */
 function chrome(inner) {
-  const sideMods = MODULES.map((m) => {
-    const on = S.view === m.id ? "on" : "";
-    return `<button class="nav ${on}" type="button" data-go="${m.id}">${esc(m.title.replace(/（/g, "(").split("(")[0].trim())}</button>`;
-  }).join("");
+  const rateeNav = `
+        <div class="sec">1. ผู้รับการประเมิน</div>
+        <button class="nav ${S.view === "period" ? "on" : ""}" type="button" data-go="period">เลือกปีงบประมาณ / รอบ</button>
+        <button class="nav ${S.view === "profile" ? "on" : ""}" type="button" data-go="profile">ยืนยันประวัติ</button>
+        <button class="nav ${S.view === "rounds" ? "on" : ""}" type="button" data-go="rounds">รอบการประเมิน</button>
+        <button class="nav ${S.view === "formset" ? "on" : ""}" type="button" data-go="formset">ชุดประเมินของฉัน</button>
+        <button class="nav ${S.view === "modules" ? "on" : ""}" type="button" data-go="modules">วงจร 9 โมดูล</button>
+        <button class="nav ${S.view === "pa" ? "on" : ""}" type="button" data-go="pa">จัดทำข้อตกลง PA</button>
+        <button class="nav ${S.view === "paReport" ? "on" : ""}" type="button" data-go="paReport">รายงานผล PA</button>
+        <button class="nav ${S.view === "competency" ? "on" : ""}" type="button" data-go="competency">ประเมินตนเอง CC/FC</button>
+        <button class="nav ${S.view === "ack" ? "on" : ""}" type="button" data-go="ack">รับทราบผล PA/CC</button>
+        <button class="nav ${S.view === "idp" ? "on" : ""}" type="button" data-go="idp">จัดทำ IDP</button>
+        <button class="nav ${S.view === "idpReport" ? "on" : ""}" type="button" data-go="idpReport">รายงานผล IDP</button>
+        <button class="nav ${S.view === "idpAck" ? "on" : ""}" type="button" data-go="idpAck">รับทราบผล IDP</button>
+        <button class="nav ${S.view === "report" ? "on" : ""}" type="button" data-go="report">รายงานของฉัน</button>`;
+  const evalNav = `
+        <div class="sec">2. ผู้ประเมิน</div>
+        <button class="nav ${S.view === "evalHome" ? "on" : ""}" type="button" data-go="evalHome">รายชื่อผู้รับการประเมิน</button>
+        <button class="nav ${S.view === "pa" ? "on" : ""}" type="button" data-go="pa">ประธานอนุมัติข้อตกลง PA</button>
+        <button class="nav ${S.view === "competency" ? "on" : ""}" type="button" data-go="competency">กรรมการ / ประธานให้คะแนน</button>
+        <button class="nav ${S.view === "idp" ? "on" : ""}" type="button" data-go="idp">ประธานอนุมัติ IDP</button>
+        <button class="nav ${S.view === "idpEval" ? "on" : ""}" type="button" data-go="idpEval">ประเมิน IDP ตามที่คาดหวัง</button>
+        <button class="nav ${S.view === "report" ? "on" : ""}" type="button" data-go="report">รายงานภาพรวม</button>`;
+  const adminNav = `
+        <div class="sec">3. Admin</div>
+        <button class="nav ${S.view === "adminHome" ? "on" : ""}" type="button" data-go="adminHome">หน้าที่ Admin</button>
+        <button class="nav ${S.view === "adminPeople" ? "on" : ""}" type="button" data-go="adminPeople">โครงสร้าง / บุคลากร</button>
+        <button class="nav ${S.view === "adminRound" ? "on" : ""}" type="button" data-go="adminRound">รอบและปฏิทิน</button>
+        <button class="nav ${S.view === "formset" ? "on" : ""}" type="button" data-go="formset">ชุดประเมิน PA CC IDP FC</button>
+        <button class="nav ${S.view === "report" ? "on" : ""}" type="button" data-go="report">ติดตามรายงาน</button>`;
+  let extra = "";
+  if (S.desk === "ratee") extra = rateeNav;
+  else if (S.desk === "eval") extra = evalNav;
+  else if (S.desk === "admin") extra = adminNav;
+  else extra = rateeNav + evalNav + adminNav;
   return `
   <div class="app">
     <header class="topbar">
@@ -561,24 +601,20 @@ function chrome(inner) {
         <div class="mark">MU</div>
         <div>
           <b>มหาวิทยาลัยมหิดล</b>
-          <small>ระบบบริหารผลงาน (PMS) · เดโม</small>
+          <small>ระบบบริหารผลงาน (PMS) · เดโมทั้งระบบ</small>
         </div>
       </div>
       <div class="who">
         <div class="avatar">พ</div>
-        <div>${esc(USER.full)}<div style="font-weight:600;font-size:14px;opacity:.85">${esc(USER.position)}</div></div>
+        <div>${esc(USER.full)}<div style="font-weight:600;font-size:14px;opacity:.85">${esc(USER.position)} · ${esc(deskLabel())}</div></div>
         <button type="button" id="btnReset">เริ่มใหม่</button>
         <button type="button" id="btnOut">ออกจากระบบ</button>
       </div>
     </header>
     <div class="shell">
       <aside class="side">
-        <div class="sec">KPI</div>
-        <button class="nav ${S.view === "rounds" ? "on" : ""}" type="button" data-go="rounds">รอบการประเมิน</button>
-        <button class="nav ${S.view === "formset" ? "on" : ""}" type="button" data-go="formset">ชุดประเมิน</button>
-        <button class="nav ${S.view === "modules" ? "on" : ""}" type="button" data-go="modules">วงจร PMS</button>
-        <div class="sec">ขั้นตอน</div>
-        ${sideMods}
+        <button class="nav ${S.view === "home" ? "on" : ""}" type="button" data-go="home">หน้าโปรแกรมรวม</button>
+        ${extra}
       </aside>
       <main class="main">${inner}</main>
     </div>
@@ -624,6 +660,139 @@ function viewLogin() {
       <button class="btn-navy full" type="submit">Log in</button>
     </form>
   </div>`;
+}
+
+function viewHome() {
+  return chrome(`
+    <p class="crumb">หน้าหลักระบบงาน (Dashboard)</p>
+    <h1 class="page-title">หน้าโปรแกรมรวม</h1>
+    <div class="card">
+      <p><b>เดโมทั้งระบบ PMS</b> ตามคู่มือ myPMS — คนหนึ่งมีหลายแบบประเมิน (PA / CC / IDP / FC) ไม่ใช่หน้าเดียว</p>
+      <p>เขียนด้วย <b>HTML + CSS + JavaScript</b> เปิดในเบราว์เซอร์ · ฐานข้อมูลเดโมคือ <b>localStorage ในเครื่อง</b> ไม่มีเซิร์ฟเวอร์ ไม่มี SQL / MySQL / Google Sheet</p>
+    </div>
+    <div class="role-grid">
+      <section class="role-col ratee">
+        <span class="role-num">1</span>
+        <h2>ผู้รับการประเมิน</h2>
+        <p>น.ส.พรทิพา เซี่ยงฉิน · อาจารย์</p>
+        <ul>
+          <li>เลือกปีงบประมาณ / ยืนยันประวัติ</li>
+          <li>จัดทำข้อตกลง PA น้ำหนักรวม 100</li>
+          <li>รายงานผล + ประเมินตนเอง (ส่งแล้วแก้ไม่ได้)</li>
+          <li>ประเมินตนเอง CC 7 ข้อ และ FC</li>
+          <li>รับทราบผล หรือไม่เห็นด้วย</li>
+          <li>จัดทำ / รายงาน / รับทราบ IDP</li>
+        </ul>
+        <button class="btn-navy" type="button" data-go="rateeHome">เข้าเมนูผู้รับการประเมิน</button>
+      </section>
+      <section class="role-col eval">
+        <span class="role-num">2</span>
+        <h2>ผู้ประเมิน</h2>
+        <p>ประธานกรรมการ / กรรมการ</p>
+        <ul>
+          <li>อนุมัติหรือไม่อนุมัติข้อตกลง PA</li>
+          <li>กรรมการให้ความเห็นรายข้อ</li>
+          <li>ประธานให้คะแนน PA 80 + CC 20</li>
+          <li>ส่งคะแนนแล้วแก้ไม่ได้</li>
+          <li>อนุมัติ IDP และประเมินตาม/ไม่ตามที่คาดหวัง</li>
+        </ul>
+        <button class="btn-navy" type="button" data-go="evalHome">เข้าเมนูผู้ประเมิน</button>
+      </section>
+      <section class="role-col admin">
+        <span class="role-num">3</span>
+        <h2>Admin</h2>
+        <p>Admin มหาวิทยาลัย / Admin ส่วนงาน</p>
+        <ul>
+          <li>นำเข้าโครงสร้างส่วนงาน บุคลากร ผู้บังคับบัญชา</li>
+          <li>สร้างรอบประเมินและปฏิทิน</li>
+          <li>ตรวจชุดประเมิน PA CC IDP FC MC ให้ครบตามตำแหน่ง</li>
+          <li>นำเข้ากรรมการ</li>
+          <li>ติดตามสถานะตามปฏิทิน / รายงาน</li>
+        </ul>
+        <button class="btn-navy" type="button" data-go="adminHome">เข้าเมนู Admin</button>
+      </section>
+    </div>`);
+}
+
+function viewEvalHome() {
+  return chrome(`
+    <p class="crumb">ผู้ประเมิน · รายชื่อ</p>
+    <h1 class="page-title">ผู้รับการประเมินในความดูแล</h1>
+    <div class="card">
+      <table class="data">
+        <thead><tr><th>ชื่อ</th><th>ตำแหน่ง</th><th>สถานะ PA</th><th>Action</th></tr></thead>
+        <tbody><tr>
+          <td>${esc(USER.full)}</td>
+          <td>${esc(USER.position)}</td>
+          <td>${statusPill(S.paStatus)}</td>
+          <td>
+            <button class="act" data-go="pa">อนุมัติข้อตกลง</button>
+            <button class="act" data-go="competency">ให้คะแนน PA/CC</button>
+            <button class="act" data-go="idp">อนุมัติ IDP</button>
+            <button class="act" data-go="idpEval">ประเมิน IDP</button>
+          </td>
+        </tr></tbody>
+      </table>
+    </div>`);
+}
+
+function viewAdminHome() {
+  return chrome(`
+    <p class="crumb">Admin</p>
+    <h1 class="page-title">หน้าที่ผู้ดูแลระบบ</h1>
+    <div class="two-admin">
+      <div class="card">
+        <h3>Admin มหาวิทยาลัย</h3>
+        <ul>
+          <li>นำเข้าโครงสร้างส่วนงาน บุคลากร ผู้บังคับบัญชา ผู้บริหาร</li>
+          <li>ให้คำปรึกษาการใช้ระบบ</li>
+        </ul>
+        <button class="btn-navy" type="button" data-go="adminPeople">เปิดโครงสร้าง / บุคลากร</button>
+      </div>
+      <div class="card">
+        <h3>Admin ส่วนงาน</h3>
+        <ul>
+          <li>สร้างรอบและปฏิทิน</li>
+          <li>ตรวจชุดประเมิน PA IDP CC FC MC ให้ครบตามตำแหน่ง</li>
+          <li>นำเข้ากรรมการ · ติดตามตามปฏิทิน</li>
+        </ul>
+        <button class="btn-navy" type="button" data-go="adminRound">เปิดรอบและปฏิทิน</button>
+      </div>
+    </div>`);
+}
+
+function viewAdminPeople() {
+  return chrome(`
+    <p class="crumb">Admin · โครงสร้าง</p>
+    <h1 class="page-title">โครงสร้างส่วนงานและบุคลากร (เดโม)</h1>
+    <div class="card">
+      <table class="data">
+        <thead><tr><th>รหัส</th><th>ชื่อ</th><th>ตำแหน่ง</th><th>สังกัด</th><th>ผู้บังคับบัญชา</th><th>ชุดประเมิน</th></tr></thead>
+        <tbody>
+          <tr><td>${esc(USER.staffId)}</td><td>${esc(USER.full)}</td><td>อาจารย์</td><td>${esc(USER.faculty)}</td><td>${esc(USER.supervisor)}</td><td>PA, CC, IDP, FC</td></tr>
+        </tbody>
+      </table>
+      <p class="hint">ของจริงนำเข้าจากไฟล์ที่มหาวิทยาลัยกำหนด · เดโมโชว์คนเดียวในคณะสังคมฯ</p>
+    </div>`);
+}
+
+function viewAdminRound() {
+  return chrome(`
+    <p class="crumb">Admin · รอบและปฏิทิน</p>
+    <h1 class="page-title">รอบประเมินและปฏิทิน</h1>
+    <div class="card">
+      <table class="data">
+        <thead><tr><th>กิจกรรม</th><th>เริ่ม</th><th>สิ้นสุด</th></tr></thead>
+        <tbody>
+          <tr><td>จัดทำข้อตกลง PA</td><td>1 ต.ค. 2568</td><td>31 ต.ค. 2568</td></tr>
+          <tr><td>รายงานผลและประเมินตนเอง</td><td>1 ก.ย. 2569</td><td>15 ก.ย. 2569</td></tr>
+          <tr><td>กรรมการ / ประธานให้คะแนน</td><td>16 ก.ย. 2569</td><td>30 ก.ย. 2569</td></tr>
+          <tr><td>รับทราบผล</td><td>1 ต.ค. 2569</td><td>15 ต.ค. 2569</td></tr>
+          <tr><td>จัดทำ IDP</td><td>16 ต.ค. 2569</td><td>31 ต.ค. 2569</td></tr>
+        </tbody>
+      </table>
+      <p class="hint">ข้าราชการ/ลูกจ้าง 2 รอบต่อปี · พนักงานมหาวิทยาลัย 1 รอบ</p>
+    </div>`);
 }
 
 function viewPeriod() {
@@ -1193,14 +1362,15 @@ function viewReport() {
 
 function render() {
   const root = document.getElementById("app");
-  const v = S.loggedIn ? (S.view || "modules") : "login";
+  const v = S.loggedIn ? (S.view || "home") : "login";
   const map = {
-    login: viewLogin, period: viewPeriod, profile: viewProfile, rounds: viewRounds,
+    login: viewLogin, home: viewHome, period: viewPeriod, profile: viewProfile, rounds: viewRounds,
     formset: viewFormset, modules: viewModules, pa: viewPA, paReport: viewPaReport,
     competency: viewCompetency, ack: viewAck, idp: viewIdp, idpReport: viewIdpReport,
-    idpEval: viewIdpEval, idpAck: viewIdpAck, report: viewReport
+    idpEval: viewIdpEval, idpAck: viewIdpAck, report: viewReport,
+    evalHome: viewEvalHome, adminHome: viewAdminHome, adminPeople: viewAdminPeople, adminRound: viewAdminRound
   };
-  root.innerHTML = (map[v] || viewModules)();
+  root.innerHTML = (map[v] || viewHome)();
   bind();
 }
 
@@ -1221,8 +1391,19 @@ function bind() {
   document.querySelectorAll("[data-go]").forEach((b) => {
     b.addEventListener("click", () => {
       const id = b.getAttribute("data-go");
+      if (id === "home") { S.desk = "home"; go("home"); return; }
+      if (id === "rateeHome") { S.desk = "ratee"; go("modules"); return; }
+      if (id === "evalHome") { S.desk = "eval"; go("evalHome"); return; }
+      if (id === "adminHome" || id === "adminPeople" || id === "adminRound") {
+        S.desk = "admin";
+        go(id);
+        return;
+      }
+      if (["period", "profile", "rounds", "modules", "pa", "paReport", "ack", "idpReport", "idpAck"].includes(id) && S.desk === "home") {
+        S.desk = "ratee";
+      }
       const mod = MODULES.find((m) => m.id === id);
-      if (mod && !canOpen(mod)) { toast("ยังไม่ถึงขั้นตอนนี้ตามวงจร PMS"); return; }
+      if (mod && S.desk === "ratee" && !canOpen(mod)) { toast("ยังไม่ถึงขั้นตอนนี้ตามวงจร PMS"); return; }
       go(id);
     });
   });
@@ -1236,7 +1417,8 @@ function bind() {
         return;
       }
       S.loggedIn = true;
-      go("period");
+      S.desk = "home";
+      go("home");
     });
   }
   const yp = document.getElementById("goProfile");

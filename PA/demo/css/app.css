@@ -197,6 +197,28 @@ table.data .act:hover { text-decoration: underline; }
 }
 .step.done:not(:last-child)::after { background: var(--ok); }
 
+.role-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 8px;
+}
+.role-col {
+  background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 20px 18px 18px;
+  box-shadow: 0 6px 18px rgba(10,51,88,.05);
+}
+.role-num {
+  display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--navy); color: #fff; font-weight: 800; margin-bottom: 8px;
+}
+.role-col h2 { margin: 0 0 6px; color: var(--navy); font-size: 22px; }
+.role-col ul { margin: 10px 0 16px; padding-left: 20px; }
+.role-col li { margin: 6px 0; }
+.role-col.ratee { border-top: 6px solid #0d7377; }
+.role-col.eval { border-top: 6px solid #c9a227; }
+.role-col.admin { border-top: 6px solid #0a3358; }
+.two-admin { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 980px) {
+  .role-grid, .two-admin { grid-template-columns: 1fr; }
+}
+
 /* PA table clone */
 .pa-banner {
   background: #d7eaf5; border-radius: 10px 10px 0 0; padding: 14px 16px;
