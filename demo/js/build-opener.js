@@ -42,7 +42,7 @@ function copyDirFile(src, dest) {
   fs.copyFileSync(src, dest);
 }
 
-["css/app.css", "js/app.js", "js/criteria.js", "js/db.js", "js/criteria.test.js", "index.html", "README.md"].forEach((rel) => {
+["css/app.css", "js/app.js", "js/criteria.js", "js/db.js", "js/criteria.test.js", "js/labels.test.js", "index.html", "README.md"].forEach((rel) => {
   copyDirFile(path.join(root, rel), path.join(repo, "PA", "demo", rel));
 });
 
