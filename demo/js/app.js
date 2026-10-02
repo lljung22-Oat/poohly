@@ -491,7 +491,7 @@ async function enterUser(user) {
   let rec = null;
   if (DB) rec = await DB.loadRecord(user.id, S.year);
   if (rec) {
-    const keep = { user: S.user, users: S.users, loggedIn: true, account: user.id, year: S.year };
+    const keep = { user: S.user, users: S.users, loggedIn: true, account: user.id, year: S.year, focus: user.track || S.focus || "faculty" };
     S = hydrate(rec);
     Object.assign(S, keep);
   }
@@ -2390,6 +2390,7 @@ function applyQuery() {
       S.loggedIn = true;
       S.user = u;
       S.account = u.id;
+      if (!q.get("focus") && u.track) S.focus = u.track;
     }
   }
   if (view || seed) {
@@ -2438,7 +2439,7 @@ async function boot() {
           if (sess.year) setYear(sess.year);
           const rec = await DB.loadRecord(u.id, S.year);
           if (rec) {
-            const keep = { user: u, users: S.users, loggedIn: true, account: u.id, year: S.year };
+            const keep = { user: u, users: S.users, loggedIn: true, account: u.id, year: S.year, focus: u.track || "faculty" };
             S = hydrate(rec);
             Object.assign(S, keep);
           }
