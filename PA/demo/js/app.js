@@ -993,26 +993,9 @@ function ackIdp(ok) {
   persist(); toast("ไม่เห็นด้วย — สถานะกลับไปที่ประธาน"); render();
 }
 
-function modeBanner() {
-  const a = account();
-  if (!a) return "";
-  const looking = isEval()
-    ? `กำลังดูผู้รับการประเมิน: ${esc(rateeAccount().full)} (${esc(rateeAccount().roleSub)})`
-    : a.hint;
-  return `<div class="mode-banner tone-${a.tone}">
-    <div>
-      <div class="mode-kicker">ขณะนี้อยู่ในโหมด</div>
-      <div class="mode-title">${esc(a.roleLabel)} · ${esc(a.roleSub)}</div>
-      <div class="mode-sub">${looking}</div>
-    </div>
-    <div class="mode-meta">
-      <label>ปีงบประมาณ
-        <select id="yearSel">${yearOptions()}</select>
-      </label>
-      <button type="button" id="btnReset">เริ่มเดโมใหม่</button>
-      <button type="button" id="btnOut">ออกจากระบบ</button>
-    </div>
-  </div>`;
+function lookingLine() {
+  if (!isEval() || S.view === "home") return "";
+  return `<span class="sep">|</span><span class="look">กำลังดู ${esc(rateeAccount().full)}</span>`;
 }
 
 function flowTabs() {
@@ -1069,16 +1052,17 @@ function chrome(inner) {
         <span class="uname">${esc(a ? a.full : "")}</span>
         <span class="sep">|</span>
         <span class="uline">${esc(a ? a.roleLabel + " · " + a.roleSub : "")}</span>
+        ${lookingLine()}
         <span class="sep">|</span>
-        <span class="year-inline">ปีงบประมาณ ${esc(S.year)}</span>
+        <label class="year-lab">ปีงบประมาณ
+          <select id="yearSel">${yearOptions()}</select>
+        </label>
         <span class="sep">|</span>
         <button type="button" id="btnOut">ออกจากระบบ</button>
       </div>
     </header>
-    ${modeBanner()}
     ${home ? "" : `<div class="subbar">
       <button type="button" class="back" data-go="home">← กลับหน้าหลักระบบงาน</button>
-      <button type="button" id="btnReset">เริ่มเดโมใหม่</button>
     </div>`}
     <main class="main ${home ? "main-home" : ""}">${home ? "" : flowTabs()}${inner}</main>
   </div>`;
