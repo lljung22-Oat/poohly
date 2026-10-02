@@ -15,6 +15,9 @@ assert.match(src, /function firstHeadLabel\(\) \{ return "หัวหน้า�
 assert.match(src, /function headLabel\(\) \{ return "หัวหน้างาน"; \}/);
 assert.match(src, /roleLabel: "หัวหน้างานขั้นต้น"/);
 assert.match(src, /roleLabel: "หัวหน้างาน"/);
+assert.match(src, /role: "committee"/);
+assert.match(src, /role: "chair"/);
+assert.match(src, /canChair: true/);
 assert.doesNotMatch(src, /roleLabel: "กรรมการประเมิน"/);
 assert.doesNotMatch(src, /roleLabel: "ประธานกรรมการประเมิน"/);
 
