@@ -378,6 +378,7 @@ table.pa {
   width: 100%; border-collapse: collapse; min-width: 1280px; font-size: 16px;
 }
 table.pa.pa-faculty { min-width: 1680px; }
+table.pa.pa-faculty td:nth-child(3) { min-width: 380px; }
 table.pa .seq-cell { width: 64px; text-align: center; font-weight: 800; }
 table.pa .seq-cell .iconbtn { display: block; margin: 8px auto 0; }
 table.pa .title-cell { min-width: 220px; }

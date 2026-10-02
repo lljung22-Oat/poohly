@@ -180,24 +180,14 @@ function defaultGroups() {
           }]
         },
         {
-          id: uid(), code: "1.2", title: "ยุทธศาสตร์การจัดการศึกษา",
+          id: uid(), code: "1.2", title: "ยุทธศาสตร์การวิจัย",
           kpis: [{
-            id: uid(), code: "1.2.1", title: "ระดับคุณภาพการจัดการเรียนการสอน MUPSF",
+            id: uid(), code: "1.2.1", title: "ผลงานตีพิมพ์ / ทุนวิจัย ตามเกณฑ์ประกาศคณะ",
             targets: [{
               ...emptyTarget("1.2.1.1", 10),
-              title: "ได้รับการรับรอง MUPSF ตามเกณฑ์ประกาศ",
-              criteriaId: "mupsf2", kpiType: "quality"
-            }]
-          }]
-        },
-        {
-          id: uid(), code: "1.3", title: "ยุทธศาสตร์บริการวิชาการ",
-          kpis: [{
-            id: uid(), code: "1.3.1", title: "การมีส่วนร่วมในกระบวนการกำหนดนโยบาย",
-            targets: [{
-              ...emptyTarget("1.3.1.1", 5),
-              title: "มีส่วนร่วมระดับชาติ",
-              criteriaId: "part_nat", kpiType: "quality"
+              title: "",
+              date: "",
+              kpiType: "quantity"
             }]
           }]
         }
@@ -1736,13 +1726,14 @@ function facultyCriteriaCell(t, g, lock) {
       </select>`;
     }).join("");
     const others = (C.CATALOG.strat || []).filter((c) => c.id && c.kind === "fixed").map((c) =>
-      critRadio(t, lock, c.id, c.label)
+      `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""}>${esc(c.label)}</option>`
     ).join("");
     return `<div class="crit-list">${pubs}</div>
-      <div class="grant-stack">${grants}</div>
-      <div class="crit-more">
-        <div class="date-lab">เกณฑ์ยุทธศาสตร์อื่นตามประกาศ</div>
-        <div class="crit-list">${others}</div>
+      <div class="grant-stack">${grants}
+        <select data-crit-other="${t.id}" ${lock ? "disabled" : ""}>
+          <option value="">เกณฑ์ยุทธศาสตร์อื่นตามประกาศ</option>
+          ${others}
+        </select>
       </div>`;
   }
   const items = (C.CATALOG[g.id] || []).filter((c) => c.id);
@@ -1786,7 +1777,8 @@ function facultyItemRow(t, g, lock, seq) {
     <td>${facultyRoleCell(t, g, lock)}${warn}</td>
     <td class="auto">${C.fmtUnit(cal.units)}</td>
     <td>
-      <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="${esc(C.fmtScore(self))}" ${lock ? "disabled" : ""} />
+      <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
+      <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
     </td>
     <td>
       <textarea data-pa="t:${t.id}:report" placeholder="กรอกคะแนน 9–10 หรือ 0–2 พร้อมเหตุผล/หลักฐานประกอบ" ${lock ? "disabled" : ""}>${esc(t.report)}</textarea>
@@ -2625,6 +2617,16 @@ function bind() {
       const [kind, amt] = el.value.split("|");
       t.criteriaId = kind;
       t.amount = amt;
+      persist();
+      render();
+    });
+  });
+  document.querySelectorAll("[data-crit-other]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const t = findTarget(el.getAttribute("data-crit-other"));
+      if (!t || !el.value) return;
+      t.criteriaId = el.value;
+      t.amount = "";
       persist();
       render();
     });
