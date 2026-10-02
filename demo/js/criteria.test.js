@@ -92,4 +92,19 @@ assert.strictEqual(S.levelOf(75), "ดี");
 assert.strictEqual(S.levelOf(65), "พอใช้");
 assert.strictEqual(S.levelOf(50), "ควรปรับปรุง");
 
+const supItems = [
+  { weight: 20, selfScore: 8, chairScore: 8 },
+  { weight: 55, selfScore: 8, chairScore: 8 },
+  { weight: 15, selfScore: 8, chairScore: 8 },
+  { weight: 10, selfScore: 8, chairScore: 8 }
+];
+assert.strictEqual(S.sumSupportWeight(supItems), 100);
+assert.strictEqual(S.supportPaPoints(supItems, false), 80);
+const supTot = S.supportTotalScore(supItems, ccItems, true);
+assert.strictEqual(supTot.pa, 64);
+assert.strictEqual(supTot.cc, 16);
+assert.strictEqual(supTot.total, 80);
+assert.strictEqual(S.SUPPORT_FC_ITEMS.length, 2);
+assert.strictEqual(S.WORK_TYPES.length, 4);
+
 console.log("criteria tests ok");

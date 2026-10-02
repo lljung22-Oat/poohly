@@ -65,6 +65,18 @@
     { id: "SFC02", name: "SFC02 ทักษะการวิจัย" }
   ];
 
+  const SUPPORT_FC_ITEMS = [
+    { id: "SUP01", name: "การปฏิบัติงานตามระเบียบและขั้นตอนของส่วนงาน" },
+    { id: "SUP02", name: "การให้บริการและการประสานงาน" }
+  ];
+
+  const WORK_TYPES = [
+    { id: "strat", label: "งานยุทธศาสตร์ (มหาวิทยาลัย/ส่วนงาน)" },
+    { id: "main", label: "งานประจำตามตำแหน่ง" },
+    { id: "assign", label: "งานที่ได้รับมอบหมาย" },
+    { id: "community", label: "งานเพื่อส่วนรวม" }
+  ];
+
   const IDP_METHODS = [
     { id: "70", label: "70 : เรียนรู้จากการปฏิบัติงานจริง" },
     { id: "20", label: "20 : เรียนรู้จากผู้อื่น (โค้ช / พี่เลี้ยง)" },
@@ -329,6 +341,29 @@
     return { pa, cc, total, level: levelOf(total) };
   }
 
+  function sumSupportWeight(items) {
+    return (items || []).reduce((s, it) => s + (Number(it.weight) || 0), 0);
+  }
+
+  function supportPaPoints(items, useChair) {
+    let acc = 0;
+    (items || []).forEach((it) => {
+      const wt = Number(it.weight) || 0;
+      const raw = useChair && it.chairScore !== "" && it.chairScore != null
+        ? it.chairScore : it.selfScore;
+      const sc = Number(raw);
+      acc += ((Number.isNaN(sc) ? 0 : sc) / 10) * wt;
+    });
+    return +acc.toFixed(2);
+  }
+
+  function supportTotalScore(items, ccItems, useChair) {
+    const pa = +((supportPaPoints(items, useChair) / 100) * PA_WEIGHT).toFixed(2);
+    const cc = ccPoints(ccItems);
+    const total = +(pa + cc).toFixed(2);
+    return { pa, cc, total, level: levelOf(total) };
+  }
+
   function levelOf(n) {
     const x = Number(n) || 0;
     const hit = LEVELS.find((lv) => x >= lv.min && x <= lv.max);
@@ -376,11 +411,14 @@
 
   const api = {
     PA_WEIGHT, CC_WEIGHT, CC_SUM_MAX, IDP_MAX, TOTAL_UNITS,
-    GROUPS, ROLES, KPI_TYPES, SCALE5, LEVELS, CC_ITEMS, FC_ITEMS, IDP_METHODS,
+    GROUPS, ROLES, KPI_TYPES, SCALE5, LEVELS, CC_ITEMS, FC_ITEMS, SUPPORT_FC_ITEMS,
+    WORK_TYPES, IDP_METHODS,
     PUB, CATALOG,
     findCrit, grantUnits, rolePct, unitsToScore, calcTarget,
     collectTargets, sumWeight, groupUnits, effectiveScore,
-    paPoints, chairPaScore, ccRaw, ccPoints, paWeighted80, totalScore, levelOf, scaleLabel,
+    paPoints, chairPaScore, ccRaw, ccPoints, paWeighted80, totalScore,
+    sumSupportWeight, supportPaPoints, supportTotalScore,
+    levelOf, scaleLabel,
     fmtUnit, fmtScore, calc, sumUnits
   };
   root.PAScore = api;
