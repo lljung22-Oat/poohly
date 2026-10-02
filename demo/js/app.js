@@ -1256,83 +1256,55 @@ function dashCards(cards) {
     </div>`;
 }
 
+function hrisCards() {
+  return [
+    { go: "profile", ico: "person", title: "ข้อมูลบุคลากร", sub: "ประวัติและข้อมูลส่วนบุคคล" },
+    { go: "leave", ico: "leave", title: "ข้อมูลวันลา", sub: "สถิติและการขออนุมัติวันลา" },
+    { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" },
+    { go: "paStaff", focus: "support", ico: "clip", title: "PA ประเมินภาระงาน", sub: "(สายสนับสนุน / ตารางทั่วไป)" },
+    { go: "period", focus: "faculty", ico: "grad", title: "PA ภาระงานอาจารย์", sub: "(สายวิชาการ / ตารางแบบ Matrix)", cream: true },
+    { go: "competency", ico: "target", title: "Functional Competency", sub: "ประเมินสมรรถนะเฉพาะสายงาน", linkish: true },
+    { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคล" }
+  ];
+}
+
 function viewHome() {
   if (isFaculty() || isSupport()) {
-    return chrome(`
-    <div class="dash">
-      <h1>หน้าหลักระบบงาน (Dashboard)</h1>
-      ${sectionBlock("ข้อมูลบุคลากร", "ประวัติส่วนบุคคล วันลา และเวลาปฏิบัติงาน", [
-        { go: "profile", ico: "person", title: "ข้อมูลบุคลากร", sub: "ประวัติและข้อมูลส่วนบุคคล" },
-        { go: "leave", ico: "leave", title: "ข้อมูลวันลา", sub: "สถิติและการขออนุมัติวันลา" },
-        { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" }
-      ], "info")}
-      ${sectionBlock("PA ภาระงานอาจารย์", "ข้อตกลงการปฏิบัติงานตามประกาศสายวิชาการ", [
-        { go: "modules", focus: "faculty", ico: "grad", title: "วงจร PMS", sub: "ข้อตกลง · รายงานผล · สมรรถนะ · รับทราบ", cream: isFaculty() },
-        { go: "pa", focus: "faculty", ico: "clip", title: "ข้อตกลง PA", sub: "ภาระงานที่ 1–4 ตามประกาศสายวิชาการ" }
-      ], "faculty")}
-      ${sectionBlock("PA ประเมินภาระงาน", "ข้อตกลงการปฏิบัติงานของบุคลากรสายสนับสนุน แบบ 05–09", [
-        { go: "modules", focus: "support", ico: "clip", title: "วงจรบุคคลากร", sub: "ข้อตกลง 05 · ติดตาม 06 · รายงาน 07 · สรุป 09 · แจ้งผล 08", cream: isSupport() },
-        { go: "pa", focus: "support", ico: "clip", title: "ข้อตกลง 05", sub: "กรอกข้อตกลงสายสนับสนุน" }
-      ], "staff")}
-      ${sectionBlock("สมรรถนะและแผนพัฒนา", "ประเมินสมรรถนะเฉพาะงาน และจัดทำแผนพัฒนารายบุคคล", [
-        { go: "competency", ico: "target", title: "Functional Competency", sub: "ประเมินสมรรถนะเฉพาะงาน", linkish: true },
-        { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคล" }
-      ], "dev")}
-    </div>`);
+    return chrome(dashCards(hrisCards()));
   }
   if (isCommittee()) {
-    return chrome(`<div class="dash"><h1>หน้าหลักระบบงาน (Dashboard)</h1>
-      ${sectionBlock("ผู้รับการประเมิน", "รายชื่อผู้รับการประเมินในความดูแล", [
-        { go: "evalHome", ico: "people", title: "รายชื่อผู้รับการประเมิน", sub: "คนที่ตนต้องให้ความเห็น" }
-      ], "eval")}
-      ${sectionBlock("ประเมินผล", "ให้ความเห็นผลการปฏิบัติงานและพิมพ์รายงาน", [
-        { go: "competency", ico: "target", title: "ประเมินผล", sub: "ให้ความเห็น PA / CC / FC แล้วส่งประธาน" },
-        { go: "report", ico: "chart", title: "สอบถาม / พิมพ์รายงาน", sub: "ดูสถานะและพิมพ์รายงาน" }
-      ], "dev")}
-      ${sectionBlock("การช่วยเหลือ", "", [
-        { go: "help", ico: "clip", title: "การช่วยเหลือ", sub: "หน้าที่กรรมการตาม UM-01 และ PMS" }
-      ], "info")}
-    </div>`);
+    return chrome(dashCards([
+      { go: "evalHome", ico: "people", title: "รายชื่อผู้รับการประเมิน", sub: "คนที่ตนต้องให้ความเห็น" },
+      { go: "competency", ico: "target", title: "ประเมินผล", sub: "ให้ความเห็น PA / CC / FC แล้วส่งประธาน" },
+      { go: "report", ico: "chart", title: "สอบถาม / พิมพ์รายงาน", sub: "ดูสถานะและพิมพ์รายงาน" },
+      { go: "help", ico: "clip", title: "การช่วยเหลือ", sub: "หน้าที่กรรมการตาม UM-01 และ PMS" }
+    ]));
   }
   if (isChair()) {
-    return chrome(`<div class="dash"><h1>หน้าหลักระบบงาน (Dashboard)</h1>
-      ${sectionBlock("ผู้รับการประเมิน", "รายชื่อผู้รับการประเมินในความดูแล", [
-        { go: "evalHome", ico: "people", title: "รายชื่อผู้รับการประเมิน", sub: "อนุมัติข้อตกลงและให้คะแนน" }
-      ], "eval")}
-      ${sectionBlock("กลุ่ม PA", "อนุมัติข้อตกลงและให้คะแนน 80+20", [
-        { go: "pa", ico: "grad", title: "อนุมัติข้อตกลง PA", sub: "ตรวจน้ำหนัก 100 แล้วนุมัติหรือส่งกลับ" },
-        { go: "competency", ico: "target", title: "ให้คะแนน PA + CC", sub: "Dialog สรุป 80 + 20 = 100" }
-      ], "faculty")}
-      ${sectionBlock("กลุ่ม IDP", "อนุมัติและประเมินแผนพัฒนา", [
-        { go: "idp", ico: "chart", title: "อนุมัติ / ประเมิน IDP", sub: "เป็นไปตามที่คาดหวัง หรือไม่เป็นไป" }
-      ], "dev")}
-      ${sectionBlock("รายงาน", "", [
-        { go: "report", ico: "cal", title: "รายงานภาพรวม", sub: "ติดตามสถานะรอบปี " + S.year },
-        { go: "help", ico: "clip", title: "การช่วยเหลือ", sub: "หน้าที่ประธานตามคำแนะนำ PMS" }
-      ], "info")}
-    </div>`);
+    return chrome(dashCards([
+      { go: "evalHome", ico: "people", title: "รายชื่อผู้รับการประเมิน", sub: "อนุมัติข้อตกลงและให้คะแนน" },
+      { go: "pa", ico: "grad", title: "อนุมัติข้อตกลง PA", sub: "ตรวจน้ำหนัก 100 แล้วนุมัติหรือส่งกลับ" },
+      { go: "competency", ico: "target", title: "ให้คะแนน PA + CC", sub: "Dialog สรุป 80 + 20 = 100" },
+      { go: "idp", ico: "chart", title: "อนุมัติ / ประเมิน IDP", sub: "เป็นไปตามที่คาดหวัง หรือไม่เป็นไป" },
+      { go: "report", ico: "cal", title: "รายงานภาพรวม", sub: "ติดตามสถานะรอบปี " + S.year },
+      { go: "help", ico: "clip", title: "การช่วยเหลือ", sub: "หน้าที่ประธานตามคำแนะนำ PMS" }
+    ]));
   }
   if (isHr()) {
-    return chrome(`<div class="dash"><h1>หน้าหลักระบบงาน (Dashboard)</h1>
-      ${sectionBlock("รอบและชุดประเมิน", "กำหนดรอบปีงบประมาณและตรวจสอบชุดประเมิน", [
-        { go: "adminRound", ico: "cal", title: "รอบและปฏิทิน", sub: "สร้างรอบปีงบประมาณ 2569 / 2570" },
-        { go: "formset", ico: "clip", title: "ชุดประเมิน", sub: "ตรวจ PA IDP CC FC ให้ครบตามตำแหน่ง" }
-      ], "info")}
-      ${sectionBlock("บุคลากรและติดตาม", "", [
-        { go: "adminPeople", ico: "people", title: "บุคลากรส่วนงาน", sub: "รายชื่อและผู้บังคับบัญชาในคณะ" },
-        { go: "report", ico: "chart", title: "ติดตามตามปฏิทิน", sub: "สถานะข้อตกลงและคะแนน" }
-      ], "staff")}
-    </div>`);
+    return chrome(dashCards([
+      { go: "adminRound", ico: "cal", title: "รอบและปฏิทิน", sub: "สร้างรอบปีงบประมาณ 2569 / 2570" },
+      { go: "formset", ico: "clip", title: "ชุดประเมิน", sub: "ตรวจ PA IDP CC FC ให้ครบตามตำแหน่ง" },
+      { go: "adminPeople", ico: "people", title: "บุคลากรส่วนงาน", sub: "รายชื่อและผู้บังคับบัญชาในคณะ" },
+      { go: "report", ico: "chart", title: "ติดตามตามปฏิทิน", sub: "สถานะข้อตกลงและคะแนน" },
+      { go: "help", ico: "shield", title: "การช่วยเหลือ", sub: "หน้าที่ Admin ส่วนงาน" }
+    ]));
   }
-  return chrome(`<div class="dash"><h1>หน้าหลักระบบงาน (Dashboard)</h1>
-    ${sectionBlock("บัญชีและสิทธิ์", "สร้างบัญชีผู้ใช้และกำหนดสิทธิ์การเข้าใช้งาน", [
-      { go: "users", ico: "people", title: "บัญชีและสิทธิ์", sub: "สร้างผู้ใช้ ตั้งรหัส กำหนดสิทธิ์ผู้ประเมิน" }
-    ], "eval")}
-    ${sectionBlock("โครงสร้างและรอบ", "", [
-      { go: "adminPeople", ico: "people", title: "โครงสร้างส่วนงาน", sub: "นำเข้าส่วนงาน บุคลากร ผู้บังคับบัญชา" },
-      { go: "adminRound", ico: "cal", title: "รอบประเมินทั้งมหาวิทยาลัย", sub: "ปีงบประมาณ 2569 และ 2570" }
-    ], "info")}
-  </div>`);
+  return chrome(dashCards([
+    { go: "users", ico: "people", title: "บัญชีและสิทธิ์", sub: "สร้างผู้ใช้ ตั้งรหัส กำหนดสิทธิ์ผู้ประเมิน" },
+    { go: "adminPeople", ico: "people", title: "โครงสร้างส่วนงาน", sub: "นำเข้าส่วนงาน บุคลากร ผู้บังคับบัญชา" },
+    { go: "adminRound", ico: "cal", title: "รอบประเมินทั้งมหาวิทยาลัย", sub: "ปีงบประมาณ 2569 และ 2570" },
+    { go: "help", ico: "shield", title: "ให้คำปรึกษาการใช้ระบบ", sub: "ช่องทางผู้ดูแลระบบ" }
+  ]));
 }
 
 function viewLeave() {
