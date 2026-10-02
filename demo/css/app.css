@@ -131,6 +131,12 @@ a { color: #1565a8; }
 .login-links .quiet { color: #64748b; font-size: 14px; }
 .user-form { display: grid; gap: 4px; max-width: 480px; }
 .user-form input, .user-form select { width: 100%; min-height: 44px; padding: 8px 10px; border: 1px solid #c5d0dc; border-radius: 8px; }
+.profile-form { display: grid; grid-template-columns: 220px 1fr; gap: 10px 16px; align-items: center; }
+.profile-form .hint, .profile-form .footbar { grid-column: 1 / -1; }
+.profile-form label { font-weight: 700; margin: 0; }
+.profile-form input, .profile-form select {
+  width: 100%; min-height: 44px; padding: 8px 10px; border: 1px solid #c5d0dc; border-radius: 8px;
+}
 
 /* ----- app chrome ----- */
 .app { display: grid; grid-template-rows: 52px 1fr; min-height: 100vh; }
@@ -448,5 +454,5 @@ table.pa .auto {
   .who { flex-wrap: wrap; white-space: normal; justify-content: flex-end; }
   .pms-home { grid-template-columns: 1fr; }
   .pms-home .left h1 { font-size: 42px; }
-  .profile-grid { grid-template-columns: 1fr; }
+  .profile-grid, .profile-form { grid-template-columns: 1fr; }
 }

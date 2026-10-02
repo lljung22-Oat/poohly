@@ -57,7 +57,9 @@
       {
         id: "faculty", username: "porntipa.c", full: "น.ส.พรทิพา เซี่ยงฉิน",
         position: "อาจารย์", type: "สายวิชาการ", staffId: "10101642",
-        dept: "ภาควิชาสังคมศาสตร์", family: "ratee", track: "faculty", role: "faculty",
+        dept: "ภาควิชาสังคมศาสตร์", email: "porntipa.c@mahidol.ac.th", phone: "",
+        supervisor: "ประธานกรรมการประเมิน",
+        family: "ratee", track: "faculty", role: "faculty",
         roleLabel: "ผู้รับการประเมิน", roleSub: "อาจารย์",
         hint: "กรอกข้อตกลงตามประกาศสายวิชาการของตนเองเท่านั้น",
         tone: "ratee", canEval: false, canChair: false, canHr: false, canAdmin: false, active: true
@@ -65,7 +67,9 @@
       {
         id: "support", username: "staff.sh", full: "เจ้าหน้าที่สายสนับสนุน",
         position: "เจ้าหน้าที่บริหารงานทั่วไป", type: "สายสนับสนุน", staffId: "10102001",
-        dept: "งานการเจ้าหน้าที่", family: "ratee", track: "support", role: "support",
+        dept: "งานการเจ้าหน้าที่", email: "staff.sh@mahidol.ac.th", phone: "",
+        supervisor: "ประธานกรรมการประเมิน",
+        family: "ratee", track: "support", role: "support",
         roleLabel: "ผู้รับการประเมิน", roleSub: "บุคลากรสายสนับสนุน",
         hint: "กรอกแบบข้อตกลง PA บุคคลากรของตนเองเท่านั้น",
         tone: "support", canEval: false, canChair: false, canHr: false, canAdmin: false, active: true
@@ -185,6 +189,19 @@
     await audit(actor || "admin", "reset-pass", "ตั้งรหัสใหม่ให้ " + u.username);
   }
 
+  async function updateProfile(id, patch, actor) {
+    const u = await getUser(id);
+    if (!u) throw new Error("ไม่พบบัญชี");
+    const allow = ["full", "staffId", "position", "type", "dept", "email", "phone", "supervisor"];
+    allow.forEach((k) => {
+      if (patch[k] !== undefined) u[k] = patch[k];
+    });
+    u.updatedAt = now();
+    await putUser(u);
+    await audit(actor || u.username, "update-profile", "แก้ไขข้อมูลส่วนบุคคล " + u.username);
+    return u;
+  }
+
   async function setActive(id, active, actor) {
     const u = await getUser(id);
     if (!u) throw new Error("ไม่พบบัญชี");
@@ -247,7 +264,7 @@
 
   root.PMSDB = {
     open, seed, sha256,
-    listUsers, getUser, getUserByName, putUser, createUser, setPassword, setActive,
+    listUsers, getUser, getUserByName, putUser, createUser, updateProfile, setPassword, setActive,
     verify, saveRecord, loadRecord, saveSession, loadSession, clearSession,
     audit, listAudit, wipeDemo
   };

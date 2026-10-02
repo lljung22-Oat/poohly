@@ -14,6 +14,9 @@ const ACCOUNTS = {
     type: "สายวิชาการ",
     staffId: "10101642",
     dept: "ภาควิชาสังคมศาสตร์",
+    email: "porntipa.c@mahidol.ac.th",
+    phone: "",
+    supervisor: "ประธานกรรมการประเมิน",
     family: "ratee",
     track: "faculty",
     roleLabel: "ผู้รับการประเมิน",
@@ -30,6 +33,9 @@ const ACCOUNTS = {
     type: "สายสนับสนุน",
     staffId: "10102001",
     dept: "งานการเจ้าหน้าที่",
+    email: "staff.sh@mahidol.ac.th",
+    phone: "",
+    supervisor: "ประธานกรรมการประเมิน",
     family: "ratee",
     track: "support",
     roleLabel: "ผู้รับการประเมิน",
@@ -356,8 +362,22 @@ function defaultState() {
     user: null,
     users: [],
     loginGate: "public",
-    loginType: ""
+    loginType: "",
+    leaveRows: defaultLeaveRows(),
+    timeRows: defaultTimeRows()
   };
+}
+
+function defaultLeaveRows() {
+  return [
+    { id: uid(), kind: "ลาพักผ่อน", start: "", end: "", days: "", reason: "", status: "ร่าง" }
+  ];
+}
+
+function defaultTimeRows() {
+  return [
+    { id: uid(), date: "", timeIn: "", timeOut: "", note: "" }
+  ];
 }
 
 function hydrate(raw) {
@@ -367,6 +387,8 @@ function hydrate(raw) {
   if (!s.year || !["2569", "2570"].includes(String(s.year))) s.year = "2570";
   if (!s.supportFollow) s.supportFollow = [];
   if (!s.supportPledge) s.supportPledge = defaultState().supportPledge;
+  if (!s.leaveRows || !s.leaveRows.length) s.leaveRows = defaultLeaveRows();
+  if (!s.timeRows || !s.timeRows.length) s.timeRows = defaultTimeRows();
   s.modal = null;
   return s;
 }
@@ -1062,7 +1084,7 @@ function profileBox(who) {
     <b>รหัสบุคลากร</b><span>${esc(u.staffId)}</span>
     <b>ตำแหน่ง</b><span>${esc(u.position)} (${esc(u.type)})</span>
     <b>สังกัด</b><span>${esc(FACULTY)} · ${esc(u.dept)}</span>
-    <b>ผู้ประเมิน</b><span>ประธานกรรมการประเมิน</span>
+    <b>ผู้ประเมิน</b><span>${esc(u.supervisor || "ประธานกรรมการประเมิน")}</span>
     <b>รอบ</b><span>${esc(S.round)}</span>
   </div>`;
 }
@@ -1111,7 +1133,7 @@ function viewLogin() {
           </div>
           <button class="btn-navy full" type="submit">เข้าสู่ระบบ</button>
         </form>
-        <p class="hint">บัญชีตัวอย่าง${picked === "faculty" ? " อาจารย์: porntipa.c / 123456" : " เจ้าหน้าที่: staff.sh / 123456"}</p>
+        <p class="hint">บัญชีตั้งต้นของส่วนงาน${picked === "faculty" ? " อาจารย์: porntipa.c / 123456" : " เจ้าหน้าที่: staff.sh / 123456"}</p>
       ` : `<p class="hint">เลือกเจ้าหน้าที่ หรือ อาจารย์ ก่อนกรอกชื่อผู้ใช้</p>`}
       <p class="login-links">
         <button type="button" class="linkish" data-gate="eval">สำหรับผู้ประเมินที่ได้รับสิทธิ์</button>
@@ -1196,20 +1218,20 @@ function viewHome() {
     return chrome(`
     <div class="dash">
       <h1>หน้าหลักระบบงาน (Dashboard)</h1>
-      ${sectionBlock("ข้อมูลบุคลากร", "เข้าดูประวัติ วันลา และเวลาจากกลุ่มนี้ได้เลย", [
+      ${sectionBlock("ข้อมูลบุคลากร", "ประวัติส่วนบุคคล วันลา และเวลาปฏิบัติงาน", [
         { go: "profile", ico: "person", title: "ข้อมูลบุคลากร", sub: "ประวัติและข้อมูลส่วนบุคคล" },
         { go: "leave", ico: "leave", title: "ข้อมูลวันลา", sub: "สถิติและการขออนุมัติวันลา" },
         { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" }
       ], "info")}
-      ${sectionBlock("PA ภาระงานอาจารย์", "กดเข้าวงจรอาจารย์ได้เลย ไม่ต้องไล่หน้าปีงบประมาณ", [
+      ${sectionBlock("PA ภาระงานอาจารย์", "ข้อตกลงการปฏิบัติงานตามประกาศสายวิชาการ", [
         { go: "modules", focus: "faculty", ico: "grad", title: "วงจร PMS", sub: "ข้อตกลง · รายงานผล · สมรรถนะ · รับทราบ", cream: isFaculty() },
         { go: "pa", focus: "faculty", ico: "clip", title: "ข้อตกลง PA", sub: "ภาระงานที่ 1–4 ตามประกาศสายวิชาการ" }
       ], "faculty")}
-      ${sectionBlock("PA ประเมินภาระงาน", "กดเข้าวงจรบุคคลากรได้เลย แบบ 05–09", [
+      ${sectionBlock("PA ประเมินภาระงาน", "ข้อตกลงการปฏิบัติงานของบุคลากรสายสนับสนุน แบบ 05–09", [
         { go: "modules", focus: "support", ico: "clip", title: "วงจรบุคคลากร", sub: "ข้อตกลง 05 · ติดตาม 06 · รายงาน 07 · สรุป 09 · แจ้งผล 08", cream: isSupport() },
         { go: "pa", focus: "support", ico: "clip", title: "ข้อตกลง 05", sub: "กรอกข้อตกลงสายสนับสนุน" }
       ], "staff")}
-      ${sectionBlock("สมรรถนะและแผนพัฒนา", "เข้า Functional Competency หรือ IDP ได้จากกลุ่มนี้", [
+      ${sectionBlock("สมรรถนะและแผนพัฒนา", "ประเมินสมรรถนะเฉพาะงาน และจัดทำแผนพัฒนารายบุคคล", [
         { go: "competency", ico: "target", title: "Functional Competency", sub: "ประเมินสมรรถนะเฉพาะงาน", linkish: true },
         { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคล" }
       ], "dev")}
@@ -1217,10 +1239,10 @@ function viewHome() {
   }
   if (isCommittee()) {
     return chrome(`<div class="dash"><h1>หน้าหลักระบบงาน (Dashboard)</h1>
-      ${sectionBlock("ผู้รับการประเมิน", "เลือกรายชื่อแล้วเข้าให้ความเห็นได้เลย", [
+      ${sectionBlock("ผู้รับการประเมิน", "รายชื่อผู้รับการประเมินในความดูแล", [
         { go: "evalHome", ico: "people", title: "รายชื่อผู้รับการประเมิน", sub: "คนที่ตนต้องให้ความเห็น" }
       ], "eval")}
-      ${sectionBlock("ประเมินผล", "เข้าหน้าให้ความเห็นและรายงานได้เลย", [
+      ${sectionBlock("ประเมินผล", "ให้ความเห็นผลการปฏิบัติงานและพิมพ์รายงาน", [
         { go: "competency", ico: "target", title: "ประเมินผล", sub: "ให้ความเห็น PA / CC / FC แล้วส่งประธาน" },
         { go: "report", ico: "chart", title: "สอบถาม / พิมพ์รายงาน", sub: "ดูสถานะและพิมพ์รายงาน" }
       ], "dev")}
@@ -1231,7 +1253,7 @@ function viewHome() {
   }
   if (isChair()) {
     return chrome(`<div class="dash"><h1>หน้าหลักระบบงาน (Dashboard)</h1>
-      ${sectionBlock("ผู้รับการประเมิน", "เปิดรายชื่อแล้วเข้าคนนั้นได้เลย", [
+      ${sectionBlock("ผู้รับการประเมิน", "รายชื่อผู้รับการประเมินในความดูแล", [
         { go: "evalHome", ico: "people", title: "รายชื่อผู้รับการประเมิน", sub: "อนุมัติข้อตกลงและให้คะแนน" }
       ], "eval")}
       ${sectionBlock("กลุ่ม PA", "อนุมัติข้อตกลงและให้คะแนน 80+20", [
@@ -1249,7 +1271,7 @@ function viewHome() {
   }
   if (isHr()) {
     return chrome(`<div class="dash"><h1>หน้าหลักระบบงาน (Dashboard)</h1>
-      ${sectionBlock("รอบและชุดประเมิน", "เข้าตั้งรอบหรือตรวจชุดได้เลย", [
+      ${sectionBlock("รอบและชุดประเมิน", "กำหนดรอบปีงบประมาณและตรวจสอบชุดประเมิน", [
         { go: "adminRound", ico: "cal", title: "รอบและปฏิทิน", sub: "สร้างรอบปีงบประมาณ 2569 / 2570" },
         { go: "formset", ico: "clip", title: "ชุดประเมิน", sub: "ตรวจ PA IDP CC FC ให้ครบตามตำแหน่ง" }
       ], "info")}
@@ -1260,7 +1282,7 @@ function viewHome() {
     </div>`);
   }
   return chrome(`<div class="dash"><h1>หน้าหลักระบบงาน (Dashboard)</h1>
-    ${sectionBlock("บัญชีและสิทธิ์", "สร้างผู้ประเมินแล้วกำหนดสิทธิ์ได้เลย", [
+    ${sectionBlock("บัญชีและสิทธิ์", "สร้างบัญชีผู้ใช้และกำหนดสิทธิ์การเข้าใช้งาน", [
       { go: "users", ico: "people", title: "บัญชีและสิทธิ์", sub: "สร้างผู้ใช้ ตั้งรหัส กำหนดสิทธิ์ผู้ประเมิน" }
     ], "eval")}
     ${sectionBlock("โครงสร้างและรอบ", "", [
@@ -1270,22 +1292,64 @@ function viewHome() {
   </div>`);
 }
 
-function viewSoon(title, sub) {
+function viewLeave() {
+  const lock = !isRatee() && !isHr() && !isAdmin();
+  const rows = (S.leaveRows || []).map((it) => `<tr>
+    <td><select data-leave="${it.id}:kind" ${lock ? "disabled" : ""}>
+      ${["ลาพักผ่อน", "ลาป่วย", "ลากิจ", "ลาคลอด", "ลาอื่นๆ"].map((k) =>
+        `<option ${it.kind === k ? "selected" : ""}>${esc(k)}</option>`).join("")}
+    </select></td>
+    <td><input type="date" data-leave="${it.id}:start" value="${esc(it.start)}" ${lock ? "disabled" : ""} /></td>
+    <td><input type="date" data-leave="${it.id}:end" value="${esc(it.end)}" ${lock ? "disabled" : ""} /></td>
+    <td><input type="number" data-leave="${it.id}:days" value="${esc(it.days)}" ${lock ? "disabled" : ""} /></td>
+    <td><input data-leave="${it.id}:reason" value="${esc(it.reason)}" ${lock ? "disabled" : ""} /></td>
+    <td><select data-leave="${it.id}:status" ${lock ? "disabled" : ""}>
+      ${["ร่าง", "ยื่นขอ", "อนุมัติ", "ไม่อนุมัติ"].map((k) =>
+        `<option ${it.status === k ? "selected" : ""}>${esc(k)}</option>`).join("")}
+    </select></td>
+    <td>${lock ? "" : `<button class="iconbtn" type="button" data-del-leave="${it.id}">−</button>`}</td>
+  </tr>`).join("");
   return chrome(`
-    <p class="crumb">หน้าหลักระบบงาน</p>
-    <h1 class="page-title">${esc(title)}</h1>
+    <p class="crumb">ระบบงานบุคลากร</p>
+    <h1 class="page-title">ข้อมูลวันลา</h1>
     <div class="card">
-      <p>${esc(sub)}</p>
-      <p class="hint">โมดูลนี้เป็นส่วนของระบบบุคลากรตามหน้าหลัก · เดโมคณะสังคมฯ เปิดดูได้ทุกเมนู</p>
-      <button class="btn-navy" type="button" data-go="home">กลับหน้าหลักระบบงาน</button>
+      <p class="hint">บันทึกและติดตามการลาของบุคลากรในรอบปีงบประมาณ ${esc(S.year)}</p>
+      <div class="pa-wrap"><table class="data">
+        <thead><tr><th>ประเภทการลา</th><th>ตั้งแต่วันที่</th><th>ถึงวันที่</th><th>จำนวนวัน</th><th>เหตุผล</th><th>สถานะ</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+      <div class="footbar">
+        ${lock ? "" : `<button class="btn-teal" type="button" id="btnAddLeave">เพิ่มรายการลา</button>
+        <button class="btn-navy" type="button" id="btnSaveLeave">บันทึกข้อมูลวันลา</button>`}
+        <button class="btn-ghost" type="button" data-go="home">กลับหน้าหลักระบบงาน</button>
+      </div>
     </div>`);
 }
 
-function viewLeave() {
-  return viewSoon("ข้อมูลวันลา", "สถิติและการขออนุมัติวันลา");
-}
 function viewTime() {
-  return viewSoon("ข้อมูลเวลาเข้า-ออกงาน", "ลงเวลาปฏิบัติงานประจำวัน");
+  const lock = !isRatee() && !isHr() && !isAdmin();
+  const rows = (S.timeRows || []).map((it) => `<tr>
+    <td><input type="date" data-time="${it.id}:date" value="${esc(it.date)}" ${lock ? "disabled" : ""} /></td>
+    <td><input type="time" data-time="${it.id}:timeIn" value="${esc(it.timeIn)}" ${lock ? "disabled" : ""} /></td>
+    <td><input type="time" data-time="${it.id}:timeOut" value="${esc(it.timeOut)}" ${lock ? "disabled" : ""} /></td>
+    <td><input data-time="${it.id}:note" value="${esc(it.note)}" ${lock ? "disabled" : ""} /></td>
+    <td>${lock ? "" : `<button class="iconbtn" type="button" data-del-time="${it.id}">−</button>`}</td>
+  </tr>`).join("");
+  return chrome(`
+    <p class="crumb">ระบบงานบุคลากร</p>
+    <h1 class="page-title">ข้อมูลเวลาเข้า-ออกงาน</h1>
+    <div class="card">
+      <p class="hint">บันทึกเวลาปฏิบัติงานประจำวันของบุคลากร ปีงบประมาณ ${esc(S.year)}</p>
+      <div class="pa-wrap"><table class="data">
+        <thead><tr><th>วันที่</th><th>เวลาเข้า</th><th>เวลาออก</th><th>หมายเหตุ</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+      <div class="footbar">
+        ${lock ? "" : `<button class="btn-teal" type="button" id="btnAddTime">เพิ่มรายการ</button>
+        <button class="btn-navy" type="button" id="btnSaveTime">บันทึกเวลาปฏิบัติงาน</button>`}
+        <button class="btn-ghost" type="button" data-go="home">กลับหน้าหลักระบบงาน</button>
+      </div>
+    </div>`);
 }
 
 function viewPaStaff() {
@@ -1297,8 +1361,8 @@ function viewPaStaff() {
 function viewHelp() {
   const a = account();
   const blocks = {
-    faculty: ["ยืนยันประวัติก่อนกรอกข้อตกลง", "กรอก PA ภาระงานอาจารย์ตามประกาศค่าน้ำหนัก / SHPA", "หน่วยและคะแนนตนเองคำนวณจากประกาศสายวิชาการ ฐาน 1,820", "ส่งรายงานผลแล้วแก้ไม่ได้", "รับทราบ PA+CC พร้อมกัน · FC รับทราบแยก", "เดโมเปิดดูการ์ดและวงจรได้ทั้งหมด การบันทึกยังเป็นไปตามสิทธิ์"],
-    support: ["ยืนยันประวัติก่อนกรอกข้อตกลง", "ใช้เอกสาร PA บุคคลากร แบบ 05–09 ไม่ใช่ตารางหน่วยอาจารย์", "น้ำหนักรวม 100 เกณฑ์ 5 ระดับ ตาม rubrics สายสนับสนุน", "ติดตามกลางปีด้วยแบบ 06 · รายงานผลด้วยแบบ 07", "สรุปคะแนน 09 · แจ้งผล 08 · IDP ผู้ปฏิบัติ/ผู้อนุมัติ", "เดโมเปิดดูการ์ดและวงจรได้ทั้งหมด การบันทึกยังเป็นไปตามสิทธิ์"],
+    faculty: ["ตรวจสอบและแก้ไขข้อมูลส่วนบุคคลให้ถูกต้องก่อนจัดทำข้อตกลง", "กรอก PA ภาระงานอาจารย์ตามประกาศค่าน้ำหนัก / SHPA", "หน่วยและคะแนนตนเองคำนวณจากประกาศสายวิชาการ ฐาน 1,820", "ส่งรายงานผลแล้วแก้ไขไม่ได้", "รับทราบ PA+CC พร้อมกัน · FC รับทราบแยก"],
+    support: ["ตรวจสอบและแก้ไขข้อมูลส่วนบุคคลให้ถูกต้องก่อนจัดทำข้อตกลง", "ใช้เอกสาร PA บุคคลากร แบบ 05–09 ไม่ใช่ตารางหน่วยอาจารย์", "น้ำหนักรวม 100 เกณฑ์ 5 ระดับ ตาม rubrics สายสนับสนุน", "ติดตามกลางปีด้วยแบบ 06 · รายงานผลด้วยแบบ 07", "สรุปคะแนน 09 · แจ้งผล 08 · IDP ผู้ปฏิบัติ/ผู้อนุมัติ"],
     committee: ["เข้าจากรายชื่อผู้รับการประเมิน (UM-01)", "ให้ความเห็น PA / CC / FC เมื่อส่งรายงานแล้ว", "ส่งให้ประธาน — ไม่ใช่คะแนนหลัก", "ไม่มีหน้ากรอกข้อตกลง และไม่อนุมัติ"],
     chair: ["ค้นผู้รับการประเมินแล้วเข้ากำหนดตัวชี้วัด", "อนุมัติ/ไม่อนุมัติข้อตกลงเมื่อสถานะขออนุมัติ", "ให้คะแนน PA 80 + CC 20 แล้วส่งคะแนน", "ประเมิน IDP เป็นไปตามที่คาดหวัง / ไม่เป็นไป", "ไม่กรอกภาระงานแทนผู้รับการประเมิน"],
     hr: ["สร้างรอบและปฏิทินของส่วนงาน", "ตรวจชุดประเมิน PA IDP CC FC MC ให้ครบตามตำแหน่ง", "นำเข้ากรรมการ · ติดตามตามปฏิทิน", "ไม่ให้คะแนนและไม่กรอก PA"],
@@ -1420,7 +1484,7 @@ function viewAdminPeople() {
           <tr><td>${esc(ACCOUNTS.hr.staffId)}</td><td>${esc(ACCOUNTS.hr.full)}</td><td>เจ้าหน้าที่งานการเจ้าหน้าที่</td><td>${esc(FACULTY)}</td><td>Admin ส่วนงาน</td><td>—</td></tr>
         </tbody>
       </table>
-      <p class="hint">ของจริงนำเข้าจากไฟล์ที่มหาวิทยาลัยกำหนด · เดโมโชว์เฉพาะคณะสังคมฯ</p>
+      <p class="hint">ข้อมูลบุคลากรของคณะสังคมศาสตร์และมนุษยศาสตร์ สามารถนำเข้าจากไฟล์ที่มหาวิทยาลัยกำหนด</p>
     </div>`);
 }
 
@@ -1445,7 +1509,7 @@ function viewAdminRound() {
           <tr><td>จัดทำ IDP</td><td>16 ต.ค. ${esc(y)}</td><td>31 ต.ค. ${esc(y)}</td></tr>
         </tbody>
       </table>
-      <p class="hint">ข้าราชการ/ลูกจ้าง 2 รอบต่อปี · พนักงานมหาวิทยาลัย 1 รอบ · เดโมเลือกได้ปี 2569 และ 2570</p>
+      <p class="hint">ข้าราชการและลูกจ้างประเมิน 2 รอบต่อปี · พนักงานมหาวิทยาลัยประเมิน 1 รอบ · ปีงบประมาณที่ใช้คือ 2569 และ 2570</p>
     </div>`);
 }
 
@@ -1462,13 +1526,48 @@ function viewPeriod() {
 }
 
 function viewProfile() {
-  return chrome(`
-    <p class="crumb">ยืนยันประวัติส่วนตัว</p>
+  const u = isRatee() ? account() : rateeAccount();
+  const canEdit = isRatee() || isHr() || isAdmin();
+  if (!canEdit) {
+    return chrome(`
+    <p class="crumb">ข้อมูลบุคลากร</p>
     <h1 class="page-title">ข้อมูลส่วนบุคคล</h1>
-    <div class="card">${profileBox()}
-      <p class="hint">${isRatee() ? "ตรวจชื่อ ตำแหน่ง สังกัดให้ถูกต้องก่อนจัดทำข้อตกลง" : "ข้อมูลของผู้รับการประเมินที่กำลังดู"}</p>
-      <button class="btn-navy" type="button" data-go="${isEval() ? "evalHome" : "modules"}" style="margin-top:12px">${isRatee() ? "ยืนยันและเข้าวงจรประเมิน" : "กลับรายชื่อ"}</button>
+    <div class="card">${profileBox(u)}
+      <p class="hint">ข้อมูลของผู้รับการประเมินที่กำลังดู</p>
+      <button class="btn-navy" type="button" data-go="evalHome" style="margin-top:12px">กลับรายชื่อ</button>
     </div>`);
+  }
+  return chrome(`
+    <p class="crumb">ระบบงานบุคลากร</p>
+    <h1 class="page-title">ข้อมูลส่วนบุคคล</h1>
+    <form id="profileForm" class="card profile-form">
+      <p class="hint">แก้ไขประวัติส่วนบุคคลให้ถูกต้อง แล้วบันทึกลงฐานข้อมูลก่อนจัดทำข้อตกลงการปฏิบัติงาน</p>
+      <label>ชื่อ-นามสกุล</label>
+      <input id="pfFull" value="${esc(u.full)}" required />
+      <label>รหัสบุคลากร</label>
+      <input id="pfStaffId" value="${esc(u.staffId)}" required />
+      <label>ตำแหน่ง</label>
+      <input id="pfPos" value="${esc(u.position)}" />
+      <label>ประเภทบุคลากร</label>
+      <select id="pfType">
+        <option value="สายวิชาการ" ${u.type === "สายวิชาการ" ? "selected" : ""}>สายวิชาการ</option>
+        <option value="สายสนับสนุน" ${u.type === "สายสนับสนุน" ? "selected" : ""}>สายสนับสนุน</option>
+      </select>
+      <label>สังกัด / ภาควิชาหรืองาน</label>
+      <input id="pfDept" value="${esc(u.dept)}" />
+      <label>ส่วนงาน</label>
+      <input value="${esc(FACULTY)}" disabled />
+      <label>ผู้ประเมิน</label>
+      <input id="pfSup" value="${esc(u.supervisor || "ประธานกรรมการประเมิน")}" />
+      <label>ไปรษณีย์อิเล็กทรอนิกส์</label>
+      <input id="pfEmail" type="email" value="${esc(u.email || "")}" />
+      <label>หมายเลขโทรศัพท์</label>
+      <input id="pfPhone" value="${esc(u.phone || "")}" />
+      <div class="footbar">
+        <button class="btn-navy" type="submit">บันทึกข้อมูลส่วนบุคคล</button>
+        <button class="btn-ghost" type="button" data-go="${isRatee() ? "modules" : "home"}">เข้าวงจรประเมิน</button>
+      </div>
+    </form>`);
 }
 
 function viewRounds() {
@@ -1522,11 +1621,11 @@ function viewModules() {
   const list = currentModules();
   const staff = track() === "support";
   const groups = staff ? [
-    { title: "กลุ่ม PA บุคคลากร", note: "แบบ 05–09 กดเข้าหน้าได้เลย", ids: ["pa", "follow", "paReport", "competency", "scoreSum", "ack"] },
+    { title: "กลุ่ม PA บุคคลากร", note: "แบบข้อตกลง 05 ติดตาม 06 รายงานผล 07 สรุปคะแนน 09 และแจ้งผล 08", ids: ["pa", "follow", "paReport", "competency", "scoreSum", "ack"] },
     { title: "กลุ่ม IDP", note: "ผู้ปฏิบัติและผู้อนุมัติ", ids: ["idp", "idpEval"] },
     { title: "กลุ่มรายงาน", note: "", ids: ["report"] }
   ] : [
-    { title: "กลุ่ม PA อาจารย์", note: "ข้อตกลงตามประกาศ / SHPA กดเข้าได้เลย", ids: ["pa", "paReport", "competency", "ack"] },
+    { title: "กลุ่ม PA อาจารย์", note: "ข้อตกลงตามประกาศค่าน้ำหนักและแบบ SHPA", ids: ["pa", "paReport", "competency", "ack"] },
     { title: "กลุ่ม IDP", note: "แผนพัฒนารายบุคคล", ids: ["idp", "idpReport", "idpEval", "idpAck"] },
     { title: "กลุ่มรายงาน", note: "", ids: ["report"] }
   ];
@@ -1735,7 +1834,7 @@ function viewSupportPA() {
       <header class="sec-head">
         <div>
           <h2>${esc(type.label)}</h2>
-          <p>น้ำหนักกลุ่มนี้ ${wsum} · กดเข้ากลุ่มนี้จากแถบบนได้เลย</p>
+          <p>น้ำหนักของกลุ่มนี้ ${wsum}</p>
         </div>
         ${canEditAgreement() ? `<button class="btn-teal" type="button" data-add-sup="${type.id}">เพิ่มข้อตกลงกลุ่มนี้</button>` : ""}
       </header>
@@ -2282,6 +2381,77 @@ function bind() {
     await enterUser(res.user);
     toast("เข้าสู่ระบบแล้ว · บันทึกลงฐานข้อมูล");
   });
+  const pf = document.getElementById("profileForm");
+  if (pf) pf.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const u = isRatee() ? account() : rateeAccount();
+    if (!u) return;
+    const patch = {
+      full: (document.getElementById("pfFull") || {}).value || u.full,
+      staffId: (document.getElementById("pfStaffId") || {}).value || u.staffId,
+      position: (document.getElementById("pfPos") || {}).value || "",
+      type: (document.getElementById("pfType") || {}).value || u.type,
+      dept: (document.getElementById("pfDept") || {}).value || "",
+      supervisor: (document.getElementById("pfSup") || {}).value || "",
+      email: (document.getElementById("pfEmail") || {}).value || "",
+      phone: (document.getElementById("pfPhone") || {}).value || ""
+    };
+    Object.assign(u, patch);
+    if (S.user && S.user.id === u.id) S.user = u;
+    if (S.users) {
+      const i = S.users.findIndex((x) => x.id === u.id);
+      if (i >= 0) S.users[i] = { ...S.users[i], ...patch };
+    }
+    if (DB && DB.updateProfile) {
+      try { await DB.updateProfile(u.id, patch, account().username); } catch (err) { toast(err.message || String(err)); return; }
+    }
+    persist();
+    toast("บันทึกข้อมูลส่วนบุคคลแล้ว");
+    render();
+  });
+  function readKeyedRows(attr, list) {
+    document.querySelectorAll(`[${attr}]`).forEach((el) => {
+      const [id, field] = el.getAttribute(attr).split(":");
+      const row = (list || []).find((x) => x.id === id);
+      if (row) row[field] = el.value;
+    });
+  }
+  const sl = document.getElementById("btnSaveLeave");
+  if (sl) sl.addEventListener("click", () => {
+    readKeyedRows("data-leave", S.leaveRows);
+    persist();
+    toast("บันทึกข้อมูลวันลาแล้ว");
+  });
+  const st = document.getElementById("btnSaveTime");
+  if (st) st.addEventListener("click", () => {
+    readKeyedRows("data-time", S.timeRows);
+    persist();
+    toast("บันทึกเวลาปฏิบัติงานแล้ว");
+  });
+  const al = document.getElementById("btnAddLeave");
+  if (al) al.addEventListener("click", () => {
+    readKeyedRows("data-leave", S.leaveRows);
+    S.leaveRows.push({ id: uid(), kind: "ลาพักผ่อน", start: "", end: "", days: "", reason: "", status: "ร่าง" });
+    persist(); render();
+  });
+  const at = document.getElementById("btnAddTime");
+  if (at) at.addEventListener("click", () => {
+    readKeyedRows("data-time", S.timeRows);
+    S.timeRows.push({ id: uid(), date: "", timeIn: "", timeOut: "", note: "" });
+    persist(); render();
+  });
+  document.querySelectorAll("[data-del-leave]").forEach((b) => {
+    b.addEventListener("click", () => {
+      S.leaveRows = (S.leaveRows || []).filter((x) => x.id !== b.getAttribute("data-del-leave"));
+      persist(); render();
+    });
+  });
+  document.querySelectorAll("[data-del-time]").forEach((b) => {
+    b.addEventListener("click", () => {
+      S.timeRows = (S.timeRows || []).filter((x) => x.id !== b.getAttribute("data-del-time"));
+      persist(); render();
+    });
+  });
   const cu = document.getElementById("createUserForm");
   if (cu) cu.addEventListener("submit", async (ev) => {
     ev.preventDefault();
@@ -2394,7 +2564,7 @@ function bind() {
   const rj = document.getElementById("btnReject");
   if (rj) rj.addEventListener("click", chairReject);
   const imp = document.getElementById("btnImport");
-  if (imp) imp.addEventListener("click", () => toast("เดโม: กรอกในระบบตามกรณีที่ 2 ของคำแนะนำ PMS"));
+  if (imp) imp.addEventListener("click", () => toast("กรอกชุดชี้วัดในระบบตามกรณีที่ 2 ของคำแนะนำการใช้ระบบ PMS"));
 
   const sr = document.getElementById("btnSaveReport");
   if (sr) sr.addEventListener("click", () => {
