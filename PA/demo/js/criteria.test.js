@@ -107,4 +107,10 @@ assert.strictEqual(supTot.total, 80);
 assert.strictEqual(S.SUPPORT_FC_ITEMS.length, 2);
 assert.strictEqual(S.WORK_TYPES.length, 4);
 
+assert.strictEqual(S.PUB[0].formLabel.includes("Top1"), true);
+assert.strictEqual(S.GRANT_SOURCES.grant_th.label.includes("ภายในประเทศ"), true);
+assert.strictEqual(S.GRANT_SOURCES.grant_en.label.includes("ต่างประเทศ"), true);
+assert.strictEqual(S.GRANT_SOURCES.grant_mu.label.includes("มหาวิทยาลัย"), true);
+assert.strictEqual(S.GRANT_SOURCES.grant_th.tiers[0].amount, 3000000);
+
 console.log("criteria tests ok");

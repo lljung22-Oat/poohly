@@ -85,13 +85,49 @@
 
   /* ตารางที่ 1 ยุทธศาสตร์การวิจัย */
   const PUB = [
-    { id: "pub_top1", label: "บทความตีพิมพ์วารสารนานาชาติ Top1", units: 455, score: 10, pub: true },
-    { id: "pub_top10", label: "บทความตีพิมพ์วารสารนานาชาติ Top10", units: 410, score: 9, pub: true },
-    { id: "pub_q1", label: "บทความตีพิมพ์วารสารนานาชาติ Q1", units: 364, score: 8, pub: true },
-    { id: "pub_q2", label: "บทความตีพิมพ์วารสารนานาชาติ Q2", units: 273, score: 6, pub: true },
-    { id: "pub_q3", label: "บทความตีพิมพ์วารสารนานาชาติ Q3", units: 228, score: 5, pub: true },
-    { id: "pub_q4", label: "บทความตีพิมพ์วารสารนานาชาติ Q4", units: 182, score: 4, pub: true }
+    { id: "pub_top1", label: "บทความตีพิมพ์วารสารนานาชาติ Top1", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Top1 (455 หน่วย / 10 คะแนน)", units: 455, score: 10, pub: true },
+    { id: "pub_top10", label: "บทความตีพิมพ์วารสารนานาชาติ Top10", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Top10 (410 หน่วย / 9 คะแนน)", units: 410, score: 9, pub: true },
+    { id: "pub_q1", label: "บทความตีพิมพ์วารสารนานาชาติ Q1", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Q1 (364 หน่วย / 8 คะแนน)", units: 364, score: 8, pub: true },
+    { id: "pub_q2", label: "บทความตีพิมพ์วารสารนานาชาติ Q2", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Q2 (273 หน่วย / 6 คะแนน)", units: 273, score: 6, pub: true },
+    { id: "pub_q3", label: "บทความตีพิมพ์วารสารนานาชาติ Q3", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Q3 (228 หน่วย / 5 คะแนน)", units: 228, score: 5, pub: true },
+    { id: "pub_q4", label: "บทความตีพิมพ์วารสารนานาชาติ Q4", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Q4 (182 หน่วย / 4 คะแนน)", units: 182, score: 4, pub: true }
   ];
+
+  const GRANT_SOURCES = {
+    grant_th: {
+      id: "grant_th",
+      label: "ทุนสนับสนุนจากหน่วยงานที่จัดสรรเงินทุนวิจัยภายในประเทศ",
+      tiers: [
+        { amount: 3000000, label: "ตั้งแต่ 3,000,000 บาท (455 หน่วย / 10 คะแนน)" },
+        { amount: 2000000, label: "2,000,000–2,999,999 บาท (410 หน่วย / 9 คะแนน)" },
+        { amount: 1000000, label: "1,000,000–1,999,999 บาท (364 หน่วย / 8 คะแนน)" },
+        { amount: 500000, label: "500,000–999,999 บาท (319 หน่วย / 7 คะแนน)" },
+        { amount: 1, label: "น้อยกว่า 500,000 บาท (273 หน่วย / 6 คะแนน)" }
+      ]
+    },
+    grant_en: {
+      id: "grant_en",
+      label: "ทุนสนับสนุนจากหน่วยงานที่จัดสรรเงินทุนวิจัยจากต่างประเทศ",
+      tiers: [
+        { amount: 1000000, label: "ตั้งแต่ 1,000,000 บาท (455 หน่วย / 10 คะแนน)" },
+        { amount: 700000, label: "700,000–999,999 บาท (410 หน่วย / 9 คะแนน)" },
+        { amount: 500000, label: "500,000–699,999 บาท (364 หน่วย / 8 คะแนน)" },
+        { amount: 200000, label: "200,000–499,999 บาท (319 หน่วย / 7 คะแนน)" },
+        { amount: 1, label: "น้อยกว่า 200,000 บาท (273 หน่วย / 6 คะแนน)" }
+      ]
+    },
+    grant_mu: {
+      id: "grant_mu",
+      label: "ทุนสนับสนุนจากงบประมาณรายได้ของมหาวิทยาลัยและส่วนงาน",
+      tiers: [
+        { amount: 500000, label: "ตั้งแต่ 500,000 บาท (455 หน่วย / 10 คะแนน)" },
+        { amount: 400000, label: "400,000–499,999 บาท (410 หน่วย / 9 คะแนน)" },
+        { amount: 300000, label: "300,000–399,999 บาท (364 หน่วย / 8 คะแนน)" },
+        { amount: 200000, label: "200,000–299,999 บาท (319 หน่วย / 7 คะแนน)" },
+        { amount: 1, label: "น้อยกว่า 200,000 บาท (273 หน่วย / 6 คะแนน)" }
+      ]
+    }
+  };
 
   const CATALOG = {
     strat: [
@@ -413,7 +449,7 @@
     PA_WEIGHT, CC_WEIGHT, CC_SUM_MAX, IDP_MAX, TOTAL_UNITS,
     GROUPS, ROLES, KPI_TYPES, SCALE5, LEVELS, CC_ITEMS, FC_ITEMS, SUPPORT_FC_ITEMS,
     WORK_TYPES, IDP_METHODS,
-    PUB, CATALOG,
+    PUB, GRANT_SOURCES, CATALOG,
     findCrit, grantUnits, rolePct, unitsToScore, calcTarget,
     collectTargets, sumWeight, groupUnits, effectiveScore,
     paPoints, chairPaScore, ccRaw, ccPoints, paWeighted80, totalScore,

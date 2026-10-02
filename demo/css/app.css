@@ -377,6 +377,24 @@ table.data .act:hover { text-decoration: underline; }
 table.pa {
   width: 100%; border-collapse: collapse; min-width: 1280px; font-size: 16px;
 }
+table.pa.pa-faculty { min-width: 1680px; }
+table.pa .seq-cell { width: 64px; text-align: center; font-weight: 800; }
+table.pa .seq-cell .iconbtn { display: block; margin: 8px auto 0; }
+table.pa .title-cell { min-width: 220px; }
+table.pa .title-cell textarea { min-height: 72px; }
+.date-lab { display: block; margin: 8px 0 4px; font-weight: 800; font-size: 14px; color: #334155; }
+.crit-list { display: flex; flex-direction: column; gap: 6px; min-width: 280px; }
+.crit-list .opt, .role-stack .opt {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-weight: 600; line-height: 1.4;
+}
+.crit-list input[type="radio"], .role-stack input[type="radio"] { margin-top: 4px; flex: none; }
+.grant-stack { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.grant-stack select { width: 100%; }
+.crit-more { margin-top: 12px; padding-top: 8px; border-top: 1px dashed #c5d0dc; }
+.role-stack { display: flex; flex-direction: column; gap: 8px; min-width: 220px; }
+.file-box { margin-top: 8px; }
+.file-box input[type="file"] { width: 100%; font-size: 14px; }
 table.pa th {
   background: #d6e6f2; color: #163a5f; padding: 12px 10px; text-align: left; font-weight: 800;
   position: sticky; top: 0; line-height: 1.35; white-space: normal; font-size: 15px;

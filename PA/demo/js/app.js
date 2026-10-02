@@ -1,4 +1,4 @@
-const KEY = "mu-pms-demo-v6";
+const KEY = "mu-pms-demo-v7";
 const C = PAScore;
 const DB = window.PMSDB;
 
@@ -154,7 +154,7 @@ function uid() {
 
 function emptyTarget(code, weight) {
   return {
-    id: uid(), code, title: "", kpiType: "quantity", weight: weight || 0,
+    id: uid(), code, title: "", date: "", kpiType: "quantity", weight: weight || 0,
     criteriaId: "", role: "", inDb: false, withStudent: false,
     amount: "", hours: "", qty: 1, report: "", file: "",
     selfScore: "", committeeComment: "", committeeScore: "",
@@ -174,6 +174,7 @@ function defaultGroups() {
             targets: [{
               ...emptyTarget("1.1.1.1", 10),
               title: "บทความตีพิมพ์ในวารสารที่อยู่ในฐานข้อมูล",
+              date: "2026-03-15",
               criteriaId: "pub_q1", role: "pi", inDb: true, kpiType: "quantity"
             }]
           }]
@@ -660,8 +661,40 @@ function forEachTarget(fn) {
   });
 }
 
+function findTarget(id) {
+  let hit = null;
+  forEachTarget((t) => { if (t.id === id) hit = t; });
+  return hit;
+}
+
+function groupTargets(g) {
+  const out = [];
+  (g.agreements || []).forEach((a) => {
+    (a.kpis || []).forEach((k) => {
+      (k.targets || []).forEach((t) => out.push(t));
+    });
+  });
+  return out;
+}
+
+function syncFacultyWeights() {
+  C.GROUPS.forEach((meta) => {
+    const g = (S.groups || []).find((x) => x.id === meta.id);
+    if (!g) return;
+    const targets = groupTargets(g);
+    if (!targets.length) return;
+    const each = +(meta.pct / targets.length).toFixed(2);
+    targets.forEach((t, i) => {
+      t.weight = i === targets.length - 1
+        ? +(meta.pct - each * (targets.length - 1)).toFixed(2)
+        : each;
+    });
+  });
+}
+
 function readPaForm() {
   document.querySelectorAll("[data-pa]").forEach((el) => {
+    if (el.type === "radio" && !el.checked) return;
     const [kind, id, field] = el.dataset.pa.split(":");
     const val = el.type === "checkbox" ? el.checked : el.value;
     S.groups.forEach((g) => {
@@ -679,6 +712,7 @@ function readPaForm() {
       });
     });
   });
+  if (track() !== "support") syncFacultyWeights();
 }
 
 function readSupportForm() {
@@ -701,15 +735,34 @@ function addAgreement(gid) {
       targets: [emptyTarget(`${g.no}.${n}.1.1`, 0)]
     }]
   });
+  syncFacultyWeights();
   persist(); render();
 }
 
 function removeAgreement(gid, aid) {
   if (!canEditAgreement()) return;
   const g = S.groups.find((x) => x.id === gid);
-  if (g.agreements.length <= 1) { toast("ต้องมีข้อตกลงอย่างน้อย 1 ข้อในภาระงานนี้"); return; }
+  if (g.agreements.length <= 1) { toast("ต้องมีรายการอย่างน้อย 1 รายการในภาระงานนี้"); return; }
   g.agreements = g.agreements.filter((a) => a.id !== aid);
+  syncFacultyWeights();
   persist(); render();
+}
+
+function removeFacultyRow(gid, tid) {
+  if (!canEditAgreement()) return;
+  const g = S.groups.find((x) => x.id === gid);
+  if (!g) return;
+  if (groupTargets(g).length <= 1) { toast("ต้องมีรายการอย่างน้อย 1 รายการในภาระงานนี้"); return; }
+  g.agreements.forEach((a) => {
+    (a.kpis || []).forEach((k) => {
+      k.targets = (k.targets || []).filter((t) => t.id !== tid);
+    });
+    a.kpis = (a.kpis || []).filter((k) => (k.targets || []).length);
+  });
+  g.agreements = g.agreements.filter((a) => (a.kpis || []).length);
+  syncFacultyWeights();
+  persist();
+  render();
 }
 
 function checkWeight() {
@@ -753,7 +806,7 @@ function requestApprove() {
       if (!String(t.title || "").trim()) ok = false;
       if (!t.criteriaId) ok = false;
     });
-    if (!ok) { toast("กรอกภารกิจและเลือกเกณฑ์ให้ครบทุกเป้าหมาย"); return; }
+    if (!ok) { toast("กรอกชื่อบทความ/โครงการและเลือกเกณฑ์ให้ครบทุกรายการ"); return; }
     S.paStatus = "wait";
     forEachTarget((t) => { t.approved = "wait"; });
   }
@@ -1655,83 +1708,104 @@ function viewModules() {
     </div>`);
 }
 
-function criteriaOptions(gid, selected) {
-  return (C.CATALOG[gid] || []).map((c) =>
-    `<option value="${esc(c.id)}" ${c.id === selected ? "selected" : ""}>${esc(c.label)}</option>`
-  ).join("");
+function critRadio(t, lock, value, label) {
+  return `<label class="opt"><input type="radio" name="crit-${t.id}" data-crit="${t.id}" value="${esc(value)}" ${t.criteriaId === value ? "checked" : ""} ${lock ? "disabled" : ""} /><span>${esc(label)}</span></label>`;
 }
 
-function extraFields(t, g, lock) {
+function grantTierValue(kind, amount) {
+  const src = C.GRANT_SOURCES[kind];
+  if (!src) return "";
+  const n = Number(amount) || 0;
+  const hit = src.tiers.find((x) => n >= x.amount);
+  return hit ? `${kind}|${hit.amount}` : "";
+}
+
+function facultyCriteriaCell(t, g, lock) {
+  if (g.id === "strat") {
+    const pubs = C.PUB.map((p) =>
+      critRadio(t, lock, p.id, p.formLabel || `${p.label} (${p.units} หน่วย / ${p.score} คะแนน)`)
+    ).join("");
+    const grants = ["grant_th", "grant_en", "grant_mu"].map((kind) => {
+      const src = C.GRANT_SOURCES[kind];
+      const sel = t.criteriaId === kind ? grantTierValue(kind, t.amount) : "";
+      return `<select data-grant="${t.id}" ${lock ? "disabled" : ""}>
+        <option value="">${esc(src.label)}</option>
+        ${src.tiers.map((x) =>
+          `<option value="${kind}|${x.amount}" ${sel === `${kind}|${x.amount}` ? "selected" : ""}>${esc(x.label)}</option>`
+        ).join("")}
+      </select>`;
+    }).join("");
+    const others = (C.CATALOG.strat || []).filter((c) => c.id && c.kind === "fixed").map((c) =>
+      critRadio(t, lock, c.id, c.label)
+    ).join("");
+    return `<div class="crit-list">${pubs}</div>
+      <div class="grant-stack">${grants}</div>
+      <div class="crit-more">
+        <div class="date-lab">เกณฑ์ยุทธศาสตร์อื่นตามประกาศ</div>
+        <div class="crit-list">${others}</div>
+      </div>`;
+  }
+  const items = (C.CATALOG[g.id] || []).filter((c) => c.id);
+  return `<div class="crit-list">${items.map((c) => critRadio(t, lock, c.id, c.label)).join("")}</div>`;
+}
+
+function facultyRoleCell(t, g, lock) {
   const c = C.findCrit(g.id, t.criteriaId);
   const dis = lock ? "disabled" : "";
-  if (!c || !c.id) return "";
-  let html = "";
-  if (c.kind === "pub") {
-    html += `<select data-pa="t:${t.id}:role" ${dis}>${C.ROLES.map((r) =>
-      `<option value="${r.id}" ${t.role === r.id ? "selected" : ""}>${esc(r.label)}</option>`).join("")}</select>`;
-    html += `<label class="chk"><input type="checkbox" data-pa="t:${t.id}:inDb" ${t.inDb ? "checked" : ""} ${dis}/> ปรากฏในฐานข้อมูลแล้ว</label>`;
-    html += `<label class="chk"><input type="checkbox" data-pa="t:${t.id}:withStudent" ${t.withStudent ? "checked" : ""} ${dis}/> ตีพิมพ์ร่วมกับนักศึกษา</label>`;
+  const role = `<select data-pa="t:${t.id}:role" ${dis}>${C.ROLES.map((r) =>
+    `<option value="${r.id}" ${t.role === r.id ? "selected" : ""}>${esc(r.label)}</option>`).join("")}</select>`;
+  const cond = `<label class="opt"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="inDb" ${t.inDb && !t.withStudent ? "checked" : ""} ${dis} /><span>เผยแพร่แล้วและปรากฏในฐานข้อมูลเรียบร้อยแล้ว</span></label>
+    <label class="opt"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="student" ${t.withStudent ? "checked" : ""} ${dis} /><span>ผลงานวิจัยร่วมกับนักศึกษา</span></label>`;
+  let extra = "";
+  if (c && c.kind === "hours") {
+    extra += `<input type="number" data-pa="t:${t.id}:hours" value="${esc(t.hours)}" placeholder="จำนวนชั่วโมง" ${dis} />`;
   }
-  if (c.kind === "grant_th" || c.kind === "grant_en" || c.kind === "grant_mu") {
-    html += `<select data-pa="t:${t.id}:role" ${dis}>${C.ROLES.map((r) =>
-      `<option value="${r.id}" ${t.role === r.id ? "selected" : ""}>${esc(r.label)}</option>`).join("")}</select>`;
-    html += `<input type="number" data-pa="t:${t.id}:amount" value="${esc(t.amount)}" placeholder="จำนวนเงิน (บาท)" ${dis} />`;
+  if (c && c.kind === "count") {
+    extra += `<input type="number" data-pa="t:${t.id}:qty" value="${esc(t.qty)}" placeholder="จำนวน" ${dis} />`;
   }
-  if (c.kind === "hours") {
-    html += `<input type="number" data-pa="t:${t.id}:hours" value="${esc(t.hours)}" placeholder="จำนวนชั่วโมง" ${dis} />`;
-  }
-  if (c.kind === "count") {
-    html += `<input type="number" data-pa="t:${t.id}:qty" value="${esc(t.qty)}" placeholder="จำนวน" ${dis} />`;
-  }
-  return html;
+  if (g.id === "strat") return `<div class="role-stack">${role}${cond}${extra}</div>`;
+  return `<div class="role-stack">${role}${extra}</div>`;
 }
 
-function facultyGroupRows(g, lock, chairOn) {
-  const rows = [];
-  g.agreements.forEach((a) => {
-    rows.push(`<tr class="a"><td>${canEditAgreement() ? `<button class="iconbtn" type="button" data-del-ag="${g.id}:${a.id}">−</button>` : ""}</td>
-      <td>ข้อตกลง ${esc(a.code)}</td>
-      <td colspan="7"><input data-pa="a:${a.id}:title" value="${esc(a.title)}" ${lock ? "disabled" : ""} /></td></tr>`);
-    a.kpis.forEach((k) => {
-      rows.push(`<tr class="k"><td></td><td>ตัวชี้วัด ${esc(k.code)}</td>
-        <td colspan="7"><input data-pa="k:${k.id}:title" value="${esc(k.title)}" ${lock ? "disabled" : ""} /></td></tr>`);
-      k.targets.forEach((t) => {
-        const cal = C.calcTarget(t, g.id);
-        const self = C.effectiveScore(t, g.id);
-        rows.push(`<tr>
-          <td></td>
-          <td>เป้าหมาย ${esc(t.code)}</td>
-          <td>
-            <input data-pa="t:${t.id}:title" value="${esc(t.title)}" ${lock ? "disabled" : ""} />
-            <div class="extra">${extraFields(t, g, lock)}
-              ${cal.blocked === "student" ? `<div class="warn-box">ผลงานร่วมนักศึกษาไม่นับในยุทธศาสตร์</div>` : ""}
-              ${cal.blocked === "db" ? `<div class="warn-box">ต้องปรากฏในฐานข้อมูลก่อนจึงคิดหน่วย</div>` : ""}
-            </div>
-          </td>
-          <td><select data-pa="t:${t.id}:kpiType" ${lock ? "disabled" : ""}>${C.KPI_TYPES.map((x) =>
-            `<option value="${x.id}" ${t.kpiType === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select></td>
-          <td><input type="number" data-pa="t:${t.id}:weight" value="${esc(t.weight)}" ${lock ? "disabled" : ""} /></td>
-          <td><select data-pa="t:${t.id}:criteriaId" ${lock ? "disabled" : ""}>${criteriaOptions(g.id, t.criteriaId)}</select>
-            <div class="hint">เกณฑ์ 5 ระดับ: สูงกว่า 9–10 · ตามเป้า 7–8 · ใกล้เคียง 5–6 · ต่ำกว่า 3–4 · ต่ำกว่ามาก 0–2</div></td>
-          <td>${chairOn ? `<select data-pa="t:${t.id}:approved">
-            <option value="wait" ${t.approved === "wait" ? "selected" : ""}>รออนุมัติ</option>
-            <option value="yes" ${t.approved === "yes" ? "selected" : ""}>อนุมัติ</option>
-            <option value="no" ${t.approved === "no" ? "selected" : ""}>ไม่อนุมัติ</option>
-          </select>` : `<span class="pill pill-gray">${t.approved === "yes" ? "อนุมัติ" : t.approved === "no" ? "ไม่อนุมัติ" : "รออนุมัติ"}</span>`}</td>
-          <td>
-            <div class="auto">${C.fmtUnit(cal.units)} หน่วย</div>
-            <div class="auto">คะแนน ${C.fmtScore(self)}</div>
-          </td>
-          <td>${chairOn ? `<input data-pa="t:${t.id}:approveReason" value="${esc(t.approveReason)}" placeholder="ความคิดเห็นผู้อนุมัติ" />` : esc(t.approveReason || "—")}</td>
-        </tr>`);
-      });
-    });
-  });
-  return rows.join("");
+function facultyItemRow(t, g, lock, seq) {
+  const cal = C.calcTarget(t, g.id);
+  const self = C.effectiveScore(t, g.id);
+  const warn = cal.blocked === "student"
+    ? `<div class="warn-box">ผลงานวิจัยร่วมกับนักศึกษาไม่นับในยุทธศาสตร์</div>`
+    : cal.blocked === "db"
+      ? `<div class="warn-box">ต้องเผยแพร่แล้วและปรากฏในฐานข้อมูลก่อนจึงคิดหน่วย</div>`
+      : "";
+  return `<tr>
+    <td class="seq-cell">${seq}${canEditAgreement() ? `<button class="iconbtn" type="button" data-del-row="${g.id}:${t.id}" aria-label="ลบรายการ">−</button>` : ""}</td>
+    <td class="title-cell">
+      <textarea data-pa="t:${t.id}:title" placeholder="ชื่อบทความ / ชื่อโครงการ" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
+      <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
+      <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
+    </td>
+    <td>${facultyCriteriaCell(t, g, lock)}</td>
+    <td>${facultyRoleCell(t, g, lock)}${warn}</td>
+    <td class="auto">${C.fmtUnit(cal.units)}</td>
+    <td>
+      <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="${esc(C.fmtScore(self))}" ${lock ? "disabled" : ""} />
+    </td>
+    <td>
+      <textarea data-pa="t:${t.id}:report" placeholder="กรอกคะแนน 9–10 หรือ 0–2 พร้อมเหตุผล/หลักฐานประกอบ" ${lock ? "disabled" : ""}>${esc(t.report)}</textarea>
+      <div class="file-box">
+        <div class="date-lab">Upload ไฟล์หลักฐาน</div>
+        <input type="file" data-file="${t.id}" ${lock ? "disabled" : ""} />
+        <div class="hint">${t.file ? esc(t.file) : "ไม่มีไฟล์ที่เลือก"}</div>
+      </div>
+    </td>
+  </tr>`;
+}
+
+function facultyGroupRows(g, lock) {
+  return groupTargets(g).map((t, i) => facultyItemRow(t, g, lock, i + 1)).join("");
 }
 
 function viewPA() {
   if (track() === "support") return viewSupportPA();
+  syncFacultyWeights();
   const lock = !canEditAgreement();
   const chairOn = canApproveAgreement();
   const w = checkWeight();
@@ -1748,15 +1822,19 @@ function viewPA() {
           <h2>${esc(meta.title)} · ${esc(meta.name)}</h2>
           <p>น้ำหนักตามประกาศ ${meta.pct}% · เพดาน ${meta.cap} หน่วย · ได้ ${C.fmtUnit(units)} หน่วย</p>
         </div>
-        ${canEditAgreement() ? `<button class="btn-teal" type="button" data-add-ag="${g.id}">เพิ่มข้อตกลงกลุ่มนี้</button>` : ""}
+        ${canEditAgreement() ? `<button class="btn-teal" type="button" data-add-ag="${g.id}">เพิ่มรายการ</button>` : ""}
       </header>
-      <div class="pa-wrap"><table class="pa">
+      <div class="pa-wrap"><table class="pa pa-faculty">
         <thead><tr>
-          <th>จัดการ</th><th>ลำดับ</th><th>ภารกิจ</th><th>ประเภทตัวชี้วัด</th>
-          <th>ร้อยละ (ค่าน้ำหนัก)</th><th>เกณฑ์การประเมิน</th><th>อนุมัติ</th>
-          <th>หน่วย / คะแนนตนเอง</th><th>ความคิดเห็นของผู้อนุมัติ</th>
+          <th>ลำดับ</th>
+          <th>ชื่อบทความ / ชื่อโครงการ</th>
+          <th>รายละเอียดเกณฑ์</th>
+          <th>บทบาทและเงื่อนไขใช้</th>
+          <th>หน่วยภาระงานที่ได้รับ</th>
+          <th>ผลการประเมินตนเอง</th>
+          <th>หลักฐาน / เหตุผล</th>
         </tr></thead>
-        <tbody>${facultyGroupRows(g, lock, chairOn)}</tbody>
+        <tbody>${facultyGroupRows(g, lock)}</tbody>
       </table></div>
     </section>`;
   }).join("");
@@ -1764,7 +1842,7 @@ function viewPA() {
   const chairBar = chairOn ? `
     <div class="card chair-only">
       <h3>ประธานพิจารณาข้อตกลง</h3>
-      <p>ตรวจรวมร้อยละค่าน้ำหนัก แล้วอนุมัติทีละข้อ หรือกดอนุมัติทั้งหมด · ถ้าจะส่งกลับแก้ เปลี่ยนเป็นไม่อนุมัติแล้วใส่เหตุผล</p>
+      <p>ตรวจรายการบทความ / โครงการ แล้วกดอนุมัติทั้งหมด หรือส่งกลับให้แก้ไข</p>
       <textarea id="rejectReason" placeholder="เหตุผลกรณีไม่อนุมัติ">${esc(S.paReject)}</textarea>
       <div class="footbar">
         <button class="btn-ok" type="button" id="btnApproveAll">อนุมัติทั้งหมด</button>
@@ -1784,7 +1862,7 @@ function viewPA() {
         <h2>Performance Agreement (PA)</h2>
         <p class="sub">การประเมินผลการปฏิบัติงาน · ${statusPill(paStatus())} · ปี ${esc(S.year)}</p>
       </div>
-      <div class="weight-box ${wcls}">รวมร้อยละ (ค่าน้ำหนัก) ของตัวชี้วัด : ${w}</div>
+      <div class="weight-box ${wcls}">น้ำหนักตามประกาศ : ${w}</div>
     </div>
     ${paStatus() === "back" ? `<div class="warn-box">ส่งกลับแก้ไข: ${esc(reject)}</div>` : ""}
     ${chairBar}
@@ -2524,6 +2602,52 @@ function bind() {
       removeAgreement(g, a);
     });
   });
+  document.querySelectorAll("[data-del-row]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const [g, tid] = b.dataset.delRow.split(":");
+      removeFacultyRow(g, tid);
+    });
+  });
+  document.querySelectorAll("[data-crit]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const t = findTarget(el.getAttribute("data-crit"));
+      if (!t || !el.checked) return;
+      t.criteriaId = el.value;
+      if (String(el.value).startsWith("pub_")) t.amount = "";
+      persist();
+      render();
+    });
+  });
+  document.querySelectorAll("[data-grant]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const t = findTarget(el.getAttribute("data-grant"));
+      if (!t || !el.value) return;
+      const [kind, amt] = el.value.split("|");
+      t.criteriaId = kind;
+      t.amount = amt;
+      persist();
+      render();
+    });
+  });
+  document.querySelectorAll("[data-cond]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const t = findTarget(el.getAttribute("data-cond"));
+      if (!t || !el.checked) return;
+      t.inDb = el.value === "inDb";
+      t.withStudent = el.value === "student";
+      persist();
+      render();
+    });
+  });
+  document.querySelectorAll("[data-file]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const t = findTarget(el.getAttribute("data-file"));
+      if (!t) return;
+      t.file = el.files && el.files[0] ? el.files[0].name : "";
+      persist();
+      render();
+    });
+  });
   document.querySelectorAll("[data-del-sup]").forEach((b) => {
     b.addEventListener("click", () => {
       if (S.supportItems.length <= 1) { toast("ต้องมีอย่างน้อย 1 ข้อ"); return; }
@@ -2544,7 +2668,7 @@ function bind() {
       readPaForm();
       persist();
       const field = el.dataset.pa.split(":")[2];
-      if (["criteriaId", "role", "inDb", "withStudent", "amount", "hours", "qty", "weight"].includes(field)) render();
+      if (["criteriaId", "role", "inDb", "withStudent", "amount", "hours", "qty", "weight", "selfScore"].includes(field)) render();
     });
   });
   document.querySelectorAll("[data-sup]").forEach((el) => {
