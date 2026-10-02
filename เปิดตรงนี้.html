@@ -1,0 +1,3220 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ระบบสารสนเทศเพื่อการบริหารจัดการบุคลากร</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@600;700;800&family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+:root {
+  --navy: #1b4b7a;
+  --navy-2: #2563a0;
+  --gold: #e0a106;
+  --gold-2: #f5c451;
+  --sidebar: #eef1f4;
+  --teal: #0f766e;
+  --teal-2: #0d9488;
+  --ink: #1a2332;
+  --muted: #4b5568;
+  --line: #d5dde6;
+  --pink: #ec4899;
+  --ok: #15803d;
+  --warn: #c2410c;
+  --danger: #b42318;
+  --row-g: #e4f1fa;
+  --row-a: #f3f8fc;
+  --row-k: #f8fbfd;
+  --taupe: #7d8a78;
+  --taupe-2: #66735f;
+  --head: #5b8eb8;
+  --ratee: #0f766e;
+  --support: #2563a0;
+  --eval: #b45309;
+  --chair: #9a3412;
+  --hr: #1e4d7b;
+  --admin: #1e3a5f;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  font-family: "Sarabun", "Noto Sans Thai", Tahoma, sans-serif;
+  color: var(--ink);
+  background: #eef3f8;
+  font-size: 18px;
+  line-height: 1.5;
+}
+button, input, select, textarea { font-family: inherit; font-size: 18px; }
+textarea { width: 100%; min-height: 72px; padding: 8px 10px; border: 1px solid #c5d0dc; border-radius: 8px; }
+button { cursor: pointer; }
+a { color: #1565a8; }
+.hidden { display: none !important; }
+.sr { position: absolute; left: -9999px; }
+
+/* ----- login ----- */
+.login-wrap {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #123a66 0 220px, #eef3f8 220px);
+  display: flex; flex-direction: column; align-items: center;
+}
+.login-head {
+  color: #fff; text-align: center; padding: 22px 20px 12px;
+}
+.login-logo {
+  width: 64px; height: 64px; margin: 0 auto 8px; border-radius: 50%;
+  background: #fff; display: grid; place-items: center;
+  font-weight: 800; color: var(--navy); font-size: 18px; letter-spacing: .04em;
+}
+.login-head h1 { margin: 0; font-size: 24px; font-weight: 800; }
+.login-head p { margin: 6px 0 0; opacity: .9; font-size: 16px; }
+.login-box {
+  width: min(520px, calc(100% - 32px));
+  background: #fff; border-radius: 16px; padding: 28px 28px 22px;
+  box-shadow: 0 16px 40px rgba(10,51,88,.18); margin-top: 8px;
+}
+.login-box.login-modes {
+  width: min(980px, calc(100% - 32px));
+  margin-bottom: 48px;
+  padding: 20px 22px 18px;
+}
+.mode-card { min-height: 148px; }
+.login-year { justify-content: flex-start; margin: 12px 0 8px; }
+.mode-group-title { margin: 22px 0 4px; color: var(--navy); font-size: 20px; }
+.mode-group-note { margin: 0 0 10px; color: var(--muted); font-size: 15px; }
+.mode-cards {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.mode-card {
+  text-align: left; background: #f8fafc; border: 1px solid #d5dde6;
+  border-left: 8px solid #94a3b8; border-radius: 14px; padding: 16px 16px 14px;
+  min-height: 168px; display: flex; flex-direction: column; gap: 4px;
+}
+.mode-card:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(27,75,122,.12); }
+.mode-card b { font-size: 20px; color: var(--navy); }
+.mode-card .who-line { font-weight: 800; color: #0f172a; }
+.mode-card small { color: var(--muted); font-weight: 700; }
+.mode-card em { font-style: normal; color: #334155; font-size: 15px; margin-top: 4px; }
+.mode-card .user-tag {
+  margin-top: auto; align-self: flex-start; background: #e2e8f0; color: #334155;
+  padding: 2px 8px; border-radius: 999px; font-size: 13px; font-weight: 800;
+}
+.mode-card.tone-ratee { border-left-color: var(--ratee); background: #f0fdfa; }
+.mode-card.tone-support { border-left-color: var(--support); background: #eff6ff; }
+.mode-card.tone-eval { border-left-color: var(--eval); background: #fff7ed; }
+.mode-card.tone-chair { border-left-color: var(--chair); background: #fff1e8; }
+.mode-card.tone-hr { border-left-color: var(--hr); background: #f0f7fc; }
+.mode-card.tone-admin { border-left-color: var(--admin); background: #eef2f7; }
+.login-box h2 { margin: 0 0 16px; color: var(--navy); font-size: 22px; }
+.login-box label { display: block; font-weight: 700; margin: 12px 0 6px; }
+.login-box input, .login-box select {
+  width: 100%; padding: 12px 14px; border: 1px solid #cfd8e3; border-radius: 10px;
+  min-height: 48px;
+}
+.hint { color: var(--muted); font-size: 16px; margin: 8px 0 0; }
+.btn-navy, .btn-gold, .btn-ghost, .btn-ok, .btn-danger, .btn-teal {
+  border: 0; border-radius: 10px; padding: 12px 20px; font-weight: 700;
+  min-height: 48px; font-size: 18px;
+}
+.btn-navy { background: var(--navy); color: #fff; }
+.btn-navy:hover { background: var(--navy-2); }
+.btn-gold { background: var(--gold); color: #1a1400; }
+.btn-ghost { background: #e5eaf0; color: var(--ink); }
+.btn-ok { background: var(--ok); color: #fff; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-teal { background: var(--teal); color: #fff; }
+.btn-navy:disabled, .btn-ok:disabled, .btn-teal:disabled, .btn-gold:disabled {
+  opacity: .45; cursor: not-allowed;
+}
+.full { width: 100%; margin-top: 16px; }
+
+/* ----- app chrome ----- */
+.app { display: grid; grid-template-rows: 52px auto 1fr; min-height: 100vh; }
+.app:not(.app-home) { grid-template-rows: 52px auto auto 1fr; }
+.topbar {
+  background: #163a5f; color: #fff;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 22px; gap: 12px;
+}
+.role-chip {
+  background: rgba(255,255,255,.18); color: #fff; border-radius: 999px;
+  padding: 3px 10px; font-size: 13px; font-weight: 800;
+}
+.year-inline { font-weight: 800; }
+.mode-banner {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  padding: 10px 22px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+  border-left: 8px solid #163a5f;
+}
+.mode-banner.tone-ratee { border-left-color: var(--ratee); background: #f0fdfa; }
+.mode-banner.tone-support { border-left-color: var(--support); background: #eff6ff; }
+.mode-banner.tone-eval { border-left-color: var(--eval); background: #fff7ed; }
+.mode-banner.tone-chair { border-left-color: var(--chair); background: #fff7ed; }
+.mode-banner.tone-hr { border-left-color: var(--hr); background: #f8fafc; }
+.mode-banner.tone-admin { border-left-color: var(--admin); background: #f8fafc; }
+.mode-kicker { font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: #64748b; }
+.mode-title { font-size: 22px; font-weight: 800; color: #0f172a; }
+.mode-sub { color: #334155; font-size: 15px; font-weight: 600; }
+.mode-meta { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+.mode-meta select {
+  min-height: 42px; padding: 6px 10px; border-radius: 10px; border: 1px solid #c5d0dc;
+  font-weight: 800; background: #fff;
+}
+.mode-meta button, .who #btnSwitch {
+  background: rgba(255,255,255,.16); color: inherit; border: 1px solid rgba(255,255,255,.3);
+  border-radius: 999px; padding: 6px 12px; min-height: auto; font-weight: 800;
+}
+.mode-meta button { background: #fff; color: var(--navy); border-color: #c5d0dc; }
+.chair-only { border: 2px solid #fdba74; background: #fff7ed; }
+.chk { display: flex; gap: 6px; align-items: center; margin-top: 6px; font-weight: 700; }
+.dash-lead { text-align: center; color: #475569; font-weight: 700; margin: -8px 0 8px; }
+.mod-why { display: block; font-weight: 600; font-size: 13px; opacity: .9; }
+.brand-text { font-size: 16px; font-weight: 700; letter-spacing: .01em; }
+.who {
+  display: flex; align-items: center; gap: 8px; white-space: nowrap; font-weight: 700; font-size: 15px;
+}
+.who .uname { color: #f9a8d4; }
+.who .uline { color: #e2e8f0; font-weight: 600; }
+.who .sep { opacity: .55; }
+.who button { background: transparent; color: #fff; border: 0; min-height: auto; padding: 4px; font-size: 15px; }
+.who button:hover { text-decoration: underline; }
+
+.subbar {
+  display: flex; align-items: center; gap: 12px; padding: 8px 22px;
+  background: #fff; border-bottom: 1px solid var(--line);
+}
+.subbar .back {
+  background: transparent; border: 0; color: var(--navy); font-weight: 800; padding: 6px 0;
+}
+.year-chip {
+  margin-left: auto; background: #e8f1f8; color: var(--navy);
+  padding: 4px 12px; border-radius: 999px; font-weight: 800; font-size: 15px;
+}
+.subbar #btnReset { background: transparent; border: 0; color: var(--muted); text-decoration: underline; min-height: auto; padding: 4px; font-size: 15px; }
+
+.main { padding: 18px 22px 48px; overflow: auto; background: #f7f9fc; }
+.main-home { padding: 36px 24px 64px; background: #f7f9fc; }
+.crumb { color: var(--muted); font-size: 15px; margin: 0 0 8px; }
+.page-title { margin: 0 0 14px; color: var(--navy); font-size: 28px; font-weight: 800; }
+
+.flow {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 16px;
+}
+.flow-a {
+  background: #fff; border: 1px solid #d5dde6; border-radius: 999px;
+  padding: 8px 14px; font-weight: 700; font-size: 15px; color: var(--navy); min-height: 40px;
+}
+.flow-a.on { background: #163a5f; color: #fff; border-color: #163a5f; }
+
+.dash { max-width: 1080px; margin: 0 auto; }
+.dash h1 {
+  text-align: center; color: #163a5f; font-size: 34px; font-weight: 800; margin: 12px 0 28px;
+}
+.year-pick {
+  display: flex; justify-content: center; align-items: center; gap: 10px; margin: 0 0 22px;
+  font-weight: 700; color: var(--navy);
+}
+.year-pick select {
+  min-height: 44px; min-width: 120px; padding: 8px 12px; border: 1px solid #c5d0dc; border-radius: 10px;
+  font-weight: 800; color: var(--navy); background: #fff;
+}
+.year-pick button {
+  background: transparent; border: 0; color: var(--muted); text-decoration: underline;
+  min-height: auto; padding: 4px; font-size: 15px; font-weight: 700;
+}
+.dash-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+}
+.dash-grid.cols-2 { grid-template-columns: repeat(2, 1fr); max-width: 720px; margin-left: auto; margin-right: auto; }
+.dash-card {
+  background: #fff; border: 0; border-radius: 18px; padding: 30px 18px 24px;
+  box-shadow: 0 10px 28px rgba(22,58,95,.07); text-align: center;
+  min-height: 176px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px;
+}
+.dash-card:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(22,58,95,.12); }
+.dash-card.cream { background: #fbf6ea; }
+.dash-card.locked { opacity: .42; filter: grayscale(.15); cursor: not-allowed; }
+.dash-card.locked:hover { transform: none; box-shadow: 0 10px 28px rgba(22,58,95,.07); }
+.dash-card .ico { margin-bottom: 8px; height: 52px; display: grid; place-items: center; }
+.dash-card b { color: #1e3a5f; font-size: 18px; }
+.dash-card small { color: #64748b; font-size: 14px; font-weight: 600; }
+.dash-card small.linkish { color: #1d4ed8; text-decoration: underline; }
+
+.card {
+  background: #fff; border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(10,51,88,.05); padding: 16px 18px; margin-bottom: 16px;
+}
+.card h3 { margin: 0 0 8px; color: var(--navy); font-size: 20px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-bottom: 10px; }
+.search {
+  width: 100%; padding: 12px 14px 12px 40px; border: 1px solid #cfd8e3; border-radius: 10px;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Ccircle cx='9' cy='9' r='6'/%3E%3Cpath d='M14 14l4 4'/%3E%3C/svg%3E") 12px 50% no-repeat;
+  min-height: 48px; margin: 10px 0;
+}
+
+table.data { width: 100%; border-collapse: collapse; font-size: 17px; }
+table.data th {
+  text-align: left; color: var(--muted); font-weight: 700; padding: 10px 8px;
+  border-bottom: 1px solid var(--line); font-size: 15px;
+}
+table.data td { padding: 12px 8px; border-bottom: 1px solid #eef2f6; vertical-align: middle; }
+table.data .act { color: #1565a8; font-weight: 700; background: none; border: 0; padding: 4px 8px; min-height: auto; }
+table.data .act:hover { text-decoration: underline; }
+
+.pill {
+  display: inline-block; padding: 4px 12px; border-radius: 999px; font-weight: 700; font-size: 15px;
+}
+.pill-pink { background: #fce7f3; color: #9d174d; }
+.pill-gold { background: #fef3c7; color: #92400e; }
+.pill-green { background: #dcfce7; color: #166534; }
+.pill-blue { background: #dbeafe; color: #1e40af; }
+.pill-gray { background: #e5e7eb; color: #374151; }
+.pill-red { background: #fee2e2; color: #991b1b; }
+
+/* 9 modules like the slide */
+.pms-home {
+  display: grid; grid-template-columns: minmax(220px, 1fr) minmax(420px, 1.4fr);
+  gap: 28px; align-items: start; padding: 12px 8px 24px;
+}
+.pms-home .left h1 {
+  margin: 0; font-size: 64px; letter-spacing: .04em; color: var(--navy); line-height: 1;
+}
+.pms-home .left p { margin: 10px 0 0; font-size: 22px; color: #334155; max-width: 280px; }
+.mods { display: flex; flex-direction: column; gap: 10px; }
+.mod {
+  background: var(--taupe); color: #fff; border: 0; border-radius: 12px;
+  padding: 14px 18px; font-size: 18px; font-weight: 700; text-align: center;
+  min-height: 52px; box-shadow: 0 4px 0 rgba(0,0,0,.08);
+}
+.mod:hover { background: var(--taupe-2); }
+.mod:disabled { opacity: .72; cursor: not-allowed; filter: grayscale(.15); }
+.mod small { display: block; font-weight: 600; font-size: 14px; opacity: .92; }
+
+.profile-grid {
+  display: grid; grid-template-columns: 180px 1fr 180px 1fr; gap: 8px 16px;
+  background: #eaf3fa; border: 1px solid #d5e4f0; border-radius: 10px; padding: 12px 14px;
+}
+.profile-grid b { color: #334155; }
+.stepper {
+  display: flex; gap: 0; overflow-x: auto; padding: 8px 4px 18px; align-items: flex-start;
+}
+.step {
+  flex: 1; min-width: 110px; text-align: center; position: relative; font-size: 14px; font-weight: 700;
+  color: #64748b;
+}
+.step .dot {
+  width: 28px; height: 28px; border-radius: 50%; margin: 0 auto 6px;
+  background: #e5e7eb; border: 3px solid #e5e7eb;
+}
+.step.done .dot { background: var(--ok); border-color: var(--ok); }
+.step.now .dot { background: #f59e0b; border-color: #f59e0b; }
+.step.done, .step.now { color: var(--ink); }
+.step:not(:last-child)::after {
+  content: ""; position: absolute; top: 13px; left: calc(50% + 18px); right: calc(-50% + 18px);
+  height: 3px; background: #e5e7eb;
+}
+.step.done:not(:last-child)::after { background: var(--ok); }
+
+.role-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 8px;
+}
+.role-col {
+  background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 20px 18px 18px;
+  box-shadow: 0 6px 18px rgba(10,51,88,.05);
+}
+.role-num {
+  display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--navy); color: #fff; font-weight: 800; margin-bottom: 8px;
+}
+.role-col h2 { margin: 0 0 6px; color: var(--navy); font-size: 22px; }
+.role-col ul { margin: 10px 0 16px; padding-left: 20px; }
+.role-col li { margin: 6px 0; }
+.role-col.ratee { border-top: 6px solid #0d7377; }
+.role-col.eval { border-top: 6px solid #c9a227; }
+.role-col.admin { border-top: 6px solid #0a3358; }
+.two-admin { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 980px) {
+  .role-grid, .two-admin { grid-template-columns: 1fr; }
+}
+
+/* PA table clone */
+.pa-banner {
+  background: #d7eaf5; border-radius: 10px 10px 0 0; padding: 14px 16px;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+}
+.pa-banner h2 { margin: 0; color: var(--navy); font-size: 24px; }
+.pa-banner .sub { margin: 4px 0 0; color: #334155; }
+.weight-box {
+  background: var(--teal); color: #fff; border-radius: 10px; padding: 8px 14px;
+  font-weight: 800; font-size: 18px; white-space: nowrap;
+}
+.weight-box.warn { background: var(--danger); }
+.pa-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 0 0 10px 10px; }
+table.pa {
+  width: 100%; border-collapse: collapse; min-width: 1280px; font-size: 16px;
+}
+table.pa th {
+  background: #d6e6f2; color: #163a5f; padding: 12px 10px; text-align: left; font-weight: 800;
+  position: sticky; top: 0; line-height: 1.35; white-space: normal; font-size: 15px;
+  border-bottom: 1px solid #b7c9d8;
+}
+table.pa td { padding: 8px; border-bottom: 1px solid #dbe4ee; vertical-align: top; word-break: keep-all; }
+table.pa tr.g { background: var(--row-g); color: #163a5f; font-weight: 800; }
+table.pa tr.g td { border-color: #c5d8e6; }
+table.pa tr.a { background: var(--row-a); color: #163a5f; font-weight: 700; }
+table.pa tr.k { background: var(--row-k); }
+table.pa input[type="text"], table.pa input[type="number"], table.pa input[type="date"],
+table.pa select, table.pa textarea {
+  width: 100%; padding: 8px 10px; border: 1px solid #c5d0dc; border-radius: 8px; min-height: 42px;
+  background: #fff; color: var(--ink);
+}
+table.pa textarea { min-height: 64px; resize: vertical; }
+table.pa .iconbtn {
+  width: 36px; height: 36px; border: 0; border-radius: 6px; font-weight: 800; color: #fff;
+  background: #dc2626; margin: 0 2px;
+}
+table.pa .iconbtn.add { background: #2563eb; }
+table.pa .auto {
+  font-weight: 800; color: var(--teal); font-size: 18px; white-space: nowrap;
+}
+.footbar {
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0 0; align-items: center;
+}
+.lock-note {
+  background: #fff7ed; border: 1px solid #fdba74; color: #9a3412;
+  padding: 10px 14px; border-radius: 10px; font-weight: 700; margin: 8px 0;
+}
+.warn-box {
+  background: #fff1e8; border: 1px solid #f4c7b0; color: #9a3412;
+  padding: 12px 14px; border-radius: 10px; margin: 8px 0;
+}
+.ok-box {
+  background: #e8f6ee; border: 1px solid #b7e0c5; color: #166534;
+  padding: 12px 14px; border-radius: 10px; margin: 8px 0;
+}
+
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(10,20,40,.45);
+  display: grid; place-items: center; z-index: 50; padding: 16px;
+}
+.modal {
+  background: #fff; border-radius: 14px; width: min(640px, 100%);
+  padding: 20px; box-shadow: 0 20px 50px rgba(0,0,0,.25);
+}
+.modal label { display: block; font-weight: 700; margin: 10px 0 4px; }
+.modal textarea { width: 100%; min-height: 70px; padding: 8px 10px; border: 1px solid #c5d0dc; border-radius: 8px; }
+.modal table { width: 100%; border-collapse: collapse; }
+.modal td, .modal th { padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+.score-big { font-size: 28px; font-weight: 800; color: var(--navy); }
+
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--navy); color: #fff; padding: 12px 18px; border-radius: 10px;
+  opacity: 0; pointer-events: none; transition: .2s; z-index: 80; font-weight: 700;
+  max-width: min(640px, 92vw);
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.print-page { page-break-after: always; }
+.print-page h2 { color: var(--navy); }
+@media print {
+  .topbar, .subbar, .flow, .toolbar, .footbar, .search, #toast { display: none !important; }
+  .app, .app:not(.app-home) { display: block; }
+  .main { padding: 0; background: #fff; }
+  .print-page { page-break-after: always; }
+  body { font-size: 16px; word-break: keep-all; }
+}
+
+@media (max-width: 980px) {
+  .dash-grid, .dash-grid.cols-2, .mode-cards { grid-template-columns: 1fr; }
+  .who { flex-wrap: wrap; white-space: normal; justify-content: flex-end; }
+  .pms-home { grid-template-columns: 1fr; }
+  .pms-home .left h1 { font-size: 42px; }
+  .profile-grid { grid-template-columns: 1fr; }
+  .mode-banner { flex-direction: column; align-items: flex-start; }
+}
+
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="toast"></div>
+  <script>
+/* หลักเกณฑ์ ค่าน้ำหนัก และการจัดทำข้อตกลง — ประกาศคณะสังคมศาสตร์และมนุษยศาสตร์
+   มหาวิทยาลัยมหิดล พ.ศ. 2568 สายวิชาการ
+   ใช้คำนวณหน่วยภาระงานและคะแนนประเมินตนเองของอาจารย์ ไม่ใช่หน้าจอเพิ่ม */
+(function (root) {
+  const PA_WEIGHT = 80;
+  const CC_WEIGHT = 20;
+  const CC_MAX_EACH = 10;
+  const CC_COUNT = 7;
+  const CC_SUM_MAX = CC_MAX_EACH * CC_COUNT; // 70
+  const IDP_MAX = 2;
+  const TOTAL_UNITS = 1820;
+
+  const GROUPS = [
+    { id: "strat", no: 1, pct: 25, cap: 455, title: "ภาระงานที่ 1", name: "งานตามภารกิจที่สอดคล้องกับประเด็นยุทธศาสตร์ของมหาวิทยาลัยและแผนกลยุทธ์ของส่วนงาน" },
+    { id: "main", no: 2, pct: 55, cap: 1000, title: "ภาระงานที่ 2", name: "งานตามภารกิจหลักของตำแหน่งงาน ตามหน้าที่ความรับผิดชอบ ตามคำบรรยายลักษณะงาน" },
+    { id: "assign", no: 3, pct: 15, cap: 273, title: "ภาระงานที่ 3", name: "งานที่ได้รับมอบหมาย" },
+    { id: "community", no: 4, pct: 5, cap: 92, title: "ภาระงานที่ 4", name: "งานเพื่อส่วนรวม" }
+  ];
+
+  const ROLES = [
+    { id: "", label: "-- เลือกบทบาท --", pct: 0 },
+    { id: "pi", label: "หัวหน้าโครงการ (100%)", pct: 1 },
+    { id: "corr", label: "ผู้ประพันธ์บรรณกิจ / Corresponding Author (100%)", pct: 1 },
+    { id: "co", label: "ผู้ร่วมวิจัย หรือชื่อลำดับอื่น ๆ (50%)", pct: 0.5 }
+  ];
+
+  const KPI_TYPES = [
+    { id: "quantity", label: "ปริมาณ" },
+    { id: "quality", label: "คุณภาพ" },
+    { id: "time", label: "เวลา" },
+    { id: "value", label: "ความคุ้มค่า" },
+    { id: "satisfy", label: "ความพึงพอใจ" },
+    { id: "other", label: "อื่นๆ" }
+  ];
+
+  const SCALE5 = [
+    { min: 9, max: 10, label: "สูงกว่าเป้าหมาย", hint: "9–10" },
+    { min: 7, max: 8, label: "ตามเป้าหมาย", hint: "7–8" },
+    { min: 5, max: 6, label: "ใกล้เคียงเป้าหมาย", hint: "5–6" },
+    { min: 3, max: 4, label: "ต่ำกว่าเป้าหมาย", hint: "3–4" },
+    { min: 0, max: 2, label: "ต่ำกว่าเป้าหมายมาก", hint: "0–2" }
+  ];
+
+  const LEVELS = [
+    { min: 90, max: 100, label: "ดีเด่น" },
+    { min: 80, max: 89.99, label: "ดีมาก" },
+    { min: 70, max: 79.99, label: "ดี" },
+    { min: 60, max: 69.99, label: "พอใช้" },
+    { min: 0, max: 59.99, label: "ควรปรับปรุง" }
+  ];
+
+  const CC_ITEMS = [
+    { id: "cc1", name: "Mastery มีสติ เป็นเลิศในงานที่รับผิดชอบ", full: "มีสติ ควบคุมกำกับจิตใจและความคิด มุ่งเรียนรู้เพื่อพัฒนาตนอย่างต่อเนื่อง นำไปสู่การรู้ลึก รู้จริง และรอบรู้ในงานของตน" },
+    { id: "cc2", name: "Altruism ทำเพื่อผู้อื่น", full: "ให้ความช่วยเหลือผู้อื่นโดยไม่ต้องร้องขอ พร้อมเสียสละเวลาส่วนตัวเพื่อประโยชน์ส่วนรวมให้งานสำเร็จ" },
+    { id: "cc3", name: "Harmony ประสานความต่าง", full: "รับฟัง ให้เกียรติ และเห็นคุณค่าของผู้อื่น สามารถทำงานร่วมกับผู้ที่มีความแตกต่าง ร่วมคิด วางแผน และลงมือปฏิบัติเพื่อความสำเร็จของงานโดยยึดเป้าหมายร่วมกัน" },
+    { id: "cc4", name: "Integrity ซื่อสัตย์ สุจริต มีคุณธรรม รักษาคำพูด", full: "มีสัจจะ เชื่อถือได้ ปฏิบัติหน้าที่โดยคำนึงถึงความถูกต้อง ความยุติธรรม และจรรยาบรรณของวิชาชีพ" },
+    { id: "cc5", name: "Determination มุ่งมั่น ฝ่าฟัน จนสำเร็จ", full: "ตั้งใจทำงานที่ได้รับมอบหมายอย่างเต็มความสามารถ มีความเพียรพยายามอดทนเพื่อให้งานสำเร็จตามเป้าหมาย แม้พบปัญหา อุปสรรค และความยากลำบาก" },
+    { id: "cc6", name: "Originality คิดและทำสิ่งใหม่", full: "แสดงความเห็น คิดริเริ่ม ปรับปรุง และพัฒนาวิธีการหรือกระบวนการทำงานให้มีประสิทธิภาพเกินมาตรฐาน เกิดสิ่งใหม่ๆ หรือนวัตกรรม" },
+    { id: "cc7", name: "Leadership กล้าคิด กล้าทำ กล้านำ กล้าเปลี่ยนแปลง", full: "ทำให้เกิดการเปลี่ยนแปลงที่ท้าทายไปจากเดิม โดยสามารถสื่อสาร โน้มน้าว จูงใจให้ผู้อื่นเกิดความเชื่อมั่น และร่วมมือในการสร้างการเปลี่ยนแปลงให้เกิดขึ้นจริง" }
+  ];
+
+  const FC_ITEMS = [
+    { id: "CFC01", name: "CFC01 ความเป็นอาจารย์มหาวิทยาลัยมหิดล" },
+    { id: "SFC01", name: "SFC01 ทักษะการจัดการเรียนการสอน" },
+    { id: "SFC02", name: "SFC02 ทักษะการวิจัย" }
+  ];
+
+  const SUPPORT_FC_ITEMS = [
+    { id: "SUP01", name: "การปฏิบัติงานตามระเบียบและขั้นตอนของส่วนงาน" },
+    { id: "SUP02", name: "การให้บริการและการประสานงาน" }
+  ];
+
+  const WORK_TYPES = [
+    { id: "strat", label: "งานยุทธศาสตร์ (มหาวิทยาลัย/ส่วนงาน)" },
+    { id: "main", label: "งานประจำตามตำแหน่ง" },
+    { id: "assign", label: "งานที่ได้รับมอบหมาย" },
+    { id: "community", label: "งานเพื่อส่วนรวม" }
+  ];
+
+  const IDP_METHODS = [
+    { id: "70", label: "70 : เรียนรู้จากการปฏิบัติงานจริง" },
+    { id: "20", label: "20 : เรียนรู้จากผู้อื่น (โค้ช / พี่เลี้ยง)" },
+    { id: "10", label: "10 : เรียนรู้จากหลักสูตร อบรม" }
+  ];
+
+  /* ตารางที่ 1 ยุทธศาสตร์การวิจัย */
+  const PUB = [
+    { id: "pub_top1", label: "บทความตีพิมพ์วารสารนานาชาติ Top1", units: 455, score: 10, pub: true },
+    { id: "pub_top10", label: "บทความตีพิมพ์วารสารนานาชาติ Top10", units: 410, score: 9, pub: true },
+    { id: "pub_q1", label: "บทความตีพิมพ์วารสารนานาชาติ Q1", units: 364, score: 8, pub: true },
+    { id: "pub_q2", label: "บทความตีพิมพ์วารสารนานาชาติ Q2", units: 273, score: 6, pub: true },
+    { id: "pub_q3", label: "บทความตีพิมพ์วารสารนานาชาติ Q3", units: 228, score: 5, pub: true },
+    { id: "pub_q4", label: "บทความตีพิมพ์วารสารนานาชาติ Q4", units: 182, score: 4, pub: true }
+  ];
+
+  const CATALOG = {
+    strat: [
+      { id: "", label: "-- เลือกเกณฑ์จากประกาศ --" },
+      { id: "pub_top1", label: "1.1 บทความตีพิมพ์ Top1 (455 หน่วย / 10 คะแนน)", kind: "pub", units: 455, score: 10 },
+      { id: "pub_top10", label: "1.2 บทความตีพิมพ์ Top10 (410 / 9)", kind: "pub", units: 410, score: 9 },
+      { id: "pub_q1", label: "1.3 บทความตีพิมพ์ Q1 (364 / 8)", kind: "pub", units: 364, score: 8 },
+      { id: "pub_q2", label: "1.4 บทความตีพิมพ์ Q2 (273 / 6)", kind: "pub", units: 273, score: 6 },
+      { id: "pub_q3", label: "1.5 บทความตีพิมพ์ Q3 (228 / 5)", kind: "pub", units: 228, score: 5 },
+      { id: "pub_q4", label: "1.6 บทความตีพิมพ์ Q4 (182 / 4)", kind: "pub", units: 182, score: 4 },
+      { id: "grant_th", label: "1.7 ทุนสนับสนุนจากหน่วยงานในประเทศ (กรอกจำนวนเงิน)", kind: "grant_th" },
+      { id: "grant_en", label: "1.8 ทุนสนับสนุนจากหน่วยงานต่างประเทศ (กรอกจำนวนเงิน)", kind: "grant_en" },
+      { id: "grant_mu", label: "1.9 ทุนเงินรายได้มหาวิทยาลัย/ส่วนงาน (กรอกจำนวนเงิน)", kind: "grant_mu" },
+      { id: "mupsf4", label: "2.1 UKPSF Principal Fellow / MUPSF ระดับ 4 (455 / 10)", kind: "fixed", units: 455, score: 10 },
+      { id: "mupsf3", label: "2.2 UKPSF Senior Fellow / MUPSF ระดับ 3 (410 / 9)", kind: "fixed", units: 410, score: 9 },
+      { id: "mupsf2", label: "2.3 MUPSF ระดับ 2 (319 / 7)", kind: "fixed", units: 319, score: 7 },
+      { id: "mupsf1", label: "2.4 MUPSF ระดับ 1 (182 / 4)", kind: "fixed", units: 182, score: 4 },
+      { id: "policy_intl", label: "3.1 นโยบายชี้นำสังคมระดับนานาชาติ (455 / 10)", kind: "fixed", units: 455, score: 10 },
+      { id: "policy_nat", label: "3.1 นโยบายชี้นำสังคมระดับชาติ (410 / 9)", kind: "fixed", units: 410, score: 9 },
+      { id: "policy_prov", label: "3.1 นโยบายชี้นำสังคมระดับจังหวัด (364 / 8)", kind: "fixed", units: 364, score: 8 },
+      { id: "policy_amp", label: "3.1 นโยบายชี้นำสังคมระดับอำเภอ (319 / 7)", kind: "fixed", units: 319, score: 7 },
+      { id: "policy_tam", label: "3.1 นโยบายชี้นำสังคมระดับตำบล (273 / 6)", kind: "fixed", units: 273, score: 6 },
+      { id: "part_intl", label: "3.2 มีส่วนร่วมกำหนดนโยบายระดับนานาชาติ (137 / 3)", kind: "fixed", units: 137, score: 3 },
+      { id: "part_nat", label: "3.2 มีส่วนร่วมกำหนดนโยบายระดับชาติ (91 / 2)", kind: "fixed", units: 91, score: 2 }
+    ],
+    main: [
+      { id: "", label: "-- เลือกเกณฑ์จากประกาศ --" },
+      { id: "teach_grad_main", label: "ตารางที่ 4 สอนป.โท/เอก ผู้สอนหลัก (1 ชม. = 4 หน่วย) กรอกชั่วโมง", kind: "hours", per: 4 },
+      { id: "teach_ug_lec", label: "ตารางที่ 4 สอนป.ตรี บรรยาย ผู้สอนหลัก (1 ชม. = 3 หน่วย) กรอกชั่วโมง", kind: "hours", per: 3 },
+      { id: "teach_ug_lab", label: "ตารางที่ 4 สอนป.ตรี ปฏิบัติ ผู้สอนหลัก (1 ชม. = 1.5 หน่วย) กรอกชั่วโมง", kind: "hours", per: 1.5 },
+      { id: "thesis_ug", label: "ตารางที่ 9 ควบคุมโครงงานป.ตรี (1 หน่วย/สัปดาห์/คน) กรอกจำนวน", kind: "count", per: 1 },
+      { id: "course_proj", label: "ตารางที่ 10 โครงการหลักสูตร (1 ชม. = 3 หน่วย) กรอกชั่วโมง", kind: "hours", per: 3 },
+      { id: "res_proc_1", label: "ตารางที่ 11 กระบวนการวิจัย ระดับ 1 สัญญา/ธุรการ (80 หน่วย)", kind: "fixed", units: 80, score: null },
+      { id: "res_proc_2", label: "ตารางที่ 11 กระบวนการวิจัย ระดับ 2 ก้าวหน้า 20% หรือมี IRB (120)", kind: "fixed", units: 120, score: null },
+      { id: "res_proc_3", label: "ตารางที่ 11 กระบวนการวิจัย ระดับ 3 ก้าวหน้า 21–50% (160)", kind: "fixed", units: 160, score: null },
+      { id: "res_proc_4", label: "ตารางที่ 11 กระบวนการวิจัย ระดับ 4 ก้าวหน้า 51–90% (200)", kind: "fixed", units: 200, score: null },
+      { id: "res_proc_5", label: "ตารางที่ 11 กระบวนการวิจัย ระดับ 5 ร่างรายงานขั้นสุดท้าย (240)", kind: "fixed", units: 240, score: null }
+    ],
+    assign: [
+      { id: "", label: "-- เลือกเกณฑ์จากประกาศ --" },
+      { id: "asg_chair", label: "ตารางที่ 21 ประธานกรรมการ/เลขานุการ 1 โครงการ = 20 หน่วย", kind: "count", per: 20 },
+      { id: "asg_member", label: "ตารางที่ 21 กรรมการ 1 โครงการ = 15 หน่วย", kind: "count", per: 15 },
+      { id: "asg_attend", label: "ตารางที่ 21 เข้าร่วม 1 โครงการ = 10 หน่วย", kind: "count", per: 10 },
+      { id: "asg_prog_chair", label: "ประธานคณะกรรมการบริหาร 1 หลักสูตร = 78 หน่วย", kind: "fixed", units: 78, score: null },
+      { id: "asg_prog_sec", label: "กรรมการและเลขานุการบริหารหลักสูตร = 62 หน่วย", kind: "fixed", units: 62, score: null },
+      { id: "asg_prog_mem", label: "กรรมการบริหารหลักสูตร = 15 หน่วย", kind: "fixed", units: 15, score: null },
+      { id: "asg_prog_resp", label: "อาจารย์ผู้รับผิดชอบหลักสูตร = 10 หน่วย", kind: "fixed", units: 10, score: null },
+      { id: "asg_vice_dept", label: "รองหัวหน้าภาควิชา = 9 หน่วย/สัปดาห์ กรอกจำนวนสัปดาห์", kind: "count", per: 9 },
+      { id: "asg_assist_dept", label: "ผู้ช่วยหัวหน้าภาควิชา = 6 หน่วย/สัปดาห์ กรอกจำนวนสัปดาห์", kind: "count", per: 6 }
+    ],
+    community: [
+      { id: "", label: "-- เลือกเกณฑ์จากประกาศ --" },
+      { id: "com_chair", label: "ตารางที่ 22 ประธาน/เลขานุการกิจกรรมนักศึกษา = 20 หน่วย", kind: "count", per: 20 },
+      { id: "com_member", label: "ตารางที่ 22 กรรมการกิจกรรมนักศึกษา = 15 หน่วย", kind: "count", per: 15 },
+      { id: "com_attend", label: "ตารางที่ 22 เข้าร่วมกิจกรรมนักศึกษา = 5 หน่วย", kind: "count", per: 5 },
+      { id: "sport_fac", label: "กีฬา ระดับส่วนงาน = 10 หน่วย", kind: "fixed", units: 10, score: null },
+      { id: "sport_uni", label: "กีฬา ระดับมหาวิทยาลัย = 15 หน่วย", kind: "fixed", units: 15, score: null },
+      { id: "sport_nat", label: "กีฬา ระดับชาติ = 20 หน่วย", kind: "fixed", units: 20, score: null },
+      { id: "sport_intl", label: "กีฬา ระดับนานาชาติ = 30 หน่วย", kind: "fixed", units: 30, score: null },
+      { id: "media_uni", label: "ให้ความรู้ผ่านสื่อระดับมหาวิทยาลัย ครั้งละ 10 หน่วย กรอกครั้ง", kind: "count", per: 10 },
+      { id: "media_nat", label: "ให้ความรู้ผ่านสื่อระดับชาติ/นานาชาติ ครั้งละ 15 หน่วย กรอกครั้ง", kind: "count", per: 15 }
+    ]
+  };
+
+  function findCrit(groupId, critId) {
+    const list = CATALOG[groupId] || [];
+    return list.find((x) => x.id === critId) || null;
+  }
+
+  function grantUnits(type, amount) {
+    const n = Number(amount) || 0;
+    if (n <= 0) return { units: 0, score: 0 };
+    if (type === "grant_th") {
+      if (n >= 3000000) return { units: 455, score: 10 };
+      if (n >= 2000000) return { units: 410, score: 9 };
+      if (n >= 1000000) return { units: 364, score: 8 };
+      if (n >= 500000) return { units: 319, score: 7 };
+      return { units: 273, score: 6 };
+    }
+    if (type === "grant_en") {
+      if (n >= 1000000) return { units: 455, score: 10 };
+      if (n >= 700000) return { units: 410, score: 9 };
+      if (n >= 500000) return { units: 364, score: 8 };
+      if (n >= 200000) return { units: 319, score: 7 };
+      return { units: 273, score: 6 };
+    }
+    if (type === "grant_mu") {
+      if (n >= 500000) return { units: 455, score: 10 };
+      if (n >= 400000) return { units: 410, score: 9 };
+      if (n >= 300000) return { units: 364, score: 8 };
+      if (n >= 200000) return { units: 319, score: 7 };
+      return { units: 273, score: 6 };
+    }
+    return { units: 0, score: 0 };
+  }
+
+  function rolePct(roleId) {
+    const r = ROLES.find((x) => x.id === roleId);
+    return r ? r.pct : 0;
+  }
+
+  function unitsToScore(units, cap) {
+    if (!cap) return 0;
+    return +Math.min(10, (Number(units) / cap) * 10).toFixed(2);
+  }
+
+  function calcTarget(t, groupId) {
+    const g = GROUPS.find((x) => x.id === groupId) || GROUPS[0];
+    const c = findCrit(groupId, t && t.criteriaId);
+    if (!c || !c.id) return { units: 0, score: 0, autoScore: 0 };
+
+    if (c.kind === "pub") {
+      if (t.withStudent) return { units: 0, score: 0, autoScore: 0, blocked: "student" };
+      if (!t.inDb) return { units: 0, score: 0, autoScore: 0, blocked: "db" };
+      const pct = rolePct(t.role);
+      if (!pct) return { units: 0, score: 0, autoScore: 0 };
+      const units = +(c.units * pct).toFixed(2);
+      const score = +(c.score * pct).toFixed(2);
+      return { units, score, autoScore: score };
+    }
+
+    if (c.kind === "grant_th" || c.kind === "grant_en" || c.kind === "grant_mu") {
+      const pct = rolePct(t.role) || 1;
+      const gres = grantUnits(c.kind, t.amount);
+      const units = +(gres.units * pct).toFixed(2);
+      const score = +(gres.score * pct).toFixed(2);
+      return { units, score, autoScore: score };
+    }
+
+    if (c.kind === "hours") {
+      const h = Number(t.hours) || 0;
+      const units = +(h * (c.per || 0)).toFixed(2);
+      const autoScore = units > 0 ? 8 : 0;
+      return { units, score: autoScore, autoScore };
+    }
+
+    if (c.kind === "count") {
+      const n = Number(t.qty) || 0;
+      const units = +(n * (c.per || 0)).toFixed(2);
+      const autoScore = units > 0 ? 8 : 0;
+      return { units, score: autoScore, autoScore };
+    }
+
+    if (c.kind === "fixed") {
+      const units = c.units || 0;
+      const score = c.score != null ? c.score : (units > 0 ? 8 : 0);
+      return { units, score, autoScore: score };
+    }
+
+    return { units: 0, score: 0, autoScore: 0 };
+  }
+
+  function collectTargets(groups) {
+    const out = [];
+    (groups || []).forEach((g) => {
+      (g.agreements || []).forEach((a) => {
+        (a.kpis || []).forEach((k) => {
+          (k.targets || []).forEach((t) => out.push({ groupId: g.id, target: t, group: g }));
+        });
+      });
+    });
+    return out;
+  }
+
+  function sumWeight(groups) {
+    return +collectTargets(groups).reduce((s, x) => s + (Number(x.target.weight) || 0), 0).toFixed(2);
+  }
+
+  function groupUnits(groups, groupId) {
+    const g = GROUPS.find((x) => x.id === groupId);
+    const raw = collectTargets(groups)
+      .filter((x) => x.groupId === groupId)
+      .reduce((s, x) => s + calcTarget(x.target, groupId).units, 0);
+    return Math.min(g ? g.cap : Infinity, +raw.toFixed(2));
+  }
+
+  function effectiveScore(t, groupId) {
+    const auto = calcTarget(t, groupId);
+    if (t.selfScore === 0 || (t.selfScore != null && t.selfScore !== "")) {
+      const n = Number(t.selfScore);
+      if (!Number.isNaN(n)) return n;
+    }
+    return auto.autoScore;
+  }
+
+  function paScore100(groups) {
+    const rows = collectTargets(groups);
+    const wsum = sumWeight(groups);
+    if (!wsum) return 0;
+    let acc = 0;
+    rows.forEach((x) => {
+      const sc = effectiveScore(x.target, x.groupId);
+      acc += (Number(x.target.weight) || 0) * (Number(sc) || 0);
+    });
+    return +((acc / wsum) * 10).toFixed(2) > 100 ? 100 : +((acc / wsum)).toFixed(2);
+  }
+
+  /* น้ำหนักข้อตกลงรวม 100, คะแนนรายข้อ 0–10 → PA เต็ม 100 = Σ(score * weight/100)*10
+     ให้ PA 0–100 = Σ((score/10) * weight) */
+  function paPoints(groups) {
+    const rows = collectTargets(groups);
+    let acc = 0;
+    rows.forEach((x) => {
+      const sc = effectiveScore(x.target, x.groupId);
+      acc += ((Number(sc) || 0) / 10) * (Number(x.target.weight) || 0);
+    });
+    return +acc.toFixed(2);
+  }
+
+  function chairPaScore(groups) {
+    const rows = collectTargets(groups);
+    let acc = 0;
+    let w = 0;
+    rows.forEach((x) => {
+      const wt = Number(x.target.weight) || 0;
+      const sc = x.target.chairScore != null && x.target.chairScore !== ""
+        ? Number(x.target.chairScore)
+        : effectiveScore(x.target, x.groupId);
+      acc += ((Number(sc) || 0) / 10) * wt;
+      w += wt;
+    });
+    return +acc.toFixed(2);
+  }
+
+  function ccRaw(items) {
+    return (items || []).reduce((s, it) => {
+      const n = it.chair != null && it.chair !== "" ? Number(it.chair)
+        : it.self != null && it.self !== "" ? Number(it.self) : 0;
+      return s + (Number.isNaN(n) ? 0 : n);
+    }, 0);
+  }
+
+  function ccPoints(items) {
+    const raw = ccRaw(items);
+    return +((raw / CC_SUM_MAX) * CC_WEIGHT).toFixed(2);
+  }
+
+  function paWeighted80(groups, useChair) {
+    const p = useChair ? chairPaScore(groups) : paPoints(groups);
+    return +((p / 100) * PA_WEIGHT).toFixed(2);
+  }
+
+  function totalScore(groups, ccItems, useChair) {
+    const pa = paWeighted80(groups, useChair);
+    const cc = ccPoints(ccItems);
+    const total = +(pa + cc).toFixed(2);
+    return { pa, cc, total, level: levelOf(total) };
+  }
+
+  function sumSupportWeight(items) {
+    return (items || []).reduce((s, it) => s + (Number(it.weight) || 0), 0);
+  }
+
+  function supportPaPoints(items, useChair) {
+    let acc = 0;
+    (items || []).forEach((it) => {
+      const wt = Number(it.weight) || 0;
+      const raw = useChair && it.chairScore !== "" && it.chairScore != null
+        ? it.chairScore : it.selfScore;
+      const sc = Number(raw);
+      acc += ((Number.isNaN(sc) ? 0 : sc) / 10) * wt;
+    });
+    return +acc.toFixed(2);
+  }
+
+  function supportTotalScore(items, ccItems, useChair) {
+    const pa = +((supportPaPoints(items, useChair) / 100) * PA_WEIGHT).toFixed(2);
+    const cc = ccPoints(ccItems);
+    const total = +(pa + cc).toFixed(2);
+    return { pa, cc, total, level: levelOf(total) };
+  }
+
+  function levelOf(n) {
+    const x = Number(n) || 0;
+    const hit = LEVELS.find((lv) => x >= lv.min && x <= lv.max);
+    return hit ? hit.label : "ควรปรับปรุง";
+  }
+
+  function scaleLabel(score) {
+    const n = Number(score);
+    if (Number.isNaN(n)) return "-";
+    const hit = SCALE5.find((s) => n >= s.min && n <= s.max);
+    return hit ? `${hit.label} (${hit.hint})` : "-";
+  }
+
+  function fmtUnit(n) {
+    if (!n) return "0";
+    return Number.isInteger(n) ? String(n) : Number(n).toFixed(2);
+  }
+
+  function fmtScore(n) {
+    if (n == null || n === "") return "-";
+    const x = Number(n);
+    if (Number.isNaN(x)) return "-";
+    return x.toFixed(2);
+  }
+
+  /* compatibility with เดโมตารางที่ 1 เดิม */
+  function calc(w) {
+    const t = {
+      criteriaId: w.crit ? "pub_" + w.crit.replace(/^pub_/, "") : w.other,
+      role: w.role,
+      inDb: w.inDb,
+      withStudent: w.withStudent,
+      amount: w.amount
+    };
+    if (w.crit && !String(w.crit).startsWith("pub_")) t.criteriaId = "pub_" + w.crit;
+    if (w.other && String(w.other).startsWith("grant")) t.criteriaId = w.other;
+    if (w.other && (w.other === "q3" || w.other === "q4")) t.criteriaId = "pub_" + w.other;
+    return calcTarget(t, "strat");
+  }
+
+  function sumUnits(works) {
+    const raw = (works || []).reduce((a, w) => a + calc(w).units, 0);
+    return Math.min(455, +raw.toFixed(2));
+  }
+
+  const api = {
+    PA_WEIGHT, CC_WEIGHT, CC_SUM_MAX, IDP_MAX, TOTAL_UNITS,
+    GROUPS, ROLES, KPI_TYPES, SCALE5, LEVELS, CC_ITEMS, FC_ITEMS, SUPPORT_FC_ITEMS,
+    WORK_TYPES, IDP_METHODS,
+    PUB, CATALOG,
+    findCrit, grantUnits, rolePct, unitsToScore, calcTarget,
+    collectTargets, sumWeight, groupUnits, effectiveScore,
+    paPoints, chairPaScore, ccRaw, ccPoints, paWeighted80, totalScore,
+    sumSupportWeight, supportPaPoints, supportTotalScore,
+    levelOf, scaleLabel,
+    fmtUnit, fmtScore, calc, sumUnits
+  };
+  root.PAScore = api;
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+})(typeof globalThis !== "undefined" ? globalThis : this);
+
+  </script>
+  <script>
+const KEY = "mu-pms-demo-v5";
+const C = PAScore;
+
+const FACULTY = "คณะสังคมศาสตร์และมนุษยศาสตร์";
+
+const ACCOUNTS = {
+  faculty: {
+    id: "faculty",
+    username: "porntipa.c",
+    aliases: ["porntipa.c", "porntipa", "พรทิพา.เซี่ยงฉิน"],
+    full: "น.ส.พรทิพา เซี่ยงฉิน",
+    position: "อาจารย์",
+    type: "สายวิชาการ",
+    staffId: "10101642",
+    dept: "ภาควิชาสังคมศาสตร์",
+    family: "ratee",
+    track: "faculty",
+    roleLabel: "ผู้รับการประเมิน",
+    roleSub: "อาจารย์",
+    hint: "กรอกข้อตกลงตามประกาศสายวิชาการ รายงานผล ประเมินตนเอง และรับทราบผลของตนเอง",
+    tone: "ratee"
+  },
+  support: {
+    id: "support",
+    username: "staff.sh",
+    aliases: ["staff.sh", "staff"],
+    full: "เจ้าหน้าที่สายสนับสนุน",
+    position: "เจ้าหน้าที่บริหารงานทั่วไป",
+    type: "สายสนับสนุน",
+    staffId: "10102001",
+    dept: "งานการเจ้าหน้าที่",
+    family: "ratee",
+    track: "support",
+    roleLabel: "ผู้รับการประเมิน",
+    roleSub: "บุคลากรสายสนับสนุน",
+    hint: "กรอกแบบข้อตกลง PA บุคคลากร (แบบ 05–11) รายงานผล และรับทราบผลของตนเอง — ไม่ใช้ตารางหน่วยอาจารย์",
+    tone: "support"
+  },
+  committee: {
+    id: "committee",
+    username: "committee.sh",
+    aliases: ["committee.sh", "committee"],
+    full: "กรรมการประเมิน",
+    position: "กรรมการประเมิน",
+    type: "คณะประเมิน",
+    staffId: "COM-01",
+    dept: "คณะกรรมการประเมิน",
+    family: "eval",
+    track: null,
+    roleLabel: "กรรมการประเมิน",
+    roleSub: "คณะประเมิน",
+    hint: "ให้ความเห็น PA / CC / FC แล้วส่งประธาน — ไม่กรอกข้อตกลงเอง",
+    tone: "eval"
+  },
+  chair: {
+    id: "chair",
+    username: "chair.sh",
+    aliases: ["chair.sh", "chair"],
+    full: "ประธานกรรมการประเมิน",
+    position: "ประธานกรรมการประเมิน",
+    type: "ผู้ประเมิน",
+    staffId: "CHR-01",
+    dept: "คณะกรรมการประเมิน",
+    family: "eval",
+    track: null,
+    roleLabel: "ประธานกรรมการประเมิน",
+    roleSub: "ผู้บังคับบัญชาชั้นต้น",
+    hint: "อนุมัติข้อตกลง ให้คะแนน PA 80 + CC 20 และประเมิน IDP",
+    tone: "chair"
+  },
+  hr: {
+    id: "hr",
+    username: "hr.sh",
+    aliases: ["hr.sh", "hr"],
+    full: "เจ้าหน้าที่งานการเจ้าหน้าที่",
+    position: "เจ้าหน้าที่งานการเจ้าหน้าที่",
+    type: "ฝ่ายบุคคลากรส่วนงาน",
+    staffId: "HR-01",
+    dept: "งานการเจ้าหน้าที่",
+    family: "admin",
+    track: null,
+    roleLabel: "ฝ่ายบุคคลากร",
+    roleSub: "Admin ส่วนงาน",
+    hint: "สร้างรอบ ปฏิทิน ตรวจชุดประเมิน นำเข้ากรรมการ — ไม่ให้คะแนน",
+    tone: "hr"
+  },
+  admin: {
+    id: "admin",
+    username: "admin.mu",
+    aliases: ["admin.mu", "admin"],
+    full: "ผู้ดูแลระบบมหาวิทยาลัย",
+    position: "Admin มหาวิทยาลัย",
+    type: "ผู้ดูแลระบบ",
+    staffId: "ADM-01",
+    dept: "กองทรัพยากรบุคคล",
+    family: "admin",
+    track: null,
+    roleLabel: "Admin มหาวิทยาลัย",
+    roleSub: "ผู้ดูแลระบบ",
+    hint: "นำเข้าโครงสร้างส่วนงาน บุคลากร ผู้บังคับบัญชา — ไม่ใช่ผู้ประเมิน",
+    tone: "admin"
+  }
+};
+
+const RATEES = [
+  { id: "faculty", name: ACCOUNTS.faculty.full, position: ACCOUNTS.faculty.position, type: ACCOUNTS.faculty.type },
+  { id: "support", name: ACCOUNTS.support.full, position: ACCOUNTS.support.position, type: ACCOUNTS.support.type }
+];
+
+const STEPS = [
+  "พนักงานประเมินตนเอง",
+  "กรรมการประเมิน",
+  "ประธานกรรมการประเมิน",
+  "คณะติดลงนาม",
+  "พนักงานรับทราบประเมินผล",
+  "เสร็จสิ้น"
+];
+
+const MODULES = [
+  { id: "pa", title: "จัดทำข้อตกลงการปฏิบัติงาน (PA)", need: null },
+  { id: "paReport", title: "รายงานผลการปฏิบัติงาน (PA)", need: "approved" },
+  { id: "competency", title: "ประเมินผลงาน และประเมินสมรรถนะ", need: "reported" },
+  { id: "ack", title: "แจ้งผลและรับทราบผลการประเมินการปฏิบัติงาน", need: "chair" },
+  { id: "idp", title: "จัดทำแผนพัฒนารายบุคคล (IDP)", need: null },
+  { id: "idpReport", title: "รายงานผลการพัฒนารายบุคคล (IDP)", need: "idpApproved" },
+  { id: "idpEval", title: "ประเมินผลการพัฒนารายบุคคล (IDP)", need: "idpReported", sub: "เป็นไปตามที่คาดหวัง / ไม่เป็นไปตามที่คาดหวัง" },
+  { id: "idpAck", title: "แจ้งผลและรับทราบผลการพัฒนารายบุคคล (IDP)", need: "idpEval" },
+  { id: "report", title: "รายงานและติดตามผลการดำเนินการ (REPORT)", need: null }
+];
+
+/* วงจร PA บุคคลากร — จากชุดเอกสารสายสนับสนุน ไม่ปนประกาศหน่วยอาจารย์ */
+const STAFF_MODULES = [
+  { id: "pa", title: "แบบข้อตกลงและประเมินผลการปฏิบัติงาน (แบบ 05)", need: null },
+  { id: "follow", title: "แบบติดตามผลการปฏิบัติงาน (แบบ 06)", need: "approved" },
+  { id: "paReport", title: "แบบรายงานผลการปฏิบัติงาน (แบบ 07)", need: "approved" },
+  { id: "competency", title: "ประเมินสมรรถนะหลัก / ตามสายงาน", need: "reported" },
+  { id: "scoreSum", title: "แบบสรุปคะแนนผลการประเมิน (แบบ 09)", need: "chair" },
+  { id: "ack", title: "แบบสรุปและแจ้งผลการประเมิน (แบบ 08)", need: "chair" },
+  { id: "pledge", title: "แบบคำมั่น (แบบ 11)", need: null },
+  { id: "idp", title: "IDP ผู้ปฏิบัติ", need: null },
+  { id: "idpEval", title: "IDP ผู้อนุมัติ", need: "idpReported", sub: "เป็นไปตามที่คาดหวัง / ไม่เป็นไปตามที่คาดหวัง" },
+  { id: "report", title: "รายงานและติดตามผลการดำเนินการ", need: null }
+];
+
+function uid() {
+  return "id" + Math.random().toString(36).slice(2, 9);
+}
+
+function emptyTarget(code, weight) {
+  return {
+    id: uid(), code, title: "", kpiType: "quantity", weight: weight || 0,
+    criteriaId: "", role: "", inDb: false, withStudent: false,
+    amount: "", hours: "", qty: 1, report: "", file: "",
+    selfScore: "", committeeComment: "", committeeScore: "",
+    chairComment: "", chairScore: "", approved: "wait", approveReason: ""
+  };
+}
+
+function defaultGroups() {
+  return [
+    {
+      id: "strat", no: 1,
+      agreements: [
+        {
+          id: uid(), code: "1.1", title: "ยุทธศาสตร์การวิจัย",
+          kpis: [{
+            id: uid(), code: "1.1.1", title: "ผลงานตีพิมพ์ / ทุนวิจัย ตามเกณฑ์ประกาศคณะ",
+            targets: [{
+              ...emptyTarget("1.1.1.1", 10),
+              title: "บทความตีพิมพ์ในวารสารที่อยู่ในฐานข้อมูล",
+              criteriaId: "pub_q1", role: "pi", inDb: true, kpiType: "quantity"
+            }]
+          }]
+        },
+        {
+          id: uid(), code: "1.2", title: "ยุทธศาสตร์การจัดการศึกษา",
+          kpis: [{
+            id: uid(), code: "1.2.1", title: "ระดับคุณภาพการจัดการเรียนการสอน MUPSF",
+            targets: [{
+              ...emptyTarget("1.2.1.1", 10),
+              title: "ได้รับการรับรอง MUPSF ตามเกณฑ์ประกาศ",
+              criteriaId: "mupsf2", kpiType: "quality"
+            }]
+          }]
+        },
+        {
+          id: uid(), code: "1.3", title: "ยุทธศาสตร์บริการวิชาการ",
+          kpis: [{
+            id: uid(), code: "1.3.1", title: "การมีส่วนร่วมในกระบวนการกำหนดนโยบาย",
+            targets: [{
+              ...emptyTarget("1.3.1.1", 5),
+              title: "มีส่วนร่วมระดับชาติ",
+              criteriaId: "part_nat", kpiType: "quality"
+            }]
+          }]
+        }
+      ]
+    },
+    {
+      id: "main", no: 2,
+      agreements: [
+        {
+          id: uid(), code: "2.1", title: "ภาระงานสอน",
+          kpis: [{
+            id: uid(), code: "2.1.1", title: "ชั่วโมงสอนตามตารางที่ 4",
+            targets: [{
+              ...emptyTarget("2.1.1.1", 30),
+              title: "สอนภาคบรรยาย ปริญญาโท/เอก",
+              criteriaId: "teach_grad_main", hours: "45", kpiType: "quantity"
+            }]
+          }]
+        },
+        {
+          id: uid(), code: "2.2", title: "ภาระงานวิจัย",
+          kpis: [{
+            id: uid(), code: "2.2.1", title: "ความก้าวหน้ากระบวนการวิจัย ตารางที่ 11",
+            targets: [{
+              ...emptyTarget("2.2.1.1", 15),
+              title: "โครงการวิจัยที่อยู่ในระหว่างดำเนินการ",
+              criteriaId: "res_proc_3", kpiType: "quantity"
+            }]
+          }]
+        },
+        {
+          id: uid(), code: "2.3", title: "ภาระงานบริการวิชาการ",
+          kpis: [{
+            id: uid(), code: "2.3.1", title: "โครงการหลักสูตร / รายวิชา",
+            targets: [{
+              ...emptyTarget("2.3.1.1", 10),
+              title: "ปฏิบัติงานในโครงการของหลักสูตร",
+              criteriaId: "course_proj", hours: "12", kpiType: "quantity"
+            }]
+          }]
+        }
+      ]
+    },
+    {
+      id: "assign", no: 3,
+      agreements: [
+        {
+          id: uid(), code: "3.1", title: "งานที่ได้รับมอบหมายตามแผนปฏิบัติการ",
+          kpis: [{
+            id: uid(), code: "3.1.1", title: "กิจกรรม/โครงการที่ได้รับมอบหมาย",
+            targets: [{
+              ...emptyTarget("3.1.1.1", 15),
+              title: "ประธานกรรมการ/เลขานุการโครงการ",
+              criteriaId: "asg_chair", qty: 2, kpiType: "quantity"
+            }]
+          }]
+        }
+      ]
+    },
+    {
+      id: "community", no: 4,
+      agreements: [
+        {
+          id: uid(), code: "4.1", title: "งานเพื่อส่วนรวม",
+          kpis: [{
+            id: uid(), code: "4.1.1", title: "กิจกรรมนักศึกษา / ศิษย์เก่า",
+            targets: [{
+              ...emptyTarget("4.1.1.1", 5),
+              title: "เข้าร่วมกิจกรรมนักศึกษา",
+              criteriaId: "com_attend", qty: 3, kpiType: "quantity"
+            }]
+          }]
+        }
+      ]
+    }
+  ];
+}
+
+function emptySupportItem(n) {
+  return {
+    id: uid(), no: n, workType: "main", title: "", weight: 0,
+    kpiType: "quantity", kpiWeight: 100, criteria: "",
+    report: "", file: "", selfScore: "",
+    committeeComment: "", chairScore: "", approved: "wait", approveReason: ""
+  };
+}
+
+function defaultSupportItems() {
+  return [
+    { ...emptySupportItem(1), workType: "strat", title: "สนับสนุนการดำเนินงานตามแผนกลยุทธ์ของคณะ", weight: 20, kpiType: "quality", criteria: "ส่งงานตามแผนครบและตรงเวลา" },
+    { ...emptySupportItem(2), workType: "main", title: "ปฏิบัติงานตามหน้าที่ความรับผิดชอบประจำตำแหน่ง", weight: 55, kpiType: "quantity", criteria: "ปริมาณงานประจำเสร็จตามที่ได้รับมอบหมาย" },
+    { ...emptySupportItem(3), workType: "assign", title: "งานที่ได้รับมอบหมายเพิ่มเติมจากผู้บังคับบัญชา", weight: 15, kpiType: "time", criteria: "ส่งงานภายในกำหนด" },
+    { ...emptySupportItem(4), workType: "community", title: "ร่วมกิจกรรมเพื่อส่วนรวมของส่วนงาน", weight: 10, kpiType: "quantity", criteria: "เข้าร่วมกิจกรรมตามที่คณะจัด" }
+  ];
+}
+
+function blankCc() {
+  return C.CC_ITEMS.map((x) => ({ id: x.id, name: x.name, full: x.full, report: "", file: "", self: "", committee: "", chair: "" }));
+}
+function blankFc(track) {
+  const src = track === "support" ? C.SUPPORT_FC_ITEMS : C.FC_ITEMS;
+  return src.map((x) => ({ id: x.id, name: x.name, report: "", self: "", committee: "", chair: "", ack: false }));
+}
+function blankIdp(track) {
+  return [{
+    id: uid(),
+    competency: track === "support" ? "การประสานงานกับส่วนงาน" : "SFC02 ทักษะการวิจัย",
+    behavior: track === "support" ? "ประสานงานได้ครบวงจรภายในกำหนด" : "จัดทำข้อเสนอโครงการวิจัยและตีพิมพ์ผลงาน",
+    method: "70",
+    detail: track === "support" ? "เรียนรู้จากการปฏิบัติงานจริงในงานการเจ้าหน้าที่" : "เป็นนักวิจัยร่วมในโครงการของภาควิชา",
+    start: "2026-10-01", end: "2027-09-30",
+    budget: "0", approved: "wait", report: "", file: "", result: ""
+  }];
+}
+
+function defaultState() {
+  return {
+    loggedIn: false,
+    account: "",
+    focus: "faculty",
+    year: "2570",
+    round: "รอบประเมินปีงบประมาณ 2570",
+    view: "login",
+    paStatus: "draft",
+    paReject: "",
+    paDisagree: "",
+    groups: defaultGroups(),
+    ccStatus: "draft",
+    cc: blankCc(),
+    fc: blankFc("faculty"),
+    fcAck: false,
+    strength: "",
+    develop: "",
+    suggest: "",
+    chairSent: false,
+    idpStatus: "draft",
+    idpReject: "",
+    idpDisagree: "",
+    idp: blankIdp("faculty"),
+    idpEvalNote: "",
+    supportStatus: "draft",
+    supportReject: "",
+    supportDisagree: "",
+    supportItems: defaultSupportItems(),
+    supportCc: blankCc(),
+    supportFc: blankFc("support"),
+    supportFcAck: false,
+    supportStrength: "",
+    supportDevelop: "",
+    supportSuggest: "",
+    supportChairSent: false,
+    supportIdpStatus: "draft",
+    supportIdpReject: "",
+    supportIdpDisagree: "",
+    supportIdp: blankIdp("support"),
+    supportFollow: [],
+    supportPledge: {
+      text: "ข้าพเจ้าจะปฏิบัติงานตามข้อตกลงที่ได้รับอนุมัติ และพัฒนาสมรรถนะตามแผน IDP ในปีงบประมาณนี้",
+      rateeSigned: false,
+      chairSigned: false
+    },
+    modal: null
+  };
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return defaultState();
+    const s = { ...defaultState(), ...JSON.parse(raw) };
+    if (!s.groups || !s.groups.length) s.groups = defaultGroups();
+    if (!s.supportItems || !s.supportItems.length) s.supportItems = defaultSupportItems();
+    if (!s.year || !["2569", "2570"].includes(String(s.year))) s.year = "2570";
+    if (!s.supportFollow) s.supportFollow = [];
+    if (!s.supportPledge) {
+      s.supportPledge = defaultState().supportPledge;
+    }
+    s.modal = null;
+    return s;
+  } catch {
+    return defaultState();
+  }
+}
+
+function persist() {
+  const copy = { ...S, modal: null };
+  localStorage.setItem(KEY, JSON.stringify(copy));
+}
+
+let S = load();
+
+function account() {
+  return ACCOUNTS[S.account] || null;
+}
+
+function isRatee() { return account() && account().family === "ratee"; }
+function isFaculty() { return S.account === "faculty"; }
+function isSupport() { return S.account === "support"; }
+function isCommittee() { return S.account === "committee"; }
+function isChair() { return S.account === "chair"; }
+function isHr() { return S.account === "hr"; }
+function isAdmin() { return S.account === "admin"; }
+function isEval() { return isCommittee() || isChair(); }
+
+function track() {
+  if (isRatee()) return account().track;
+  return S.focus === "support" ? "support" : "faculty";
+}
+
+function rateeAccount() {
+  return ACCOUNTS[track()] || ACCOUNTS.faculty;
+}
+
+function paStatus() { return track() === "support" ? S.supportStatus : S.paStatus; }
+function setPaStatus(v) {
+  if (track() === "support") S.supportStatus = v;
+  else S.paStatus = v;
+}
+function idpStatus() { return track() === "support" ? S.supportIdpStatus : S.idpStatus; }
+function setIdpStatus(v) {
+  if (track() === "support") S.supportIdpStatus = v;
+  else S.idpStatus = v;
+}
+
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 3200);
+}
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+function go(view) {
+  S.view = view;
+  S.modal = null;
+  persist();
+  location.hash = view;
+  render();
+  window.scrollTo(0, 0);
+}
+
+function logout() {
+  S.loggedIn = false;
+  S.account = "";
+  S.view = "login";
+  persist();
+  render();
+}
+
+function resetDemo() {
+  if (!confirm("ล้างข้อมูลเดโมแล้วเริ่มใหม่? โหมดที่ใช้อยู่ยังเป็นคนเดิม")) return;
+  const acc = S.account;
+  const year = S.year;
+  S = defaultState();
+  S.loggedIn = true;
+  S.account = acc;
+  S.year = year;
+  S.round = "รอบประเมินปีงบประมาณ " + year;
+  S.view = "home";
+  persist();
+  render();
+  toast("เริ่มเดโมใหม่แล้ว");
+}
+
+function yearOptions() {
+  return ["2570", "2569"].map((y) =>
+    `<option value="${y}" ${String(S.year) === y ? "selected" : ""}>${y}</option>`
+  ).join("");
+}
+
+function setYear(y) {
+  S.year = String(y);
+  S.round = "รอบประเมินปีงบประมาณ " + S.year;
+}
+
+function enterAccount(id) {
+  const acc = ACCOUNTS[id];
+  if (!acc) { toast("ไม่พบบัญชีนี้"); return; }
+  S.loggedIn = true;
+  S.account = id;
+  S.focus = acc.track || S.focus || "faculty";
+  S.view = "home";
+  persist();
+  location.hash = "home";
+  render();
+  window.scrollTo(0, 0);
+}
+
+function ico(name) {
+  const common = 'xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="#2b4c7e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';
+  if (name === "person") return `<svg ${common}><circle cx="24" cy="16" r="7"/><path d="M10 38c2-8 8-12 14-12s12 4 14 12"/></svg>`;
+  if (name === "leave") return `<svg ${common}><rect x="10" y="12" width="28" height="24" rx="3"/><path d="M10 20h28M18 8v8M30 8v8"/><circle cx="24" cy="28" r="2.2" fill="#2b4c7e" stroke="none"/></svg>`;
+  if (name === "clock") return `<svg ${common}><circle cx="24" cy="24" r="14"/><path d="M24 16v9l6 4"/></svg>`;
+  if (name === "clip") return `<svg ${common}><rect x="14" y="12" width="20" height="26" rx="3"/><path d="M18 12V9h12v3M18 22h12M18 28h8"/></svg>`;
+  if (name === "grad") return `<svg ${common}><path d="M8 20l16-8 16 8-16 8-16-8z"/><path d="M16 24v8c4 3 12 3 16 0v-8"/><path d="M40 20v10"/></svg>`;
+  if (name === "target") return `<svg ${common}><circle cx="24" cy="24" r="14"/><circle cx="24" cy="24" r="7"/><circle cx="24" cy="24" r="2" fill="#c2410c" stroke="#c2410c"/><path d="M24 10v4M38 24h-4M24 38v-4M10 24h4" stroke="#c2410c"/></svg>`;
+  if (name === "people") return `<svg ${common}><circle cx="16" cy="16" r="6"/><circle cx="32" cy="16" r="6"/><path d="M6 38c1-8 6-12 10-12s9 4 10 12M26 38c1-8 6-12 10-12s8 4 10 12"/></svg>`;
+  if (name === "cal") return `<svg ${common}><rect x="10" y="12" width="28" height="24" rx="3"/><path d="M10 20h28M18 8v8M30 8v8"/></svg>`;
+  if (name === "shield") return `<svg ${common}><path d="M24 8l14 6v10c0 9-6 16-14 18C16 40 10 33 10 24V14z"/></svg>`;
+  return `<svg ${common}><path d="M10 32l8-10 6 6 8-12 8 16H10z"/><path d="M10 36h28"/></svg>`;
+}
+
+function canEditAgreement() {
+  return isRatee() && ["draft", "back"].includes(paStatus());
+}
+function canApproveAgreement() {
+  return isChair() && paStatus() === "wait";
+}
+function canReportPa() {
+  return isRatee() && paStatus() === "approved";
+}
+function canComment() {
+  return isCommittee() && ["reported", "committee"].includes(paStatus());
+}
+function canChairScore() {
+  return isChair() && ["reported", "committee", "disagree"].includes(paStatus());
+}
+function canAck() {
+  return isRatee() && ["chair", "disagree"].includes(paStatus());
+}
+function canEditIdp() {
+  return isRatee() && ["draft", "back"].includes(idpStatus());
+}
+function canApproveIdp() {
+  return isChair() && idpStatus() === "wait";
+}
+function canEvalIdp() {
+  return isChair() && idpStatus() === "reported";
+}
+
+function paLocked() {
+  return ["reported", "committee", "chair", "ack", "disagree"].includes(paStatus());
+}
+function agreeLocked() {
+  return !["draft", "back"].includes(paStatus());
+}
+function idpLocked() {
+  return ["reported", "eval", "ack", "disagree"].includes(idpStatus());
+}
+function idpAgreeLocked() {
+  return !["draft", "back"].includes(idpStatus());
+}
+
+function stepIndex() {
+  const st = paStatus();
+  if (st === "ack") return 5;
+  if (st === "disagree") return 2;
+  if (st === "chair") return 3;
+  if (st === "committee") return 2;
+  if (st === "reported") return 1;
+  if (st === "approved") return 0;
+  return -1;
+}
+
+function statusPill(st) {
+  const map = {
+    draft: ["pill-gray", "บันทึกร่าง"],
+    wait: ["pill-gold", "ขออนุมัติ"],
+    back: ["pill-red", "ไม่อนุมัติ / ส่งกลับ"],
+    approved: ["pill-green", "อนุมัติแล้ว"],
+    reported: ["pill-blue", "ส่งรายงานผลแล้ว"],
+    committee: ["pill-blue", "กรรมการประเมินแล้ว"],
+    chair: ["pill-blue", "ประธานส่งคะแนนแล้ว"],
+    ack: ["pill-green", "รับทราบแล้ว"],
+    disagree: ["pill-red", "ไม่เห็นด้วย"],
+    eval: ["pill-blue", "ประเมิน IDP แล้ว"]
+  };
+  const x = map[st] || ["pill-gray", st];
+  return `<span class="pill ${x[0]}">${x[1]}</span>`;
+}
+
+function canOpen(mod) {
+  if (!mod.need) return true;
+  const pa = paStatus();
+  const idp = idpStatus();
+  if (mod.need === "approved") return ["approved", "reported", "committee", "chair", "ack", "disagree"].includes(pa);
+  if (mod.need === "reported") return ["reported", "committee", "chair", "ack", "disagree"].includes(pa);
+  if (mod.need === "chair") return ["chair", "ack", "disagree"].includes(pa);
+  if (mod.need === "idpApproved") return ["approved", "reported", "eval", "ack", "disagree"].includes(idp);
+  if (mod.need === "idpReported") return ["reported", "eval", "ack", "disagree"].includes(idp);
+  if (mod.need === "idpEval") return ["eval", "ack", "disagree"].includes(idp);
+  return true;
+}
+
+function currentModules() {
+  return track() === "support" ? STAFF_MODULES : MODULES;
+}
+
+function moduleAllowed(mod) {
+  if (isHr() || isAdmin()) return ["report", "formset", "adminRound", "adminPeople"].includes(mod.id);
+  if (isCommittee()) return ["competency", "report"].includes(mod.id);
+  if (isChair()) return true;
+  if (isRatee()) return !["idpEval"].includes(mod.id) || canOpen(mod);
+  return false;
+}
+
+function supportFollowRows() {
+  S.supportFollow = S.supportFollow || [];
+  return S.supportItems.map((it) => {
+    let row = S.supportFollow.find((x) => x.itemId === it.id);
+    if (!row) {
+      row = { id: uid(), itemId: it.id, progress: "", problem: "", help: "" };
+      S.supportFollow.push(row);
+    }
+    return { it, row };
+  });
+}
+
+function forEachTarget(fn) {
+  S.groups.forEach((g) => {
+    (g.agreements || []).forEach((a) => {
+      (a.kpis || []).forEach((k) => {
+        (k.targets || []).forEach((t) => fn(t, g, a, k));
+      });
+    });
+  });
+}
+
+function readPaForm() {
+  document.querySelectorAll("[data-pa]").forEach((el) => {
+    const [kind, id, field] = el.dataset.pa.split(":");
+    const val = el.type === "checkbox" ? el.checked : el.value;
+    S.groups.forEach((g) => {
+      g.agreements.forEach((a) => {
+        if (kind === "a" && a.id === id) a[field] = val;
+        a.kpis.forEach((k) => {
+          if (kind === "k" && k.id === id) k[field] = val;
+          k.targets.forEach((t) => {
+            if (kind === "t" && t.id === id) {
+              if (field === "inDb" || field === "withStudent") t[field] = !!val;
+              else t[field] = val;
+            }
+          });
+        });
+      });
+    });
+  });
+}
+
+function readSupportForm() {
+  document.querySelectorAll("[data-sup]").forEach((el) => {
+    const [id, field] = el.dataset.sup.split(":");
+    const it = S.supportItems.find((x) => x.id === id);
+    if (!it) return;
+    it[field] = el.type === "checkbox" ? el.checked : el.value;
+  });
+}
+
+function addAgreement(gid) {
+  if (!canEditAgreement()) return;
+  const g = S.groups.find((x) => x.id === gid);
+  const n = g.agreements.length + 1;
+  g.agreements.push({
+    id: uid(), code: `${g.no}.${n}`, title: "",
+    kpis: [{
+      id: uid(), code: `${g.no}.${n}.1`, title: "",
+      targets: [emptyTarget(`${g.no}.${n}.1.1`, 0)]
+    }]
+  });
+  persist(); render();
+}
+
+function removeAgreement(gid, aid) {
+  if (!canEditAgreement()) return;
+  const g = S.groups.find((x) => x.id === gid);
+  if (g.agreements.length <= 1) { toast("ต้องมีข้อตกลงอย่างน้อย 1 ข้อในภาระงานนี้"); return; }
+  g.agreements = g.agreements.filter((a) => a.id !== aid);
+  persist(); render();
+}
+
+function checkWeight() {
+  return track() === "support"
+    ? +C.sumSupportWeight(S.supportItems).toFixed(2)
+    : +C.sumWeight(S.groups).toFixed(2);
+}
+
+function currentTotal(useChair) {
+  return track() === "support"
+    ? C.supportTotalScore(S.supportItems, S.supportCc, useChair)
+    : C.totalScore(S.groups, S.cc, useChair);
+}
+
+function saveDraft() {
+  if (!canEditAgreement()) { toast("โหมดนี้กรอกข้อตกลงไม่ได้"); return; }
+  if (track() === "support") readSupportForm();
+  else readPaForm();
+  persist();
+  toast("บันทึกฉบับร่างแล้ว");
+  render();
+}
+
+function requestApprove() {
+  if (!canEditAgreement()) { toast("โหมดนี้ขออนุมัติไม่ได้"); return; }
+  if (track() === "support") {
+    readSupportForm();
+    const w = checkWeight();
+    if (w !== 100) { toast("ร้อยละค่าน้ำหนักรวมต้องได้ 100 (ตอนนี้ " + w + ")"); return; }
+    if (S.supportItems.some((x) => !String(x.title || "").trim())) {
+      toast("พิมพ์ข้อตกลงให้ครบทุกข้อ"); return;
+    }
+    S.supportStatus = "wait";
+    S.supportItems.forEach((x) => { x.approved = "wait"; });
+  } else {
+    readPaForm();
+    const w = checkWeight();
+    if (w !== 100) { toast("ร้อยละค่าน้ำหนักรวมต้องได้ 100 (ตอนนี้ " + w + ")"); return; }
+    let ok = true;
+    forEachTarget((t) => {
+      if (!String(t.title || "").trim()) ok = false;
+      if (!t.criteriaId) ok = false;
+    });
+    if (!ok) { toast("กรอกภารกิจและเลือกเกณฑ์ให้ครบทุกเป้าหมาย"); return; }
+    S.paStatus = "wait";
+    forEachTarget((t) => { t.approved = "wait"; });
+  }
+  persist();
+  toast("ส่งขออนุมัติแล้ว ให้ประธานพิจารณาในโหมดประธานกรรมการ");
+  render();
+}
+
+function chairApproveAll() {
+  if (!canApproveAgreement()) { toast("อนุมัติได้เฉพาะโหมดประธาน เมื่อสถานะขออนุมัติ"); return; }
+  if (track() === "support") {
+    S.supportStatus = "approved";
+    S.supportReject = "";
+    S.supportItems.forEach((x) => { x.approved = "yes"; });
+  } else {
+    S.paStatus = "approved";
+    S.paReject = "";
+    forEachTarget((t) => { t.approved = "yes"; });
+  }
+  persist();
+  toast("ประธานอนุมัติข้อตกลงทั้งหมดแล้ว");
+  render();
+}
+
+function chairReject() {
+  if (!canApproveAgreement()) { toast("ส่งกลับได้เฉพาะโหมดประธาน"); return; }
+  const reason = (document.getElementById("rejectReason") || {}).value || "";
+  if (!String(reason).trim()) { toast("กรณีไม่อนุมัติต้องใส่เหตุผล"); return; }
+  if (track() === "support") {
+    S.supportStatus = "back";
+    S.supportReject = reason;
+  } else {
+    S.paStatus = "back";
+    S.paReject = reason;
+  }
+  persist();
+  toast("ส่งกลับให้ผู้รับการประเมินแก้ไข");
+  render();
+}
+
+function submitSelfPA() {
+  if (!canReportPa()) { toast("ส่งรายงานผลได้เฉพาะผู้รับการประเมิน เมื่อข้อตกลงอนุมัติแล้ว"); return; }
+  if (track() === "support") {
+    readSupportForm();
+    if (S.supportItems.some((x) => !String(x.report || "").trim())) {
+      toast("พิมพ์คำอธิบายรายงานผลให้ครบทุกข้อก่อนส่ง"); return;
+    }
+    if (!confirm("ตรวจคะแนนให้แน่ใจก่อนกดส่ง เพราะส่งแล้วแก้ไขไม่ได้")) return;
+    S.supportStatus = "reported";
+  } else {
+    readPaForm();
+    let missing = false;
+    forEachTarget((t) => {
+      if (!String(t.report || "").trim()) missing = true;
+    });
+    if (missing) { toast("พิมพ์คำอธิบายรายงานผลให้ครบทุกเป้าหมายก่อนส่ง"); return; }
+    if (!confirm("ตรวจคะแนนให้แน่ใจก่อนกดส่ง เพราะส่งแล้วแก้ไขไม่ได้")) return;
+    S.paStatus = "reported";
+    S.ccStatus = "reported";
+  }
+  persist();
+  toast("ส่งรายงานผลการปฏิบัติงานแล้ว แก้ไขไม่ได้");
+  render();
+}
+
+function submitCommittee() {
+  if (!canComment()) { toast("ส่งความเห็นได้เฉพาะโหมดกรรมการ เมื่อผู้รับการประเมินส่งรายงานแล้ว"); return; }
+  if (track() === "support") {
+    readSupportForm();
+    readCcFc();
+    S.supportStatus = "committee";
+  } else {
+    readPaForm();
+    readCcFc();
+    S.paStatus = "committee";
+  }
+  persist();
+  toast("กรรมการส่งความเห็นให้ประธานแล้ว");
+  render();
+}
+
+function openScoreDialog() {
+  if (!canChairScore()) { toast("ตรวจสอบคะแนนได้เฉพาะโหมดประธาน"); return; }
+  if (track() === "support") { readSupportForm(); readCcFc(); }
+  else { readPaForm(); readCcFc(); }
+  S.modal = "score";
+  persist();
+  render();
+}
+
+function sendChairScore() {
+  if (!canChairScore()) return;
+  if (track() === "support") {
+    S.supportStrength = (document.getElementById("strength") || {}).value || S.supportStrength;
+    S.supportDevelop = (document.getElementById("develop") || {}).value || S.supportDevelop;
+    S.supportSuggest = (document.getElementById("suggest") || {}).value || S.supportSuggest;
+    S.supportStatus = "chair";
+    S.supportChairSent = true;
+  } else {
+    S.strength = (document.getElementById("strength") || {}).value || S.strength;
+    S.develop = (document.getElementById("develop") || {}).value || S.develop;
+    S.suggest = (document.getElementById("suggest") || {}).value || S.suggest;
+    S.paStatus = "chair";
+    S.chairSent = true;
+  }
+  S.modal = null;
+  persist();
+  toast("ส่งคะแนนแล้ว แก้ไขไม่ได้");
+  render();
+}
+
+function ackResult(ok) {
+  if (!canAck() && paStatus() !== "disagree") {
+    if (!isRatee()) { toast("รับทราบได้เฉพาะผู้รับการประเมิน"); return; }
+  }
+  if (track() === "support") {
+    if (ok) {
+      S.supportStatus = "ack";
+      S.supportDisagree = "";
+      persist(); toast("รับทราบผลการประเมิน PA และ CC แล้ว"); render(); return;
+    }
+    const reason = (document.getElementById("disagreeReason") || {}).value || "";
+    if (!String(reason).trim()) { toast("กรณีไม่เห็นด้วยต้องระบุเหตุผลละเอียดชัดเจน"); return; }
+    S.supportStatus = "disagree";
+    S.supportDisagree = reason;
+  } else {
+    if (ok) {
+      S.paStatus = "ack";
+      S.paDisagree = "";
+      persist(); toast("รับทราบผลการประเมิน PA และ CC แล้ว"); render(); return;
+    }
+    const reason = (document.getElementById("disagreeReason") || {}).value || "";
+    if (!String(reason).trim()) { toast("กรณีไม่เห็นด้วยต้องระบุเหตุผลละเอียดชัดเจน"); return; }
+    S.paStatus = "disagree";
+    S.paDisagree = reason;
+  }
+  persist();
+  toast("ไม่เห็นด้วย — สถานะ PA และ CC กลับเป็นประธานกรรมการประเมิน");
+  render();
+}
+
+function currentIdp() {
+  return track() === "support" ? S.supportIdp : S.idp;
+}
+
+function readIdp() {
+  document.querySelectorAll("[data-idp]").forEach((el) => {
+    const [id, field] = el.dataset.idp.split(":");
+    const it = currentIdp().find((x) => x.id === id);
+    if (it) it[field] = el.value;
+  });
+}
+
+function saveIdpDraft() {
+  if (!canEditIdp()) { toast("โหมดนี้จัดทำ IDP ไม่ได้"); return; }
+  readIdp();
+  persist();
+  toast("บันทึกฉบับร่างแผนพัฒนาแล้ว");
+  render();
+}
+
+function addIdp() {
+  if (!canEditIdp()) return;
+  const list = currentIdp();
+  if (list.length >= C.IDP_MAX) { toast("พัฒนาประมาณ 1–2 รายการต่อปี"); return; }
+  list.push({
+    id: uid(), competency: "", behavior: "", method: "70", detail: "",
+    start: "", end: "", budget: "0", approved: "wait", report: "", file: "", result: ""
+  });
+  persist(); render();
+}
+
+function removeIdp(id) {
+  if (!canEditIdp()) return;
+  if (track() === "support") {
+    if (S.supportIdp.length <= 1) { toast("ต้องมีอย่างน้อย 1 รายการ"); return; }
+    S.supportIdp = S.supportIdp.filter((x) => x.id !== id);
+  } else {
+    if (S.idp.length <= 1) { toast("ต้องมีอย่างน้อย 1 รายการ"); return; }
+    S.idp = S.idp.filter((x) => x.id !== id);
+  }
+  persist(); render();
+}
+
+function requestIdp() {
+  if (!canEditIdp()) { toast("ขออนุมัติ IDP ได้เฉพาะผู้รับการประเมิน"); return; }
+  readIdp();
+  if (currentIdp().some((x) => !x.competency.trim() || !x.behavior.trim() || !x.method)) {
+    toast("กรอกสมรรถนะ พฤติกรรมที่คาดหวัง และวิธีการพัฒนาให้ครบ");
+    return;
+  }
+  setIdpStatus("wait");
+  persist();
+  toast("ส่งขออนุมัติ IDP แล้ว");
+  render();
+}
+
+function approveIdp(yes) {
+  if (!canApproveIdp()) { toast("อนุมัติ IDP ได้เฉพาะโหมดประธาน"); return; }
+  if (!yes) {
+    const reason = (document.getElementById("idpReject") || {}).value || "";
+    if (!String(reason).trim()) { toast("ไม่อนุมัติต้องใส่เหตุผล"); return; }
+    setIdpStatus("back");
+    if (track() === "support") S.supportIdpReject = reason;
+    else S.idpReject = reason;
+    persist(); toast("ส่งกลับแก้ IDP"); render(); return;
+  }
+  setIdpStatus("approved");
+  currentIdp().forEach((x) => { x.approved = "yes"; });
+  persist(); toast("ประธานอนุมัติ IDP แล้ว"); render();
+}
+
+function submitIdpReport() {
+  if (!(isRatee() && idpStatus() === "approved")) {
+    toast("ส่งรายงาน IDP ได้เฉพาะผู้รับการประเมินเมื่อแผนอนุมัติแล้ว"); return;
+  }
+  readIdp();
+  if (currentIdp().some((x) => !String(x.report || "").trim())) {
+    toast("พิมพ์รายงานการพัฒนาให้ครบทุกรายการ"); return;
+  }
+  if (!confirm("ส่งรายงานผล IDP แล้วแก้ไขไม่ได้")) return;
+  setIdpStatus("reported");
+  persist(); toast("ส่งรายงานผล IDP แล้ว แก้ไขไม่ได้"); render();
+}
+
+function evalIdp(result) {
+  if (!canEvalIdp()) { toast("ประเมิน IDP ได้เฉพาะโหมดประธาน"); return; }
+  currentIdp().forEach((x) => { x.result = result; });
+  setIdpStatus("eval");
+  persist();
+  toast(result === "ok" ? "เป็นไปตามที่คาดหวัง" : "ไม่เป็นไปตามที่คาดหวัง");
+  render();
+}
+
+function ackIdp(ok) {
+  if (!isRatee()) { toast("รับทราบผล IDP ได้เฉพาะผู้รับการประเมิน"); return; }
+  if (ok) {
+    setIdpStatus("ack");
+    persist(); toast("รับทราบผล IDP แล้ว"); render(); return;
+  }
+  const reason = (document.getElementById("idpDisagree") || {}).value || "";
+  if (!String(reason).trim()) { toast("ต้องระบุเหตุผล"); return; }
+  setIdpStatus("disagree");
+  if (track() === "support") S.supportIdpDisagree = reason;
+  else S.idpDisagree = reason;
+  persist(); toast("ไม่เห็นด้วย — สถานะกลับไปที่ประธาน"); render();
+}
+
+function modeBanner() {
+  const a = account();
+  if (!a) return "";
+  const looking = isEval()
+    ? `กำลังดูผู้รับการประเมิน: ${esc(rateeAccount().full)} (${esc(rateeAccount().roleSub)})`
+    : a.hint;
+  return `<div class="mode-banner tone-${a.tone}">
+    <div>
+      <div class="mode-kicker">ขณะนี้อยู่ในโหมด</div>
+      <div class="mode-title">${esc(a.roleLabel)} · ${esc(a.roleSub)}</div>
+      <div class="mode-sub">${looking}</div>
+    </div>
+    <div class="mode-meta">
+      <label>ปีงบประมาณ
+        <select id="yearSel">${yearOptions()}</select>
+      </label>
+      <button type="button" id="btnReset">เริ่มเดโมใหม่</button>
+      <button type="button" id="btnSwitch">เปลี่ยนโหมด</button>
+    </div>
+  </div>`;
+}
+
+function flowTabs() {
+  if (isHr() || isAdmin()) return "";
+  const staffPa = ["period", "profile", "rounds", "formset", "modules", "pa", "follow", "paReport", "competency", "scoreSum", "ack", "pledge", "report"].includes(S.view);
+  const facPa = ["period", "profile", "rounds", "formset", "modules", "pa", "paReport", "competency", "ack", "report"].includes(S.view);
+  const idp = ["idp", "idpReport", "idpEval", "idpAck"].includes(S.view);
+  if (!staffPa && !facPa && !idp) return "";
+  let items;
+  if (idp) {
+    items = track() === "support" ? [
+      ["idp", "IDP ผู้ปฏิบัติ"],
+      ["idpReport", "รายงาน IDP"],
+      ["idpEval", "IDP ผู้อนุมัติ"],
+      ["idpAck", "รับทราบ IDP"]
+    ] : [
+      ["idp", "จัดทำ IDP"],
+      ["idpReport", "รายงาน IDP"],
+      ["idpEval", "ประเมิน IDP"],
+      ["idpAck", "รับทราบ IDP"]
+    ];
+  } else if (track() === "support") {
+    items = [
+      ["modules", "วงจรบุคคลากร"],
+      ["pa", "ข้อตกลง 05"],
+      ["follow", "ติดตาม 06"],
+      ["paReport", "รายงาน 07"],
+      ["scoreSum", "สรุปคะแนน 09"],
+      ["ack", "แจ้งผล 08"],
+      ["pledge", "คำมั่น 11"]
+    ];
+  } else {
+    items = [
+      ["modules", "วงจร PMS"],
+      ["pa", "ข้อตกลง PA"],
+      ["paReport", "รายงานผล"],
+      ["competency", "สมรรถนะ"],
+      ["ack", "รับทราบ"]
+    ];
+  }
+  return `<nav class="flow">${items.map(([id, t]) =>
+    `<button type="button" class="flow-a ${S.view === id ? "on" : ""}" data-go="${id}">${esc(t)}</button>`
+  ).join("")}</nav>`;
+}
+
+function chrome(inner) {
+  const a = account();
+  const home = S.view === "home";
+  return `
+  <div class="app ${home ? "app-home" : ""}">
+    <header class="topbar">
+      <div class="brand-text">ระบบสารสนเทศเพื่อการบริหารจัดการบุคลากร</div>
+      <div class="who">
+        <span class="uname">${esc(a ? a.full : "")}</span>
+        <span class="sep">|</span>
+        <span class="uline">${esc(a ? a.roleLabel + " · " + a.roleSub : "")}</span>
+        <span class="sep">|</span>
+        <span class="year-inline">ปีงบประมาณ ${esc(S.year)}</span>
+        <span class="sep">|</span>
+        <button type="button" id="btnSwitch">เปลี่ยนโหมด</button>
+        <button type="button" id="btnOut">ออกจากระบบ</button>
+      </div>
+    </header>
+    ${modeBanner()}
+    ${home ? "" : `<div class="subbar">
+      <button type="button" class="back" data-go="home">← กลับหน้าหลักระบบงาน</button>
+      <button type="button" id="btnReset">เริ่มเดโมใหม่</button>
+    </div>`}
+    <main class="main ${home ? "main-home" : ""}">${home ? "" : flowTabs()}${inner}</main>
+  </div>`;
+}
+
+function profileBox(who) {
+  const u = who || (isRatee() ? account() : rateeAccount());
+  return `
+  <div class="profile-grid">
+    <b>ชื่อ-นามสกุล</b><span>${esc(u.full)}</span>
+    <b>รหัสบุคลากร</b><span>${esc(u.staffId)}</span>
+    <b>ตำแหน่ง</b><span>${esc(u.position)} (${esc(u.type)})</span>
+    <b>สังกัด</b><span>${esc(FACULTY)} · ${esc(u.dept)}</span>
+    <b>ผู้ประเมิน</b><span>ประธานกรรมการประเมิน</span>
+    <b>รอบ</b><span>${esc(S.round)}</span>
+  </div>`;
+}
+
+function stepperHtml() {
+  const idx = stepIndex();
+  return `<div class="stepper">${STEPS.map((t, i) => {
+    const cls = i < idx ? "done" : i === idx ? "now" : "";
+    return `<div class="step ${cls}"><div class="dot"></div>${esc(t)}</div>`;
+  }).join("")}</div>`;
+}
+
+function viewLogin() {
+  const groups = [
+    {
+      title: "ผู้รับการประเมิน",
+      note: "คนที่ถูกประเมิน — อาจารย์กับสายสนับสนุนคนละแบบฟอร์ม",
+      ids: ["faculty", "support"]
+    },
+    {
+      title: "คณะประเมิน",
+      note: "กรรมการให้ความเห็น · ประธานอนุมัติและให้คะแนน",
+      ids: ["committee", "chair"]
+    },
+    {
+      title: "ฝ่ายบุคคลากร / ผู้ดูแลระบบ",
+      note: "ไม่ใช่ผู้ประเมิน และไม่กรอกภาระงาน",
+      ids: ["hr", "admin"]
+    }
+  ];
+  return `
+  <div class="login-wrap">
+    <div class="login-head">
+      <div class="login-logo">MU</div>
+      <h1>มหาวิทยาลัยมหิดล</h1>
+      <p>ระบบสารสนเทศเพื่อการบริหารจัดการบุคลากร · คณะสังคมศาสตร์และมนุษยศาสตร์</p>
+    </div>
+    <div class="login-box login-modes">
+      <h2>เลือกโหมดการใช้งาน</h2>
+      <p class="hint">เลือกโหมดก่อน แล้วเข้าหน้าหลักระบบงาน 7 การ์ด · PA บุคคลากร กับ PA อาจารย์คนละเอกสาร · ปีงบประมาณเริ่มต้น <b>2570</b> เลือก 2569 ได้</p>
+      <div class="year-pick login-year">
+        <label for="yearSel">ปีงบประมาณ</label>
+        <select id="yearSel">${yearOptions()}</select>
+      </div>
+      ${groups.map((g) => `
+        <h3 class="mode-group-title">${esc(g.title)}</h3>
+        <p class="mode-group-note">${esc(g.note)}</p>
+        <div class="mode-cards">
+          ${g.ids.map((id) => {
+            const a = ACCOUNTS[id];
+            return `<button type="button" class="mode-card tone-${a.tone}" data-enter="${a.id}">
+              <b>${esc(a.roleLabel)}</b>
+              <span class="who-line">${esc(a.full)}</span>
+              <small>${esc(a.roleSub)} · ${esc(a.position)}</small>
+              <em>${esc(a.hint)}</em>
+              <span class="user-tag">${esc(a.username)}</span>
+            </button>`;
+          }).join("")}
+        </div>`).join("")}
+    </div>
+  </div>`;
+}
+
+function dashCards(cards) {
+  return `
+    <div class="dash">
+      <h1>หน้าหลักระบบงาน (Dashboard)</h1>
+      <div class="dash-grid">
+        ${cards.map((c) => `
+          <button class="dash-card${c.cream ? " cream" : ""}${c.locked ? " locked" : ""}" type="button"
+            ${c.locked ? `data-lock="${esc(c.lockMsg || "ไม่ใช่แบบของโหมดนี้")}"` : `data-go="${c.go}"`}>
+            <div class="ico">${ico(c.ico)}</div>
+            <b>${esc(c.title)}</b>
+            <small class="${c.linkish ? "linkish" : ""}">${esc(c.sub)}</small>
+          </button>`).join("")}
+      </div>
+    </div>`;
+}
+
+function hrisCards() {
+  const facultyLock = isSupport();
+  const staffLock = isFaculty();
+  return [
+    { go: "profile", ico: "person", title: "ข้อมูลบุคลากร", sub: "ประวัติและข้อมูลส่วนบุคคล" },
+    { go: "leave", ico: "leave", title: "ข้อมูลวันลา", sub: "สถิติและการขออนุมัติวันลา" },
+    { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" },
+    {
+      go: "paStaff", ico: "clip", title: "PA ประเมินภาระงาน",
+      sub: "(สายสนับสนุน / บุคลากรทั่วไป)",
+      locked: staffLock,
+      lockMsg: "แบบของบุคลากร ตามเอกสาร PA บุคคลากร — เข้าด้วยโหมดสายสนับสนุน"
+    },
+    {
+      go: "period", ico: "grad", title: "PA ภาระงานอาจารย์",
+      sub: "(สายวิชาการ / กรอบแบบฟอร์ม Matrix)", cream: true,
+      locked: facultyLock,
+      lockMsg: "แบบของอาจารย์ ตามประกาศค่าน้ำหนักและ SHPA — เข้าด้วยโหมดอาจารย์"
+    },
+    { go: "competency", ico: "target", title: "Functional Competency", sub: "ประเมินสมรรถนะเฉพาะงาน", linkish: true },
+    { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคล" }
+  ];
+}
+
+function viewHome() {
+  if (isFaculty() || isSupport()) {
+    return chrome(dashCards(hrisCards()));
+  }
+  if (isCommittee()) {
+    return chrome(dashCards([
+      { go: "evalHome", ico: "people", title: "รายชื่อผู้รับการประเมิน", sub: "คนที่ตนต้องให้ความเห็น" },
+      { go: "competency", ico: "target", title: "ประเมินผล", sub: "ให้ความเห็น PA / CC / FC แล้วส่งประธาน" },
+      { go: "report", ico: "chart", title: "สอบถาม / พิมพ์รายงาน", sub: "ดูสถานะและพิมพ์รายงาน" },
+      { go: "help", ico: "clip", title: "การช่วยเหลือ", sub: "หน้าที่กรรมการตาม UM-01 และ PMS" }
+    ]));
+  }
+  if (isChair()) {
+    return chrome(dashCards([
+      { go: "evalHome", ico: "people", title: "รายชื่อผู้รับการประเมิน", sub: "อนุมัติข้อตกลงและให้คะแนน" },
+      { go: "pa", ico: "grad", title: "อนุมัติข้อตกลง PA", sub: "ตรวจน้ำหนัก 100 แล้วนุมัติหรือส่งกลับ" },
+      { go: "competency", ico: "target", title: "ให้คะแนน PA + CC", sub: "Dialog สรุป 80 + 20 = 100" },
+      { go: "idp", ico: "chart", title: "อนุมัติ / ประเมิน IDP", sub: "เป็นไปตามที่คาดหวัง หรือไม่เป็นไป" },
+      { go: "report", ico: "cal", title: "รายงานภาพรวม", sub: "ติดตามสถานะรอบปี " + S.year },
+      { go: "help", ico: "clip", title: "การช่วยเหลือ", sub: "หน้าที่ประธานตามคำแนะนำ PMS" }
+    ]));
+  }
+  if (isHr()) {
+    return chrome(dashCards([
+      { go: "adminRound", ico: "cal", title: "รอบและปฏิทิน", sub: "สร้างรอบปีงบประมาณ 2569 / 2570" },
+      { go: "formset", ico: "clip", title: "ชุดประเมิน", sub: "ตรวจ PA IDP CC FC ให้ครบตามตำแหน่ง" },
+      { go: "adminPeople", ico: "people", title: "บุคลากรส่วนงาน", sub: "รายชื่อและผู้บังคับบัญชาในคณะ" },
+      { go: "report", ico: "chart", title: "ติดตามตามปฏิทิน", sub: "สถานะข้อตกลงและคะแนน" },
+      { go: "help", ico: "shield", title: "การช่วยเหลือ", sub: "หน้าที่ Admin ส่วนงาน" }
+    ]));
+  }
+  return chrome(dashCards([
+    { go: "adminPeople", ico: "people", title: "โครงสร้างส่วนงาน", sub: "นำเข้าส่วนงาน บุคลากร ผู้บังคับบัญชา" },
+    { go: "adminRound", ico: "cal", title: "รอบประเมินทั้งมหาวิทยาลัย", sub: "ปีงบประมาณ 2569 และ 2570" },
+    { go: "help", ico: "shield", title: "ให้คำปรึกษาการใช้ระบบ", sub: "หน้าที่ Admin มหาวิทยาลัย" }
+  ]));
+}
+
+function viewSoon(title, sub) {
+  return chrome(`
+    <p class="crumb">หน้าหลักระบบงาน</p>
+    <h1 class="page-title">${esc(title)}</h1>
+    <div class="card">
+      <p>${esc(sub)}</p>
+      <p class="hint">โมดูลนี้เป็นส่วนของระบบบุคลากรตามหน้าหลัก · เดโมคณะสังคมฯ ใช้งานจริงที่การ์ด PA ของโหมดที่เลือก</p>
+      <button class="btn-navy" type="button" data-go="home">กลับหน้าหลักระบบงาน</button>
+    </div>`);
+}
+
+function viewLeave() {
+  return viewSoon("ข้อมูลวันลา", "สถิติและการขออนุมัติวันลา");
+}
+function viewTime() {
+  return viewSoon("ข้อมูลเวลาเข้า-ออกงาน", "ลงเวลาปฏิบัติงานประจำวัน");
+}
+
+function viewPaStaff() {
+  if (isFaculty()) {
+    return chrome(`<div class="warn-box">การ์ดนี้เป็นแบบของบุคลากรสายสนับสนุน ตามเอกสาร PA บุคคลากร ไม่ใช่แบบอาจารย์</div>
+      <button class="btn-navy" data-go="period">ไป PA ภาระงานอาจารย์</button>`);
+  }
+  if (isEval()) {
+    S.focus = "support";
+    persist();
+    return viewPeriod();
+  }
+  return viewPeriod();
+}
+
+function viewHelp() {
+  const a = account();
+  const blocks = {
+    faculty: ["ยืนยันประวัติก่อนกรอกข้อตกลง", "กรอก PA ภาระงานอาจารย์ตามประกาศค่าน้ำหนัก / SHPA", "หน่วยและคะแนนตนเองคำนวณจากประกาศสายวิชาการ ฐาน 1,820", "ส่งรายงานผลแล้วแก้ไม่ได้", "รับทราบ PA+CC พร้อมกัน · FC รับทราบแยก", "การ์ด PA ประเมินภาระงานของบุคลากรเปิดไม่ได้ในโหมดนี้"],
+    support: ["ยืนยันประวัติก่อนกรอกข้อตกลง", "ใช้เอกสาร PA บุคคลากร แบบ 05–11 ไม่ใช่ตารางหน่วยอาจารย์", "น้ำหนักรวม 100 เกณฑ์ 5 ระดับ ตาม rubrics สายสนับสนุน", "ติดตามกลางปีด้วยแบบ 06 · รายงานผลด้วยแบบ 07", "สรุปคะแนน 09 · แจ้งผล 08 · คำมั่น 11 · IDP ผู้ปฏิบัติ/ผู้อนุมัติ", "การ์ด PA ภาระงานอาจารย์เปิดไม่ได้ในโหมดนี้"],
+    committee: ["เข้าจากรายชื่อผู้รับการประเมิน (UM-01)", "ให้ความเห็น PA / CC / FC เมื่อส่งรายงานแล้ว", "ส่งให้ประธาน — ไม่ใช่คะแนนหลัก", "ไม่มีหน้ากรอกข้อตกลง และไม่อนุมัติ"],
+    chair: ["ค้นผู้รับการประเมินแล้วเข้ากำหนดตัวชี้วัด", "อนุมัติ/ไม่อนุมัติข้อตกลงเมื่อสถานะขออนุมัติ", "ให้คะแนน PA 80 + CC 20 แล้วส่งคะแนน", "ประเมิน IDP เป็นไปตามที่คาดหวัง / ไม่เป็นไป", "ไม่กรอกภาระงานแทนผู้รับการประเมิน"],
+    hr: ["สร้างรอบและปฏิทินของส่วนงาน", "ตรวจชุดประเมิน PA IDP CC FC MC ให้ครบตามตำแหน่ง", "นำเข้ากรรมการ · ติดตามตามปฏิทิน", "ไม่ให้คะแนนและไม่กรอก PA"],
+    admin: ["นำเข้าโครงสร้างส่วนงาน บุคลากร ผู้บังคับบัญชา", "ให้คำปรึกษาการใช้ระบบ", "ไม่ใช่ผู้ประเมิน"]
+  };
+  return chrome(`
+    <h1 class="page-title">การช่วยเหลือ · ${esc(a.roleLabel)}</h1>
+    <div class="card">
+      <p>${esc(a.hint)}</p>
+      <ul>${(blocks[a.id] || []).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+    </div>`);
+}
+
+function viewEvalHome() {
+  if (!isEval() && !isHr()) {
+    return chrome(`<div class="warn-box">หน้ารายชื่อผู้รับการประเมินเป็นของกรรมการ ประธาน และฝ่ายบุคคลากร</div>
+      <button class="btn-navy" data-go="home">กลับหน้าหลักของโหมดนี้</button>`);
+  }
+  const rows = RATEES.map((r) => {
+    const st = r.id === "support" ? S.supportStatus : S.paStatus;
+    const idp = r.id === "support" ? S.supportIdpStatus : S.idpStatus;
+    return `<tr>
+      <td>${esc(r.name)}</td>
+      <td>${esc(r.position)}<div class="hint">${esc(r.type)}</div></td>
+      <td>${statusPill(st)}</td>
+      <td>${statusPill(idp)}</td>
+      <td>
+        <button class="act" data-focus="${r.id}" data-go="${isCommittee() ? "competency" : "pa"}">${isChair() ? "เปิดข้อตกลง" : "ให้ความเห็น"}</button>
+        ${isChair() ? `<button class="act" data-focus="${r.id}" data-go="competency">ให้คะแนน</button>
+        <button class="act" data-focus="${r.id}" data-go="idp">IDP</button>` : ""}
+      </td>
+    </tr>`;
+  }).join("");
+  return chrome(`
+    <p class="crumb">${esc(account().roleLabel)} · รายชื่อ</p>
+    <h1 class="page-title">ผู้รับการประเมินในความดูแล</h1>
+    <div class="card">
+      <p class="hint">เลือกคนก่อน แล้วระบบจะเปิดหน้าที่ของโหมดนี้เท่านั้น · ปีงบประมาณ ${esc(S.year)}</p>
+      <table class="data">
+        <thead><tr><th>ชื่อ</th><th>ตำแหน่ง</th><th>สถานะ PA</th><th>สถานะ IDP</th><th>Action</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`);
+}
+
+function viewAdminPeople() {
+  return chrome(`
+    <p class="crumb">${isAdmin() ? "Admin มหาวิทยาลัย" : "ฝ่ายบุคคลากร"} · โครงสร้าง</p>
+    <h1 class="page-title">โครงสร้างส่วนงานและบุคลากร</h1>
+    <div class="card">
+      <table class="data">
+        <thead><tr><th>รหัส</th><th>ชื่อ</th><th>ตำแหน่ง</th><th>สังกัด</th><th>บทบาทในระบบ</th><th>ชุดประเมิน</th></tr></thead>
+        <tbody>
+          <tr><td>${esc(ACCOUNTS.faculty.staffId)}</td><td>${esc(ACCOUNTS.faculty.full)}</td><td>อาจารย์</td><td>${esc(FACULTY)}</td><td>ผู้รับการประเมิน</td><td>PA, CC, IDP, FC</td></tr>
+          <tr><td>${esc(ACCOUNTS.support.staffId)}</td><td>${esc(ACCOUNTS.support.full)}</td><td>เจ้าหน้าที่บริหารงานทั่วไป</td><td>${esc(FACULTY)}</td><td>ผู้รับการประเมิน</td><td>PA, CC, IDP, FC</td></tr>
+          <tr><td>${esc(ACCOUNTS.committee.staffId)}</td><td>${esc(ACCOUNTS.committee.full)}</td><td>กรรมการประเมิน</td><td>${esc(FACULTY)}</td><td>คณะประเมิน</td><td>—</td></tr>
+          <tr><td>${esc(ACCOUNTS.chair.staffId)}</td><td>${esc(ACCOUNTS.chair.full)}</td><td>ประธานกรรมการประเมิน</td><td>${esc(FACULTY)}</td><td>ผู้ประเมิน</td><td>—</td></tr>
+          <tr><td>${esc(ACCOUNTS.hr.staffId)}</td><td>${esc(ACCOUNTS.hr.full)}</td><td>เจ้าหน้าที่งานการเจ้าหน้าที่</td><td>${esc(FACULTY)}</td><td>Admin ส่วนงาน</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <p class="hint">ของจริงนำเข้าจากไฟล์ที่มหาวิทยาลัยกำหนด · เดโมโชว์เฉพาะคณะสังคมฯ</p>
+    </div>`);
+}
+
+function viewAdminRound() {
+  const y = S.year;
+  const prev = String(Number(y) - 1);
+  return chrome(`
+    <p class="crumb">${isAdmin() ? "Admin มหาวิทยาลัย" : "ฝ่ายบุคคลากร"} · รอบและปฏิทิน</p>
+    <h1 class="page-title">รอบประเมินปีงบประมาณ ${esc(y)}</h1>
+    <div class="card">
+      <div class="year-pick" style="justify-content:flex-start;margin:0 0 16px">
+        <label for="yearSel">ปีงบประมาณ</label>
+        <select id="yearSel">${yearOptions()}</select>
+      </div>
+      <table class="data">
+        <thead><tr><th>กิจกรรม</th><th>เริ่ม</th><th>สิ้นสุด</th></tr></thead>
+        <tbody>
+          <tr><td>จัดทำข้อตกลง PA</td><td>1 ต.ค. ${esc(prev)}</td><td>31 ต.ค. ${esc(prev)}</td></tr>
+          <tr><td>รายงานผลและประเมินตนเอง</td><td>1 ก.ย. ${esc(y)}</td><td>15 ก.ย. ${esc(y)}</td></tr>
+          <tr><td>กรรมการ / ประธานให้คะแนน</td><td>16 ก.ย. ${esc(y)}</td><td>30 ก.ย. ${esc(y)}</td></tr>
+          <tr><td>รับทราบผล</td><td>1 ต.ค. ${esc(y)}</td><td>15 ต.ค. ${esc(y)}</td></tr>
+          <tr><td>จัดทำ IDP</td><td>16 ต.ค. ${esc(y)}</td><td>31 ต.ค. ${esc(y)}</td></tr>
+        </tbody>
+      </table>
+      <p class="hint">ข้าราชการ/ลูกจ้าง 2 รอบต่อปี · พนักงานมหาวิทยาลัย 1 รอบ · เดโมเลือกได้ปี 2569 และ 2570</p>
+    </div>`);
+}
+
+function viewPeriod() {
+  if (isHr() || isAdmin()) {
+    return chrome(`<div class="warn-box">ฝ่ายบุคคลากรและ Admin ไม่จัดทำข้อตกลงของตนเองในหน้านี้</div>
+      <button class="btn-navy" data-go="adminRound">ไปรอบและปฏิทิน</button>`);
+  }
+  return chrome(`
+    <p class="crumb">เลือกปีงบประมาณ / รอบการประเมิน</p>
+    <h1 class="page-title">ปีงบประมาณและรอบการประเมิน</h1>
+    <div class="card">
+      <label><b>ปีงบประมาณ</b></label>
+      <select id="yearSel">${yearOptions()}</select>
+      <p class="hint">ใช้ปีงบประมาณ <b>2570</b> เป็นค่าเริ่มต้น หรือเลือก <b>2569</b> · ข้าราชการ/ลูกจ้าง มี 2 รอบต่อปี · พนักงานมหาวิทยาลัยมี 1 รอบ</p>
+      <button class="btn-navy" type="button" id="goProfile" style="margin-top:16px">${isRatee() ? "ถัดไป · ยืนยันประวัติ" : "ถัดไป · ดูผู้รับการประเมิน"}</button>
+    </div>`);
+}
+
+function viewProfile() {
+  return chrome(`
+    <p class="crumb">ยืนยันประวัติส่วนตัว</p>
+    <h1 class="page-title">ข้อมูลส่วนบุคคล</h1>
+    <div class="card">${profileBox()}
+      <p class="hint">${isRatee() ? "ตรวจชื่อ ตำแหน่ง สังกัดให้ถูกต้องก่อนจัดทำข้อตกลง" : "ข้อมูลของผู้รับการประเมินที่กำลังดู"}</p>
+      <button class="btn-navy" type="button" data-go="${isEval() ? "evalHome" : "modules"}" style="margin-top:12px">${isRatee() ? "ยืนยันและเข้าวงจรประเมิน" : "กลับรายชื่อ"}</button>
+    </div>`);
+}
+
+function viewRounds() {
+  return chrome(`
+    <p class="crumb">KPI / รอบประเมิน</p>
+    <h1 class="page-title">รอบประเมินปีงบประมาณ ${esc(S.year)}</h1>
+    <div class="card">
+      <table class="data">
+        <thead><tr><th>Action</th><th>รอบ</th><th>สถานะรอบการประเมิน</th><th>แบบ</th></tr></thead>
+        <tbody><tr>
+          <td><button class="act" data-go="formset">รายละเอียด</button>
+              <button class="act" data-go="modules">รอบประเมิน</button></td>
+          <td>${esc(S.round)} · ${esc(FACULTY)}</td>
+          <td><span class="pill pill-pink">กำลังดำเนินการ</span></td>
+          <td>พนักงานมหาวิทยาลัย</td>
+        </tr></tbody>
+      </table>
+    </div>`);
+}
+
+function viewFormset() {
+  const tot = currentTotal(true);
+  const who = rateeAccount();
+  return chrome(`
+    <p class="crumb">KPI / รอบการประเมิน / ชุดประเมิน</p>
+    <h1 class="page-title">${esc(S.round)} - ชุดประเมิน</h1>
+    ${profileBox(who)}
+    <div class="card">
+      <p>รายการทั้งหมด 4 · ของ ${esc(who.full)}</p>
+      <table class="data">
+        <thead><tr><th>Action</th><th>รหัส</th><th>ชื่อผู้ถูกประเมิน</th><th>ชื่อแบบประเมิน</th><th>แบบ</th></tr></thead>
+        <tbody>
+          ${[["pa", "แบบประเมินข้อตกลง PA", "PA"], ["idp", "แบบแผนพัฒนาตนเอง", "IDP"], ["competency", "แบบประเมินสมรรถนะหลัก", "CC"], ["competency", "แบบประเมินสมรรถนะตามสายอาชีพ", "FC"]].map(([go, name, code]) => `
+          <tr>
+            <td>
+              ${isHr() || isAdmin() ? `<button class="act" data-go="${go}">ตรวจชุด</button>` : ""}
+              ${isRatee() ? `<button class="act" data-go="${go}">${code === "IDP" || code === "PA" ? "กำหนดตัวชี้วัด" : "ประเมินผล"}</button>` : ""}
+              ${isEval() ? `<button class="act" data-go="${go}">${isChair() && go === "pa" ? "อนุมัติ / กำหนดตัวชี้วัด" : "ประเมินผล"}</button>` : ""}
+            </td>
+            <td>${esc(who.staffId)}</td><td>${esc(who.full)}</td>
+            <td>${esc(name)}</td><td>${esc(code)}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+      <p style="margin:12px 0 0">ผลการประเมิน : PA ${C.fmtScore(tot.pa)} คะแนน , CC ${C.fmtScore(tot.cc)} คะแนน , รวม ${C.fmtScore(tot.total)} คะแนน
+        · ${statusPill(paStatus())}</p>
+    </div>`);
+}
+
+function viewModules() {
+  if (isHr() || isAdmin()) {
+    return chrome(`<div class="warn-box">วงจรประเมินเป็นของผู้อยู่ในรอบ ไม่ใช่หน้าที่ฝ่ายบุคคลากร/Admin</div>
+      <button class="btn-navy" data-go="formset">ไปชุดประเมิน</button>`);
+  }
+  const list = currentModules();
+  const staff = track() === "support";
+  const cards = list.map((m) => {
+    const allowed = moduleAllowed(m);
+    const open = canOpen(m);
+    const dis = allowed && open ? "" : "disabled";
+    let why = "";
+    if (!allowed) why = isCommittee() ? "โมดูลนี้ไม่ใช่หน้าที่กรรมการ" : isRatee() && m.id === "idpEval" ? "ประเมิน IDP เป็นหน้าที่ผู้อนุมัติ" : "ไม่ใช่หน้าที่ของโหมดนี้";
+    else if (!open) why = "ยังไม่ถึงขั้นตอนนี้";
+    return `<button class="mod" type="button" data-go="${m.id}" ${dis}>
+      ${esc(m.title)}${m.sub ? `<small>${esc(m.sub)}</small>` : ""}
+      ${why ? `<small class="mod-why">${esc(why)}</small>` : ""}
+    </button>`;
+  }).join("");
+  const who = rateeAccount();
+  return chrome(`
+    <div class="pms-home">
+      <div class="left">
+        <h1>PA</h1>
+        <p>${staff ? "วงจร PA บุคคลากร" : "วงจร PA อาจารย์"} · ${staff ? "เอกสารสายสนับสนุน" : "ประกาศค่าน้ำหนัก / SHPA"}</p>
+        <p class="hint" style="margin-top:18px">${esc(who.full)} · ${esc(who.position)}<br>${esc(FACULTY)}<br>ปีงบประมาณ ${esc(S.year)}</p>
+        <p>PA ${statusPill(paStatus())} · IDP ${statusPill(idpStatus())}</p>
+      </div>
+      <div class="mods">${cards}</div>
+    </div>`);
+}
+
+function criteriaOptions(gid, selected) {
+  return (C.CATALOG[gid] || []).map((c) =>
+    `<option value="${esc(c.id)}" ${c.id === selected ? "selected" : ""}>${esc(c.label)}</option>`
+  ).join("");
+}
+
+function extraFields(t, g, lock) {
+  const c = C.findCrit(g.id, t.criteriaId);
+  const dis = lock ? "disabled" : "";
+  if (!c || !c.id) return "";
+  let html = "";
+  if (c.kind === "pub") {
+    html += `<select data-pa="t:${t.id}:role" ${dis}>${C.ROLES.map((r) =>
+      `<option value="${r.id}" ${t.role === r.id ? "selected" : ""}>${esc(r.label)}</option>`).join("")}</select>`;
+    html += `<label class="chk"><input type="checkbox" data-pa="t:${t.id}:inDb" ${t.inDb ? "checked" : ""} ${dis}/> ปรากฏในฐานข้อมูลแล้ว</label>`;
+    html += `<label class="chk"><input type="checkbox" data-pa="t:${t.id}:withStudent" ${t.withStudent ? "checked" : ""} ${dis}/> ตีพิมพ์ร่วมกับนักศึกษา</label>`;
+  }
+  if (c.kind === "grant_th" || c.kind === "grant_en" || c.kind === "grant_mu") {
+    html += `<select data-pa="t:${t.id}:role" ${dis}>${C.ROLES.map((r) =>
+      `<option value="${r.id}" ${t.role === r.id ? "selected" : ""}>${esc(r.label)}</option>`).join("")}</select>`;
+    html += `<input type="number" data-pa="t:${t.id}:amount" value="${esc(t.amount)}" placeholder="จำนวนเงิน (บาท)" ${dis} />`;
+  }
+  if (c.kind === "hours") {
+    html += `<input type="number" data-pa="t:${t.id}:hours" value="${esc(t.hours)}" placeholder="จำนวนชั่วโมง" ${dis} />`;
+  }
+  if (c.kind === "count") {
+    html += `<input type="number" data-pa="t:${t.id}:qty" value="${esc(t.qty)}" placeholder="จำนวน" ${dis} />`;
+  }
+  return html;
+}
+
+function viewPA() {
+  if (track() === "support") return viewSupportPA();
+  const lock = !canEditAgreement();
+  const chairOn = canApproveAgreement();
+  const w = checkWeight();
+  const wcls = w === 100 ? "" : "warn";
+  const rows = [];
+  S.groups.forEach((g) => {
+    const meta = C.GROUPS.find((x) => x.id === g.id);
+    const units = C.groupUnits(S.groups, g.id);
+    rows.push(`<tr class="g"><td></td><td>${esc(meta.title)}</td>
+      <td colspan="6">${esc(meta.name)} · น้ำหนักตามประกาศ ${meta.pct}% (เพดาน ${meta.cap} หน่วย) · ได้ ${C.fmtUnit(units)} หน่วย</td>
+      <td>${canEditAgreement() ? `<button class="iconbtn add" type="button" data-add-ag="${g.id}">+</button>` : ""}</td></tr>`);
+    g.agreements.forEach((a) => {
+      rows.push(`<tr class="a"><td>${canEditAgreement() ? `<button class="iconbtn" type="button" data-del-ag="${g.id}:${a.id}">−</button>` : ""}</td>
+        <td>ข้อตกลง ${esc(a.code)}</td>
+        <td colspan="7"><input data-pa="a:${a.id}:title" value="${esc(a.title)}" ${lock ? "disabled" : ""} /></td></tr>`);
+      a.kpis.forEach((k) => {
+        rows.push(`<tr class="k"><td></td><td>ตัวชี้วัด ${esc(k.code)}</td>
+          <td colspan="7"><input data-pa="k:${k.id}:title" value="${esc(k.title)}" ${lock ? "disabled" : ""} /></td></tr>`);
+        k.targets.forEach((t) => {
+          const cal = C.calcTarget(t, g.id);
+          const self = C.effectiveScore(t, g.id);
+          rows.push(`<tr>
+            <td></td>
+            <td>เป้าหมาย ${esc(t.code)}</td>
+            <td>
+              <input data-pa="t:${t.id}:title" value="${esc(t.title)}" ${lock ? "disabled" : ""} />
+              <div class="extra">${extraFields(t, g, lock)}
+                ${cal.blocked === "student" ? `<div class="warn-box">ผลงานร่วมนักศึกษาไม่นับในยุทธศาสตร์</div>` : ""}
+                ${cal.blocked === "db" ? `<div class="warn-box">ต้องปรากฏในฐานข้อมูลก่อนจึงคิดหน่วย</div>` : ""}
+              </div>
+            </td>
+            <td><select data-pa="t:${t.id}:kpiType" ${lock ? "disabled" : ""}>${C.KPI_TYPES.map((x) =>
+              `<option value="${x.id}" ${t.kpiType === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select></td>
+            <td><input type="number" data-pa="t:${t.id}:weight" value="${esc(t.weight)}" ${lock ? "disabled" : ""} /></td>
+            <td><select data-pa="t:${t.id}:criteriaId" ${lock ? "disabled" : ""}>${criteriaOptions(g.id, t.criteriaId)}</select>
+              <div class="hint">เกณฑ์ 5 ระดับ: สูงกว่า 9–10 · ตามเป้า 7–8 · ใกล้เคียง 5–6 · ต่ำกว่า 3–4 · ต่ำกว่ามาก 0–2</div></td>
+            <td>${chairOn ? `<select data-pa="t:${t.id}:approved">
+              <option value="wait" ${t.approved === "wait" ? "selected" : ""}>รออนุมัติ</option>
+              <option value="yes" ${t.approved === "yes" ? "selected" : ""}>อนุมัติ</option>
+              <option value="no" ${t.approved === "no" ? "selected" : ""}>ไม่อนุมัติ</option>
+            </select>` : `<span class="pill pill-gray">${t.approved === "yes" ? "อนุมัติ" : t.approved === "no" ? "ไม่อนุมัติ" : "รออนุมัติ"}</span>`}</td>
+            <td>
+              <div class="auto">${C.fmtUnit(cal.units)} หน่วย</div>
+              <div class="auto">คะแนน ${C.fmtScore(self)}</div>
+            </td>
+            <td>${chairOn ? `<input data-pa="t:${t.id}:approveReason" value="${esc(t.approveReason)}" placeholder="ความคิดเห็นผู้อนุมัติ" />` : esc(t.approveReason || "—")}</td>
+          </tr>`);
+        });
+      });
+    });
+  });
+
+  const chairBar = chairOn ? `
+    <div class="card chair-only">
+      <h3>ประธานพิจารณาข้อตกลง</h3>
+      <p>ตรวจรวมร้อยละค่าน้ำหนัก แล้วอนุมัติทีละข้อ หรือกดอนุมัติทั้งหมด · ถ้าจะส่งกลับแก้ เปลี่ยนเป็นไม่อนุมัติแล้วใส่เหตุผล</p>
+      <textarea id="rejectReason" placeholder="เหตุผลกรณีไม่อนุมัติ">${esc(S.paReject)}</textarea>
+      <div class="footbar">
+        <button class="btn-ok" type="button" id="btnApproveAll">อนุมัติทั้งหมด</button>
+        <button class="btn-danger" type="button" id="btnReject">ไม่อนุมัติ / ส่งกลับ</button>
+      </div>
+    </div>` : "";
+
+  const reject = (track() === "support" ? S.supportReject : S.paReject);
+  return chrome(`
+    <p class="crumb">ชุดประเมิน / แบบประเมินข้อตกลง PA · ${esc(rateeAccount().full)}</p>
+    ${isRatee() ? `<div class="toolbar">
+      <button class="btn-ghost" type="button" id="btnImport">Import Excel ชุดชี้วัด</button>
+      <button class="btn-ghost" type="button">นำเข้ารอบประเมินก่อนหน้า</button>
+    </div>` : ""}
+    <div class="pa-banner">
+      <div>
+        <h2>Performance Agreement (PA)</h2>
+        <p class="sub">การประเมินผลการปฏิบัติงาน · ${statusPill(paStatus())} · ปี ${esc(S.year)}</p>
+      </div>
+      <div class="weight-box ${wcls}">รวมร้อยละ (ค่าน้ำหนัก) ของตัวชี้วัด : ${w}</div>
+    </div>
+    ${paStatus() === "back" ? `<div class="warn-box">ส่งกลับแก้ไข: ${esc(reject)}</div>` : ""}
+    ${chairBar}
+    <div class="pa-wrap"><table class="pa">
+      <thead><tr>
+        <th>จัดการ</th><th>ลำดับ</th><th>ภารกิจ</th><th>ประเภทตัวชี้วัด</th>
+        <th>ร้อยละ (ค่าน้ำหนัก)</th><th>เกณฑ์การประเมิน</th><th>อนุมัติ</th>
+        <th>หน่วย / คะแนนตนเอง</th><th>ความคิดเห็นของผู้อนุมัติ</th>
+      </tr></thead>
+      <tbody>${rows.join("")}</tbody>
+    </table></div>
+    <div class="footbar">
+      ${canEditAgreement() ? `<button class="btn-navy" type="button" id="btnSave">บันทึกฉบับร่าง</button>
+      <button class="btn-navy" type="button" id="btnAsk">ขออนุมัติ</button>` : ""}
+      <button class="btn-ghost" type="button" data-go="${isEval() ? "evalHome" : "modules"}">กลับ</button>
+    </div>
+    <p class="hint">แบบของอาจารย์ตามเอกสาร DOC-PA.อ · หน่วยและคะแนนคำนวณจากประกาศคณะฯ พ.ศ. 2568 สายวิชาการ (ฐาน 1,820 หน่วย · PA 80 + CC 20) · ปีงบประมาณ ${esc(S.year)} · ไม่ใช้แบบข้อตกลงของบุคลากร</p>
+  `);
+}
+
+function viewSupportPA() {
+  const lock = !canEditAgreement();
+  const chairOn = canApproveAgreement();
+  const w = checkWeight();
+  const wcls = w === 100 ? "" : "warn";
+  const rows = S.supportItems.map((it) => {
+    const autoW = ((Number(it.weight) || 0) * (Number(it.kpiWeight) || 0) / 100).toFixed(2);
+    return `<tr>
+      <td>${canEditAgreement() ? `<button class="iconbtn" data-del-sup="${it.id}">−</button>` : ""}</td>
+      <td>${esc(it.no)}</td>
+      <td><select data-sup="${it.id}:workType" ${lock ? "disabled" : ""}>${C.WORK_TYPES.map((x) =>
+        `<option value="${x.id}" ${it.workType === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select></td>
+      <td><input data-sup="${it.id}:title" value="${esc(it.title)}" ${lock ? "disabled" : ""} /></td>
+      <td><input type="number" data-sup="${it.id}:weight" value="${esc(it.weight)}" ${lock ? "disabled" : ""} /></td>
+      <td><select data-sup="${it.id}:kpiType" ${lock ? "disabled" : ""}>${C.KPI_TYPES.map((x) =>
+        `<option value="${x.id}" ${it.kpiType === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select>
+        <input type="number" data-sup="${it.id}:kpiWeight" value="${esc(it.kpiWeight)}" ${lock ? "disabled" : ""} /></td>
+      <td class="auto">${autoW}</td>
+      <td><textarea data-sup="${it.id}:criteria" ${lock ? "disabled" : ""} placeholder="เกณฑ์ 5 ระดับ">${esc(it.criteria)}</textarea></td>
+      <td>${chairOn ? `<select data-sup="${it.id}:approved">
+        <option value="wait" ${it.approved === "wait" ? "selected" : ""}>รออนุมัติ</option>
+        <option value="yes" ${it.approved === "yes" ? "selected" : ""}>อนุมัติ</option>
+        <option value="no" ${it.approved === "no" ? "selected" : ""}>ไม่อนุมัติ</option>
+      </select>` : `<span class="pill pill-gray">${it.approved === "yes" ? "อนุมัติ" : it.approved === "no" ? "ไม่อนุมัติ" : "รออนุมัติ"}</span>`}</td>
+    </tr>`;
+  }).join("");
+  const chairBar = chairOn ? `
+    <div class="card chair-only">
+      <h3>ประธานพิจารณาข้อตกลงสายสนับสนุน</h3>
+      <textarea id="rejectReason" placeholder="เหตุผลกรณีไม่อนุมัติ">${esc(S.supportReject)}</textarea>
+      <div class="footbar">
+        <button class="btn-ok" type="button" id="btnApproveAll">อนุมัติทั้งหมด</button>
+        <button class="btn-danger" type="button" id="btnReject">ไม่อนุมัติ / ส่งกลับ</button>
+      </div>
+    </div>` : "";
+  return chrome(`
+    <p class="crumb">แบบประเมินข้อตกลง PA · สายสนับสนุน · ${esc(rateeAccount().full)}</p>
+    <div class="pa-banner">
+      <div>
+        <h2>Performance Agreement (PA)</h2>
+        <p class="sub">หน้า A ตาม UM-03 · ${statusPill(paStatus())} · ปี ${esc(S.year)}</p>
+      </div>
+      <div class="weight-box ${wcls}">รวมร้อยละ (ค่าน้ำหนัก) : ${w}</div>
+    </div>
+    ${paStatus() === "back" ? `<div class="warn-box">ส่งกลับแก้ไข: ${esc(S.supportReject)}</div>` : ""}
+    ${chairBar}
+    <div class="pa-wrap"><table class="pa">
+      <thead><tr>
+        <th></th><th>ลำดับ</th><th>ประเภทของงาน</th><th>ข้อตกลง (ภาระงาน)</th>
+        <th>ค่าน้ำหนัก</th><th>ตัวชี้วัด / น้ำหนักตัวชี้วัด</th><th>ร้อยละน้ำหนัก</th>
+        <th>เกณฑ์ 5 ระดับ</th><th>อนุมัติ</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <div class="footbar">
+      ${canEditAgreement() ? `<button class="btn-teal" type="button" id="btnAddSup">เพิ่มข้อตกลง</button>
+      <button class="btn-navy" type="button" id="btnSave">บันทึกฉบับร่าง</button>
+      <button class="btn-navy" type="button" id="btnAsk">ขออนุมัติ</button>` : ""}
+      <button class="btn-ghost" type="button" data-go="${isEval() ? "evalHome" : "modules"}">กลับ</button>
+    </div>
+    <p class="hint">แบบของบุคลากรตามเอกสาร PA บุคคลากร: ข้อตกลง 05 · ติดตาม 06 · รายงานผล 07 · แจ้งผล 08 · สรุปคะแนน 09 · คำมั่น 11 · IDP ผู้ปฏิบัติ/ผู้อนุมัติ · น้ำหนักรวม 100 · ประกาศหน่วย 1,820 ของอาจารย์ไม่ใช้กับหน้านี้</p>
+  `);
+}
+
+function viewFollow() {
+  if (track() !== "support") {
+    return chrome(`<div class="warn-box">แบบติดตามผลการปฏิบัติงาน (แบบ 06) เป็นของบุคลากรสายสนับสนุน</div>
+      <button class="btn-navy" data-go="home">กลับหน้าหลักระบบงาน</button>`);
+  }
+  if (!canOpen({ need: "approved" })) {
+    return chrome(`<div class="warn-box">ติดตามผลได้เมื่อประธานอนุมัติข้อตกลงแล้ว</div>
+      <button class="btn-navy" data-go="pa">ไปแบบข้อตกลง 05</button>`);
+  }
+  const lock = !isRatee() && !isChair();
+  const rows = supportFollowRows().map(({ it, row }) => `<tr>
+    <td>${esc(it.no)}</td>
+    <td>${esc(it.title)}</td>
+    <td><input data-fol="${row.id}:progress" value="${esc(row.progress)}" placeholder="ความก้าวหน้า %" ${lock ? "disabled" : ""} /></td>
+    <td><textarea data-fol="${row.id}:problem" ${lock ? "disabled" : ""} placeholder="ปัญหา / อุปสรรค">${esc(row.problem)}</textarea></td>
+    <td><textarea data-fol="${row.id}:help" ${lock ? "disabled" : ""} placeholder="ความช่วยเหลือที่ต้องการ">${esc(row.help)}</textarea></td>
+  </tr>`).join("");
+  return chrome(`
+    <p class="crumb">PA บุคคลากร · แบบ 06 · ${esc(rateeAccount().full)}</p>
+    <h1 class="page-title">แบบติดตามผลการปฏิบัติงาน</h1>
+    <p class="hint">ตามเอกสาร PA บุคคลากร แบบ 06 · ไม่ใช่แบบรายงานผลปลายปี และไม่ใช่ตารางหน่วยอาจารย์</p>
+    <div class="pa-wrap"><table class="pa" style="min-width:1100px">
+      <thead><tr><th>ลำดับ</th><th>ข้อตกลง</th><th>ความก้าวหน้า</th><th>ปัญหาอุปสรรค</th><th>ความช่วยเหลือ</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <div class="footbar">
+      ${isRatee() || isChair() ? `<button class="btn-navy" type="button" id="btnSaveFollow">บันทึกการติดตาม</button>` : ""}
+      <button class="btn-ghost" data-go="modules">กลับวงจรบุคคลากร</button>
+    </div>`);
+}
+
+function viewScoreSum() {
+  if (track() !== "support") {
+    return chrome(`<div class="warn-box">แบบสรุปคะแนน (แบบ 09) เป็นของบุคลากรสายสนับสนุน</div>
+      <button class="btn-navy" data-go="report">ไปรายงานอาจารย์</button>`);
+  }
+  if (!canOpen({ need: "chair" })) {
+    return chrome(`<div class="warn-box">สรุปคะแนนได้เมื่อประธานส่งคะแนนแล้ว</div>
+      <button class="btn-navy" data-go="competency">ไปประเมินสมรรถนะ</button>`);
+  }
+  const tot = currentTotal(true);
+  const rows = S.supportItems.map((it) => `<tr>
+    <td>${esc(it.no)}</td><td>${esc(it.title)}</td><td>${esc(it.weight)}</td>
+    <td>${C.fmtScore(it.selfScore)}</td><td>${C.fmtScore(it.chairScore)}</td>
+  </tr>`).join("");
+  return chrome(`
+    <p class="crumb">PA บุคคลากร · แบบ 09 · ${esc(rateeAccount().full)}</p>
+    <h1 class="page-title">แบบสรุปคะแนนผลการประเมินการปฏิบัติงาน</h1>
+    ${profileBox()}
+    <div class="card">
+      <table class="data">
+        <thead><tr><th>ลำดับ</th><th>ข้อตกลง</th><th>น้ำหนัก</th><th>ตนเอง</th><th>ประธาน</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p class="score-big">${C.fmtScore(tot.total)} คะแนน · ${esc(tot.level)}</p>
+      <table class="data">
+        <tr><td>ผลการปฏิบัติงาน (Performance)</td><td>80</td><td>${C.fmtScore(tot.pa)}</td></tr>
+        <tr><td>สมรรถนะหลัก (Core Competency)</td><td>20</td><td>${C.fmtScore(tot.cc)}</td></tr>
+        <tr><td>รวม</td><td>100</td><td>${C.fmtScore(tot.total)}</td></tr>
+      </table>
+      <p class="hint">ระดับ: ดีเด่น 90–100 · ดีมาก 80–89.99 · ดี 70–79.99 · พอใช้ 60–69.99 · ควรปรับปรุง ต่ำกว่า 60</p>
+    </div>
+    <button class="btn-navy" data-go="ack">ไปแบบสรุปและแจ้งผล 08</button>`);
+}
+
+function viewPledge() {
+  if (track() !== "support") {
+    return chrome(`<div class="warn-box">แบบคำมั่น (แบบ 11) เป็นของบุคลากรสายสนับสนุน</div>
+      <button class="btn-navy" data-go="home">กลับหน้าหลักระบบงาน</button>`);
+  }
+  const p = S.supportPledge || { text: "", rateeSigned: false, chairSigned: false };
+  const rateeOn = isRatee();
+  const chairOn = isChair();
+  return chrome(`
+    <p class="crumb">PA บุคคลากร · แบบ 11 · ${esc(rateeAccount().full)}</p>
+    <h1 class="page-title">แบบคำมั่น ปีงบประมาณ ${esc(S.year)}</h1>
+    <div class="card">
+      <p>ผู้รับการประเมินให้คำมั่นต่อผู้บังคับบัญชาชั้นต้น ตามเอกสาร PA บุคคลากร แบบ 11</p>
+      <label>ข้อความคำมั่น</label>
+      <textarea id="pledgeText" ${rateeOn ? "" : "disabled"}>${esc(p.text)}</textarea>
+      <label class="chk"><input type="checkbox" id="pledgeRatee" ${p.rateeSigned ? "checked" : ""} ${rateeOn ? "" : "disabled"} /> ผู้รับการประเมินลงนามคำมั่น</label>
+      <label class="chk"><input type="checkbox" id="pledgeChair" ${p.chairSigned ? "checked" : ""} ${chairOn ? "" : "disabled"} /> ผู้บังคับบัญชาชั้นต้นรับทราบคำมั่น</label>
+      <div class="footbar">
+        ${rateeOn || chairOn ? `<button class="btn-navy" type="button" id="btnSavePledge">บันทึกแบบคำมั่น</button>` : ""}
+        <button class="btn-ghost" data-go="modules">กลับวงจรบุคคลากร</button>
+      </div>
+    </div>`);
+}
+
+function viewPaReport() {
+  if (!canOpen(MODULES[1])) {
+    return chrome(`<div class="warn-box">รายงานผลได้เมื่อประธานอนุมัติข้อตกลงแล้ว</div>
+      <button class="btn-navy" data-go="pa">ไปจัดทำข้อตกลง</button>`);
+  }
+  const lock = !canReportPa();
+  if (track() === "support") {
+    const rows = S.supportItems.map((it) => `<tr>
+      <td>${esc(it.no)}</td><td>${esc(it.title)}</td>
+      <td><input type="number" min="0" max="10" step="0.5" data-sup="${it.id}:selfScore" value="${esc(it.selfScore)}" ${lock ? "disabled" : ""} /></td>
+      <td>${esc(C.scaleLabel(it.selfScore))}</td>
+      <td><textarea data-sup="${it.id}:report" ${lock ? "disabled" : ""} placeholder="คำอธิบายผลการดำเนินงาน">${esc(it.report)}</textarea>
+        <input data-sup="${it.id}:file" placeholder="ชื่อไฟล์หลักฐาน" value="${esc(it.file)}" ${lock ? "disabled" : ""} /></td>
+    </tr>`).join("");
+    return chrome(`
+      <h1 class="page-title">รายงานผลการปฏิบัติงาน (PA) · สายสนับสนุน</h1>
+      ${stepperHtml()}
+      ${paLocked() ? `<div class="lock-note">ส่งรายงานผลแล้วแก้ไขไม่ได้</div>` : ""}
+      <div class="pa-wrap"><table class="pa">
+        <thead><tr><th>ลำดับ</th><th>ข้อตกลง</th><th>ประเมินตนเอง (0–10)</th><th>เกณฑ์</th><th>รายงานผล / หลักฐาน</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+      <div class="footbar">
+        ${canReportPa() ? `<button class="btn-navy" type="button" id="btnSaveReport">บันทึก</button>
+        <button class="btn-navy" type="button" id="btnSendReport">ส่งการประเมิน</button>` : ""}
+        <button class="btn-ghost" data-go="competency">ไปประเมินสมรรถนะ</button>
+      </div>`);
+  }
+  const rows = [];
+  forEachTarget((t, g) => {
+    const cal = C.calcTarget(t, g.id);
+    const self = C.effectiveScore(t, g.id);
+    rows.push(`<tr>
+      <td>${esc(t.code)}</td>
+      <td>${esc(t.title)}</td>
+      <td class="auto">${C.fmtUnit(cal.units)}</td>
+      <td><input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? self : t.selfScore)}" ${lock ? "disabled" : ""} /></td>
+      <td>${esc(C.scaleLabel(self))}</td>
+      <td><textarea data-pa="t:${t.id}:report" ${lock ? "disabled" : ""} placeholder="คำอธิบายผลการดำเนินงาน">${esc(t.report)}</textarea>
+        <input data-pa="t:${t.id}:file" placeholder="ชื่อไฟล์หลักฐาน" value="${esc(t.file)}" ${lock ? "disabled" : ""} /></td>
+    </tr>`);
+  });
+  return chrome(`
+    <p class="crumb">แบบประเมินข้อตกลง PA / ประเมินผล</p>
+    <h1 class="page-title">รายงานผลการปฏิบัติงาน (PA)</h1>
+    ${stepperHtml()}
+    ${paLocked() ? `<div class="lock-note">ส่งรายงานผลแล้วแก้ไขไม่ได้</div>` : ""}
+    <div class="pa-wrap"><table class="pa">
+      <thead><tr><th>เป้าหมาย</th><th>ภารกิจ</th><th>หน่วยภาระงาน</th><th>ประเมินตนเอง (0–10)</th><th>เกณฑ์</th><th>รายงานผล / หลักฐาน</th></tr></thead>
+      <tbody>${rows.join("")}</tbody>
+    </table></div>
+    <div class="footbar">
+      ${canReportPa() ? `<button class="btn-navy" type="button" id="btnSaveReport">บันทึก</button>
+      <button class="btn-navy" type="button" id="btnSendReport">ส่งการประเมิน</button>` : ""}
+      <button class="btn-ghost" data-go="competency">ไปประเมินสมรรถนะ</button>
+    </div>`);
+}
+
+function ccList() { return track() === "support" ? S.supportCc : S.cc; }
+function fcList() { return track() === "support" ? S.supportFc : S.fc; }
+
+function viewCompetency() {
+  const lockChair = ["chair", "ack"].includes(paStatus());
+  const selfOn = isRatee() && paStatus() === "reported";
+  const reportOn = isRatee() && !lockChair && ["approved", "reported"].includes(paStatus());
+  const comOn = canComment();
+  const chairOn = canChairScore();
+  const cc = ccList();
+  const fc = fcList();
+  const ccRows = cc.map((it, i) => `
+    <tr>
+      <td><b>${i + 1}. ${esc(it.name)}</b><div class="hint">${esc(it.full)}</div></td>
+      <td>${isRatee() ? `<textarea data-cc="${it.id}:report" ${reportOn ? "" : "disabled"} placeholder="รายงานผล">${esc(it.report)}</textarea>` : `<div>${esc(it.report || "—")}</div>`}</td>
+      <td>0–10 ตามพฤติกรรม</td>
+      <td>${selfOn || isRatee() ? `<input type="number" min="0" max="10" data-cc="${it.id}:self" value="${esc(it.self)}" ${selfOn ? "" : "disabled"} />` : C.fmtScore(it.self)}</td>
+      <td>${isCommittee() || isChair() ? `<input type="number" min="0" max="10" data-cc="${it.id}:committee" value="${esc(it.committee)}" ${comOn ? "" : "disabled"} placeholder="ความเห็น/ตัวเลข" />` : (it.committee !== "" ? C.fmtScore(it.committee) : "—")}</td>
+      <td>${isChair() ? `<input type="number" min="0" max="10" data-cc="${it.id}:chair" value="${esc(it.chair)}" ${chairOn ? "" : "disabled"} />` : (it.chair !== "" ? C.fmtScore(it.chair) : "—")}</td>
+    </tr>`).join("");
+  const fcRows = fc.map((it) => `
+    <tr>
+      <td><b>${esc(it.name)}</b></td>
+      <td>${isRatee() ? `<textarea data-fc="${it.id}:report" ${lockChair ? "disabled" : ""}>${esc(it.report)}</textarea>` : esc(it.report || "—")}</td>
+      <td>${isRatee() ? `<input type="number" min="0" max="10" data-fc="${it.id}:self" value="${esc(it.self)}" ${lockChair ? "disabled" : ""} />` : C.fmtScore(it.self)}</td>
+      <td>${isCommittee() || isChair() ? `<input type="number" min="0" max="10" data-fc="${it.id}:committee" value="${esc(it.committee)}" ${comOn ? "" : "disabled"} />` : (it.committee !== "" ? C.fmtScore(it.committee) : "—")}</td>
+      <td>${isChair() ? `<input type="number" min="0" max="10" data-fc="${it.id}:chair" value="${esc(it.chair)}" ${chairOn ? "" : "disabled"} />` : (it.chair !== "" ? C.fmtScore(it.chair) : "—")}</td>
+    </tr>`).join("");
+  const tot = currentTotal(true);
+  let paRows = "";
+  if (track() === "support") {
+    paRows = S.supportItems.map((it) => `<tr>
+      <td>${esc(it.no)} ${esc(it.title)}</td>
+      <td>${C.fmtScore(it.selfScore)}</td>
+      <td>${isCommittee() || isChair() ? `<input data-sup="${it.id}:committeeComment" value="${esc(it.committeeComment)}" ${comOn ? "" : "disabled"} />` : esc(it.committeeComment || "—")}</td>
+      <td>${isChair() ? `<input type="number" min="0" max="10" data-sup="${it.id}:chairScore" value="${esc(it.chairScore)}" ${chairOn ? "" : "disabled"} />` : C.fmtScore(it.chairScore)}</td>
+    </tr>`).join("");
+  } else {
+    forEachTarget((t, g) => {
+      const self = C.effectiveScore(t, g.id);
+      paRows += `<tr><td>${esc(t.code)} ${esc(t.title)}</td>
+        <td>${C.fmtScore(self)}</td>
+        <td>${isCommittee() || isChair() ? `<input data-pa="t:${t.id}:committeeComment" value="${esc(t.committeeComment)}" ${comOn ? "" : "disabled"} />` : esc(t.committeeComment || "—")}</td>
+        <td>${isChair() ? `<input type="number" min="0" max="10" data-pa="t:${t.id}:chairScore" value="${esc(t.chairScore)}" ${chairOn ? "" : "disabled"} />` : C.fmtScore(t.chairScore)}</td></tr>`;
+    });
+  }
+  return chrome(`
+    <p class="crumb">แบบประเมินสมรรถนะ / ประเมินผลงาน · ${esc(rateeAccount().full)}</p>
+    <h1 class="page-title">ประเมินผลงาน และประเมินสมรรถนะ</h1>
+    ${stepperHtml()}
+    <p class="hint">${isRatee() ? "โหมดผู้รับการประเมิน: กรอกรายงานผลและคะแนนตนเอง" : isCommittee() ? "โหมดกรรมการ: ให้ความเห็นแล้วส่งประธาน" : isChair() ? "โหมดประธาน: ให้คะแนนแล้วกดตรวจสอบคะแนน" : "ดูอย่างเดียว"}</p>
+    <div class="card">
+      <h3>สมรรถนะหลัก (Core Competency) · คิดคะแนน (รวม÷70)×20</h3>
+      <div class="pa-wrap"><table class="pa" style="min-width:1100px">
+        <thead><tr>
+          <th>สมรรถนะหลัก</th><th>ผลการดำเนินงาน</th><th>เกณฑ์</th>
+          <th>ประเมินตนเอง</th><th>กรรมการ</th><th>ประธาน</th>
+        </tr></thead>
+        <tbody>${ccRows}</tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h3>สมรรถนะตามสายอาชีพ (Functional Competency) · ไม่รวมใน PA 80+CC 20 · รับทราบแยก</h3>
+      <div class="pa-wrap"><table class="pa" style="min-width:900px">
+        <thead><tr><th>รายการ</th><th>รายงานผล</th><th>ตนเอง</th><th>กรรมการ</th><th>ประธาน</th></tr></thead>
+        <tbody>${fcRows}</tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h3>คะแนนผลงาน (PA)</h3>
+      <div class="pa-wrap"><table class="pa" style="min-width:900px">
+        <thead><tr><th>รายการ</th><th>ตนเอง</th><th>กรรมการ (ความเห็น)</th><th>ประธาน (0–10)</th></tr></thead>
+        <tbody>${paRows}</tbody>
+      </table></div>
+    </div>
+    <p>ผลการประเมินขณะนี้ PA ${C.fmtScore(tot.pa)} + CC ${C.fmtScore(tot.cc)} = <b>${C.fmtScore(tot.total)}</b> (${esc(tot.level)})</p>
+    <div class="footbar">
+      <button class="btn-navy" type="button" id="btnSaveComp">บันทึก</button>
+      ${isCommittee() ? `<button class="btn-gold" type="button" id="btnCommittee" ${canComment() ? "" : "disabled"}>กรรมการส่งให้ประธาน</button>` : ""}
+      ${isChair() ? `<button class="btn-navy" type="button" id="btnCheckScore" ${canChairScore() ? "" : "disabled"}>ตรวจสอบคะแนน</button>` : ""}
+      <button class="btn-ghost" data-go="${isEval() ? "evalHome" : "formset"}">กลับ</button>
+    </div>
+    ${S.modal === "score" ? scoreModal(tot) : ""}
+  `);
+}
+
+function scoreModal(tot) {
+  const sent = track() === "support" ? S.supportChairSent : S.chairSent;
+  const lock = sent || paStatus() === "chair" || paStatus() === "ack";
+  const strength = track() === "support" ? S.supportStrength : S.strength;
+  const develop = track() === "support" ? S.supportDevelop : S.develop;
+  const suggest = track() === "support" ? S.supportSuggest : S.suggest;
+  return `<div class="modal-bg"><div class="modal">
+    <h3>สรุปผลการประเมิน</h3>
+    <table>
+      <tr><th></th><th>ค่าน้ำหนัก (%)</th><th>คะแนนที่ได้</th></tr>
+      <tr><td>ผลการประเมินผลการปฏิบัติงาน (Performance)</td><td>80</td><td>${C.fmtScore(tot.pa)}</td></tr>
+      <tr><td>ผลการประเมินสมรรถนะหลัก (Core Competency)</td><td>20</td><td>${C.fmtScore(tot.cc)}</td></tr>
+      <tr><td><b>รวม</b></td><td>100</td><td class="score-big">${C.fmtScore(tot.total)}</td></tr>
+    </table>
+    <p>ระดับ: <b>${esc(tot.level)}</b> · ดีเด่น 90–100 · ดีมาก 80–89.99 · ดี 70–79.99 · พอใช้ 60–69.99 · ควรปรับปรุง ต่ำกว่า 60</p>
+    <label>จุดเด่น</label>
+    <textarea id="strength" ${lock ? "disabled" : ""}>${esc(strength)}</textarea>
+    <label>ข้อควรพัฒนา</label>
+    <textarea id="develop" ${lock ? "disabled" : ""}>${esc(develop)}</textarea>
+    <label>ข้อเสนอแนะของผู้บังคับบัญชาชั้นต้น</label>
+    <textarea id="suggest" ${lock ? "disabled" : ""}>${esc(suggest)}</textarea>
+    <div class="footbar">
+      <button class="btn-ghost" type="button" id="closeModal">ยกเลิก</button>
+      <button class="btn-navy" type="button" id="btnSendScore" ${lock ? "disabled" : ""}>ส่งคะแนน</button>
+    </div>
+  </div></div>`;
+}
+
+function viewAck() {
+  if (!canOpen(MODULES[3])) {
+    return chrome(`<div class="warn-box">รับทราบได้เมื่อประธานส่งคะแนนแล้ว</div>
+      <button class="btn-navy" data-go="competency">ไปประเมินผลงานและสมรรถนะ</button>`);
+  }
+  const tot = currentTotal(true);
+  const locked = paStatus() === "ack";
+  const disagree = track() === "support" ? S.supportDisagree : S.paDisagree;
+  const strength = track() === "support" ? S.supportStrength : S.strength;
+  const develop = track() === "support" ? S.supportDevelop : S.develop;
+  const suggest = track() === "support" ? S.supportSuggest : S.suggest;
+  const fcAck = track() === "support" ? S.supportFcAck : S.fcAck;
+  return chrome(`
+    <p class="crumb">แจ้งผลและรับทราบ</p>
+    <h1 class="page-title">แจ้งผลและรับทราบผลการประเมินการปฏิบัติงาน</h1>
+    ${stepperHtml()}
+    ${paStatus() === "disagree" ? `<div class="warn-box">เหตุผลพนักงานไม่ยินยอม : ${esc(disagree)}</div>` : ""}
+    ${profileBox()}
+    <div class="card">
+      <h3>สรุปคะแนน</h3>
+      <p>PA ${C.fmtScore(tot.pa)} + CC ${C.fmtScore(tot.cc)} = <b>${C.fmtScore(tot.total)}</b> ระดับ ${esc(tot.level)}</p>
+      <p>จุดเด่น: ${esc(strength) || "-"}</p>
+      <p>ข้อควรพัฒนา: ${esc(develop) || "-"}</p>
+      <p>ข้อเสนอแนะ: ${esc(suggest) || "-"}</p>
+      <p class="hint">คลิกรับทราบในแบบ PA หรือ CC = รับทราบทั้งสองแบบพร้อมกัน · FC รับทราบแยก</p>
+    </div>
+    ${isRatee() ? `<div class="card">
+      <label>กรณีไม่เห็นด้วย ต้องระบุเหตุผลละเอียดชัดเจน</label>
+      <textarea id="disagreeReason" ${locked ? "disabled" : ""}>${esc(disagree)}</textarea>
+      <div class="footbar">
+        <button class="btn-ok" type="button" id="btnAck" ${locked ? "disabled" : ""}>รับทราบ</button>
+        <button class="btn-danger" type="button" id="btnDisagree" ${locked ? "disabled" : ""}>ไม่เห็นด้วย</button>
+        <label class="chk"><input type="checkbox" id="fcAck" ${fcAck ? "checked" : ""} /> รับทราบผล FC แยก</label>
+      </div>
+    </div>` : `<p class="hint">การรับทราบเป็นหน้าที่ผู้รับการประเมิน</p>`}
+  `);
+}
+
+function viewIdp() {
+  if (isCommittee()) {
+    return chrome(`<div class="warn-box">กรรมการไม่ได้จัดทำหรืออนุมัติ IDP · เป็นหน้าที่ผู้รับการประเมินและประธาน</div>
+      <button class="btn-navy" data-go="evalHome">กลับรายชื่อ</button>`);
+  }
+  const lock = !canEditIdp();
+  const list = currentIdp();
+  const rows = list.map((it) => `
+    <tr>
+      <td><input data-idp="${it.id}:competency" value="${esc(it.competency)}" ${lock ? "disabled" : ""} placeholder="ระบุสมรรถนะ/ทักษะ" /></td>
+      <td><input data-idp="${it.id}:behavior" value="${esc(it.behavior)}" ${lock ? "disabled" : ""} placeholder="พฤติกรรม/ผลลัพธ์ที่คาดหวัง" /></td>
+      <td><select data-idp="${it.id}:method" ${lock ? "disabled" : ""}>${C.IDP_METHODS.map((m) =>
+        `<option value="${m.id}" ${it.method === m.id ? "selected" : ""}>${esc(m.label)}</option>`).join("")}</select></td>
+      <td><input data-idp="${it.id}:detail" value="${esc(it.detail)}" ${lock ? "disabled" : ""} /></td>
+      <td><input type="date" data-idp="${it.id}:start" value="${esc(it.start)}" ${lock ? "disabled" : ""} /></td>
+      <td><input type="date" data-idp="${it.id}:end" value="${esc(it.end)}" ${lock ? "disabled" : ""} /></td>
+      <td><input type="number" data-idp="${it.id}:budget" value="${esc(it.budget)}" ${lock ? "disabled" : ""} /></td>
+      <td>${canEditIdp() ? `<button class="iconbtn" data-del-idp="${it.id}">ลบ</button>` : ""}</td>
+    </tr>`).join("");
+  const reject = track() === "support" ? S.supportIdpReject : S.idpReject;
+  return chrome(`
+    <p class="crumb">ชุดประเมิน / แบบแผนพัฒนาตนเอง · ${esc(rateeAccount().full)}</p>
+    <div class="pa-banner">
+      <div>
+        <h2>Individual Development Plan (IDP)</h2>
+        <p class="sub">แผนพัฒนารายบุคคล · ${statusPill(idpStatus())}</p>
+      </div>
+      ${canEditIdp() ? `<button class="btn-teal" type="button" id="btnAddIdp">กำหนดตัวชี้วัดสมรรถนะ</button>` : ""}
+    </div>
+    <div class="card">
+      <p>คำชี้แจง: ให้ผู้รับการพัฒนาระบุสมรรถนะ 1–2 รายการต่อปี ตกลงกับผู้บังคับบัญชาชั้นต้น วิธีพัฒนา 70 / 20 / 10</p>
+    </div>
+    ${idpStatus() === "back" ? `<div class="warn-box">ส่งกลับแก้ไข: ${esc(reject)}</div>` : ""}
+    <div class="pa-wrap"><table class="pa" style="min-width:1200px">
+      <thead><tr>
+        <th>สมรรถนะ/ทักษะที่จะได้รับการพัฒนา</th><th>พฤติกรรม / ผลลัพธ์ที่คาดหวัง</th><th>วิธีการพัฒนา</th>
+        <th>รายละเอียด</th><th>เริ่มต้น</th><th>สิ้นสุด</th><th>งบประมาณ</th><th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    ${canApproveIdp() ? `<div class="card chair-only">
+      <h3>ประธานอนุมัติ IDP</h3>
+      <textarea id="idpReject" placeholder="เหตุผลกรณีไม่อนุมัติ">${esc(reject)}</textarea>
+      <div class="footbar">
+        <button class="btn-ok" type="button" id="btnIdpYes">อนุมัติทั้งหมด</button>
+        <button class="btn-danger" type="button" id="btnIdpNo">ไม่อนุมัติ</button>
+      </div>
+    </div>` : ""}
+    <div class="footbar">
+      ${canEditIdp() ? `<button class="btn-navy" type="button" id="btnIdpDraft">บันทึกฉบับร่าง</button>
+      <button class="btn-navy" type="button" id="btnIdpAsk">ขออนุมัติ</button>` : ""}
+      <button class="btn-ghost" data-go="${isEval() ? "evalHome" : "formset"}">กลับ</button>
+    </div>`);
+}
+
+function viewIdpReport() {
+  if (!canOpen(MODULES[5])) {
+    return chrome(`<div class="warn-box">รายงานผล IDP ได้เมื่อประธานอนุมัติแผนแล้ว</div>
+      <button class="btn-navy" data-go="idp">ไปจัดทำ IDP</button>`);
+  }
+  const lock = !(isRatee() && idpStatus() === "approved");
+  const rows = currentIdp().map((it) => `
+    <tr>
+      <td>${esc(it.competency)}</td>
+      <td>${esc(it.behavior)}</td>
+      <td><textarea data-idp="${it.id}:report" ${lock ? "disabled" : ""}>${esc(it.report)}</textarea>
+        <input data-idp="${it.id}:file" value="${esc(it.file)}" placeholder="ไฟล์หลักฐาน" ${lock ? "disabled" : ""} /></td>
+    </tr>`).join("");
+  return chrome(`
+    <h1 class="page-title">รายงานผลการพัฒนารายบุคคล (IDP)</h1>
+    ${idpLocked() ? `<div class="lock-note">ส่งรายงานผลแล้วแก้ไขไม่ได้</div>` : ""}
+    <div class="pa-wrap"><table class="pa">
+      <thead><tr><th>สมรรถนะ</th><th>ผลลัพธ์ที่คาดหวัง</th><th>รายงานการพัฒนา</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <div class="footbar">
+      ${isRatee() && idpStatus() === "approved" ? `<button class="btn-navy" type="button" id="btnIdpSaveR">บันทึก</button>
+      <button class="btn-navy" type="button" id="btnIdpSendR">ส่งการประเมิน</button>` : ""}
+    </div>`);
+}
+
+function viewIdpEval() {
+  if (!isChair()) {
+    return chrome(`<div class="warn-box">ประเมิน IDP เป็นหน้าที่ประธานกรรมการเท่านั้น</div>
+      <button class="btn-navy" data-go="home">กลับหน้าหลักของโหมดนี้</button>`);
+  }
+  if (!canOpen(MODULES[6]) && idpStatus() !== "reported") {
+    return chrome(`<div class="warn-box">ประเมิน IDP ได้เมื่อผู้รับการประเมินส่งรายงานผลแล้ว</div>`);
+  }
+  const lock = !canEvalIdp();
+  return chrome(`
+    <h1 class="page-title">ประเมินผลการพัฒนารายบุคคล (IDP)</h1>
+    <p>ผลที่ประธานให้เป็นข้อความ <b>เป็นไปตามที่คาดหวัง</b> หรือ <b>ไม่เป็นไปตามที่คาดหวัง</b></p>
+    ${currentIdp().map((it) => `<div class="card"><h3>${esc(it.competency)}</h3><p>${esc(it.report) || "-"}</p>
+      <p>สถานะรายการ: ${it.result === "ok" ? "เป็นไปตามที่คาดหวัง" : it.result === "no" ? "ไม่เป็นไปตามที่คาดหวัง" : "-"}</p></div>`).join("")}
+    <div class="footbar">
+      <button class="btn-ok" type="button" id="btnIdpOk" ${lock ? "disabled" : ""}>เป็นไปตามที่คาดหวัง</button>
+      <button class="btn-danger" type="button" id="btnIdpNot" ${lock ? "disabled" : ""}>ไม่เป็นไปตามที่คาดหวัง</button>
+    </div>`);
+}
+
+function viewIdpAck() {
+  if (!canOpen(MODULES[7])) {
+    return chrome(`<div class="warn-box">รับทราบผล IDP ได้เมื่อประธานประเมินแล้ว</div>`);
+  }
+  const lock = idpStatus() === "ack" || !isRatee();
+  const disagree = track() === "support" ? S.supportIdpDisagree : S.idpDisagree;
+  return chrome(`
+    <h1 class="page-title">แจ้งผลและรับทราบผลการพัฒนารายบุคคล (IDP)</h1>
+    ${idpStatus() === "disagree" ? `<div class="warn-box">${esc(disagree)}</div>` : ""}
+    ${currentIdp().map((it) => `<div class="card"><h3>${esc(it.competency)}</h3>
+      <p>${it.result === "ok" ? "เป็นไปตามที่คาดหวัง" : it.result === "no" ? "ไม่เป็นไปตามที่คาดหวัง" : "-"}</p></div>`).join("")}
+    ${isRatee() ? `<textarea id="idpDisagree" ${lock ? "disabled" : ""} placeholder="เหตุผลกรณีไม่เห็นด้วย">${esc(disagree)}</textarea>
+    <div class="footbar">
+      <button class="btn-ok" type="button" id="btnIdpAck" ${lock ? "disabled" : ""}>รับทราบ</button>
+      <button class="btn-danger" type="button" id="btnIdpDis" ${lock ? "disabled" : ""}>ไม่เห็นด้วย</button>
+    </div>` : `<p class="hint">การรับทราบเป็นหน้าที่ผู้รับการประเมิน</p>`}
+  `);
+}
+
+function viewReport() {
+  const tot = currentTotal(true);
+  const w = checkWeight();
+  const who = rateeAccount();
+  let body = "";
+  if (track() === "support") {
+    body = `<table class="data"><thead><tr><th>ลำดับ</th><th>ข้อตกลง</th><th>น้ำหนัก</th><th>ตนเอง</th><th>ประธาน</th></tr></thead><tbody>` +
+      S.supportItems.map((it) => `<tr><td>${esc(it.no)}</td><td>${esc(it.title)}</td><td>${esc(it.weight)}</td>
+        <td>${C.fmtScore(it.selfScore)}</td><td>${C.fmtScore(it.chairScore)}</td></tr>`).join("") +
+      `</tbody></table>`;
+  } else {
+    S.groups.forEach((g) => {
+      const meta = C.GROUPS.find((x) => x.id === g.id);
+      const units = C.groupUnits(S.groups, g.id);
+      body += `<h3>${esc(meta.title)} ${esc(meta.name)} · ${meta.pct}% · ${C.fmtUnit(units)} / ${meta.cap} หน่วย</h3>
+        <table class="data"><thead><tr><th>รหัส</th><th>ภารกิจ</th><th>เกณฑ์</th><th>หน่วย</th><th>ตนเอง</th><th>ประธาน</th></tr></thead><tbody>`;
+      forEachTarget((t, gg) => {
+        if (gg.id !== g.id) return;
+        const cal = C.calcTarget(t, g.id);
+        const c = C.findCrit(g.id, t.criteriaId);
+        body += `<tr><td>${esc(t.code)}</td><td>${esc(t.title)}</td><td>${esc(c ? c.label : "-")}</td>
+          <td>${C.fmtUnit(cal.units)}</td><td>${C.fmtScore(C.effectiveScore(t, g.id))}</td>
+          <td>${C.fmtScore(t.chairScore)}</td></tr>`;
+      });
+      body += `</tbody></table>`;
+    });
+  }
+  return chrome(`
+    <h1 class="page-title">รายงานและติดตามผลการดำเนินการ · ปี ${esc(S.year)}</h1>
+    <div class="toolbar">
+      <button class="btn-navy" type="button" onclick="window.print()">พิมพ์รายงาน 2 หน้า</button>
+    </div>
+    <section class="print-page card">
+      <h2>หน้า 1 สรุปผล</h2>
+      ${profileBox(who)}
+      <p>น้ำหนักข้อตกลงรวม ${w} · สถานะ PA ${statusPill(paStatus())} · IDP ${statusPill(idpStatus())}</p>
+      <p class="score-big">${C.fmtScore(tot.total)} คะแนน · ${esc(tot.level)}</p>
+      <table class="data">
+        <tr><td>Performance (PA)</td><td>80</td><td>${C.fmtScore(tot.pa)}</td></tr>
+        <tr><td>Core Competency (CC)</td><td>20</td><td>${C.fmtScore(tot.cc)}</td></tr>
+        <tr><td>รวม</td><td>100</td><td>${C.fmtScore(tot.total)}</td></tr>
+      </table>
+    </section>
+    <section class="print-page card">
+      <h2>หน้า 2 ตารางรายการ</h2>
+      ${body}
+      <h3>CC 7 ข้อ</h3>
+      <ul>${ccList().map((x) => `<li>${esc(x.name)} · ตนเอง ${C.fmtScore(x.self)} · ประธาน ${C.fmtScore(x.chair)}</li>`).join("")}</ul>
+      <h3>IDP</h3>
+      <ul>${currentIdp().map((x) => `<li>${esc(x.competency)} · ${x.result === "ok" ? "เป็นไปตามที่คาดหวัง" : x.result === "no" ? "ไม่เป็นไปตามที่คาดหวัง" : "-"}</li>`).join("")}</ul>
+    </section>`);
+}
+
+function render() {
+  const root = document.getElementById("app");
+  const v = S.loggedIn ? (S.view || "home") : "login";
+  const map = {
+    login: viewLogin, home: viewHome, period: viewPeriod, profile: viewProfile, rounds: viewRounds,
+    formset: viewFormset, modules: viewModules, pa: viewPA, paReport: viewPaReport,
+    competency: viewCompetency, ack: viewAck, idp: viewIdp, idpReport: viewIdpReport,
+    idpEval: viewIdpEval, idpAck: viewIdpAck, report: viewReport,
+    evalHome: viewEvalHome, adminPeople: viewAdminPeople, adminRound: viewAdminRound,
+    leave: viewLeave, time: viewTime, help: viewHelp,
+    paStaff: viewPaStaff, follow: viewFollow, scoreSum: viewScoreSum, pledge: viewPledge
+  };
+  root.innerHTML = (map[v] || viewHome)();
+  bind();
+}
+
+function readCcFc() {
+  const cc = ccList();
+  const fc = fcList();
+  document.querySelectorAll("[data-cc]").forEach((el) => {
+    const [id, field] = el.dataset.cc.split(":");
+    const it = cc.find((x) => x.id === id);
+    if (it) it[field] = el.value;
+  });
+  document.querySelectorAll("[data-fc]").forEach((el) => {
+    const [id, field] = el.dataset.fc.split(":");
+    const it = fc.find((x) => x.id === id);
+    if (it) it[field] = el.value;
+  });
+}
+
+function bind() {
+  document.querySelectorAll("[data-lock]").forEach((b) => {
+    b.addEventListener("click", () => toast(b.getAttribute("data-lock")));
+  });
+  document.querySelectorAll("[data-go]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const id = b.getAttribute("data-go");
+      const focus = b.getAttribute("data-focus");
+      if (focus) S.focus = focus;
+      if (id === "home") { go("home"); return; }
+      if (["period", "profile", "modules", "pa", "paReport", "follow", "scoreSum", "pledge", "ack", "idp", "idpReport", "idpAck", "competency", "paStaff"].includes(id)) {
+        if (isRatee() && S.focus !== account().track) S.focus = account().track;
+      }
+      const mod = currentModules().find((m) => m.id === id);
+      if (mod && !moduleAllowed(mod)) { toast("โมดูลนี้ไม่ใช่หน้าที่ของโหมด " + account().roleLabel); return; }
+      if (mod && isRatee() && !canOpen(mod) && !["pa", "idp", "report", "competency", "pledge", "follow"].includes(id)) {
+        toast("ยังไม่ถึงขั้นตอนนี้ของวงจรที่เลือก"); return;
+      }
+      go(id);
+    });
+  });
+  document.querySelectorAll("[data-enter]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const sel = document.getElementById("yearSel");
+      if (sel) setYear(sel.value);
+      enterAccount(b.getAttribute("data-enter"));
+    });
+  });
+  const yp = document.getElementById("goProfile");
+  if (yp) yp.addEventListener("click", () => {
+    const sel = document.getElementById("yearSel");
+    if (sel) setYear(sel.value);
+    persist();
+    go(isRatee() ? "profile" : "evalHome");
+  });
+  const ys = document.getElementById("yearSel");
+  if (ys) {
+    ys.addEventListener("change", () => {
+      setYear(ys.value);
+      persist();
+      toast("ใช้ปีงบประมาณ " + S.year);
+      render();
+    });
+  }
+  document.querySelectorAll("#btnOut").forEach((out) => out.addEventListener("click", logout));
+  document.querySelectorAll("#btnSwitch").forEach((sw) => sw.addEventListener("click", logout));
+  document.querySelectorAll("#btnReset").forEach((rst) => rst.addEventListener("click", resetDemo));
+
+  document.querySelectorAll("[data-add-ag]").forEach((b) => b.addEventListener("click", () => addAgreement(b.dataset.addAg)));
+  document.querySelectorAll("[data-del-ag]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const [g, a] = b.dataset.delAg.split(":");
+      removeAgreement(g, a);
+    });
+  });
+  document.querySelectorAll("[data-del-sup]").forEach((b) => {
+    b.addEventListener("click", () => {
+      if (S.supportItems.length <= 1) { toast("ต้องมีอย่างน้อย 1 ข้อ"); return; }
+      S.supportItems = S.supportItems.filter((x) => x.id !== b.dataset.delSup);
+      persist(); render();
+    });
+  });
+  const addSup = document.getElementById("btnAddSup");
+  if (addSup) addSup.addEventListener("click", () => {
+    S.supportItems.push(emptySupportItem(S.supportItems.length + 1));
+    persist(); render();
+  });
+  document.querySelectorAll("[data-pa]").forEach((el) => {
+    el.addEventListener("change", () => {
+      readPaForm();
+      persist();
+      const field = el.dataset.pa.split(":")[2];
+      if (["criteriaId", "role", "inDb", "withStudent", "amount", "hours", "qty", "weight"].includes(field)) render();
+    });
+  });
+  document.querySelectorAll("[data-sup]").forEach((el) => {
+    el.addEventListener("change", () => {
+      readSupportForm();
+      persist();
+      if (["weight", "kpiWeight", "workType"].includes(el.dataset.sup.split(":")[1])) render();
+    });
+  });
+
+  const save = document.getElementById("btnSave");
+  if (save) save.addEventListener("click", saveDraft);
+  const ask = document.getElementById("btnAsk");
+  if (ask) ask.addEventListener("click", requestApprove);
+  const ap = document.getElementById("btnApproveAll");
+  if (ap) ap.addEventListener("click", chairApproveAll);
+  const rj = document.getElementById("btnReject");
+  if (rj) rj.addEventListener("click", chairReject);
+  const imp = document.getElementById("btnImport");
+  if (imp) imp.addEventListener("click", () => toast("เดโม: กรอกในระบบตามกรณีที่ 2 ของคำแนะนำ PMS"));
+
+  const sr = document.getElementById("btnSaveReport");
+  if (sr) sr.addEventListener("click", () => {
+    if (track() === "support") readSupportForm(); else readPaForm();
+    persist(); toast("บันทึกรายงานผลแล้ว");
+  });
+  const srr = document.getElementById("btnSendReport");
+  if (srr) srr.addEventListener("click", submitSelfPA);
+
+  const sc = document.getElementById("btnSaveComp");
+  if (sc) sc.addEventListener("click", () => {
+    if (track() === "support") readSupportForm(); else readPaForm();
+    readCcFc(); persist(); toast("บันทึกสมรรถนะแล้ว"); render();
+  });
+  const cm = document.getElementById("btnCommittee");
+  if (cm) cm.addEventListener("click", submitCommittee);
+  const ck = document.getElementById("btnCheckScore");
+  if (ck) ck.addEventListener("click", openScoreDialog);
+  const cl = document.getElementById("closeModal");
+  if (cl) cl.addEventListener("click", () => { S.modal = null; persist(); render(); });
+  const ss = document.getElementById("btnSendScore");
+  if (ss) ss.addEventListener("click", sendChairScore);
+
+  const ba = document.getElementById("btnAck");
+  if (ba) ba.addEventListener("click", () => {
+    const fc = document.getElementById("fcAck");
+    if (fc) {
+      if (track() === "support") S.supportFcAck = fc.checked;
+      else S.fcAck = fc.checked;
+    }
+    ackResult(true);
+  });
+  const bd = document.getElementById("btnDisagree");
+  if (bd) bd.addEventListener("click", () => ackResult(false));
+
+  const addI = document.getElementById("btnAddIdp");
+  if (addI) addI.addEventListener("click", addIdp);
+  document.querySelectorAll("[data-del-idp]").forEach((b) => b.addEventListener("click", () => removeIdp(b.dataset.delIdp)));
+  const idd = document.getElementById("btnIdpDraft");
+  if (idd) idd.addEventListener("click", saveIdpDraft);
+  const ida = document.getElementById("btnIdpAsk");
+  if (ida) ida.addEventListener("click", requestIdp);
+  const idy = document.getElementById("btnIdpYes");
+  if (idy) idy.addEventListener("click", () => approveIdp(true));
+  const idn = document.getElementById("btnIdpNo");
+  if (idn) idn.addEventListener("click", () => approveIdp(false));
+  const ids = document.getElementById("btnIdpSaveR");
+  if (ids) ids.addEventListener("click", () => { readIdp(); persist(); toast("บันทึก"); });
+  const ide = document.getElementById("btnIdpSendR");
+  if (ide) ide.addEventListener("click", submitIdpReport);
+  const iok = document.getElementById("btnIdpOk");
+  if (iok) iok.addEventListener("click", () => evalIdp("ok"));
+  const ino = document.getElementById("btnIdpNot");
+  if (ino) ino.addEventListener("click", () => evalIdp("no"));
+  const iack = document.getElementById("btnIdpAck");
+  if (iack) iack.addEventListener("click", () => ackIdp(true));
+  const idis = document.getElementById("btnIdpDis");
+  if (idis) idis.addEventListener("click", () => ackIdp(false));
+
+  const sf = document.getElementById("btnSaveFollow");
+  if (sf) sf.addEventListener("click", () => {
+    document.querySelectorAll("[data-fol]").forEach((el) => {
+      const [id, field] = el.dataset.fol.split(":");
+      const row = (S.supportFollow || []).find((x) => x.id === id);
+      if (row) row[field] = el.value;
+    });
+    persist();
+    toast("บันทึกแบบติดตาม 06 แล้ว");
+  });
+  const sp = document.getElementById("btnSavePledge");
+  if (sp) sp.addEventListener("click", () => {
+    S.supportPledge = S.supportPledge || {};
+    const t = document.getElementById("pledgeText");
+    const r = document.getElementById("pledgeRatee");
+    const c = document.getElementById("pledgeChair");
+    if (t && isRatee()) S.supportPledge.text = t.value;
+    if (r && isRatee()) S.supportPledge.rateeSigned = r.checked;
+    if (c && isChair()) S.supportPledge.chairSigned = c.checked;
+    persist();
+    toast("บันทึกแบบคำมั่น 11 แล้ว");
+    render();
+  });
+}
+
+window.addEventListener("hashchange", () => {
+  const h = location.hash.replace("#", "");
+  if (!h) return;
+  if (!S.loggedIn && h !== "login") return;
+  S.view = h;
+  render();
+});
+
+(function applyQuery() {
+  const q = new URLSearchParams(location.search);
+  const view = q.get("view");
+  const seed = q.get("seed");
+  const acc = q.get("account");
+  if (acc && ACCOUNTS[acc]) {
+    S.loggedIn = true;
+    S.account = acc;
+  }
+  if (view || seed) {
+    if (!S.account) S.account = "faculty";
+    S.loggedIn = true;
+    if (seed === "approved") setPaStatus("approved");
+    if (seed === "reported") {
+      setPaStatus("reported");
+      ccList().forEach((x) => { x.self = x.self || 8; });
+    }
+    if (seed === "chair") {
+      setPaStatus("chair");
+      if (track() === "support") S.supportChairSent = true;
+      else S.chairSent = true;
+      ccList().forEach((x) => { x.self = x.self || 8; x.chair = x.chair || 8; });
+    }
+    if (seed === "idpwait") setIdpStatus("wait");
+    if (seed === "wait") setPaStatus("wait");
+    if (view) S.view = view;
+    if (q.get("modal") === "score") S.modal = "score";
+    if (q.get("focus")) S.focus = q.get("focus");
+  }
+  const h = location.hash.replace("#", "");
+  if (h && S.loggedIn) S.view = h;
+})();
+
+render();
+
+  </script>
+</body>
+</html>

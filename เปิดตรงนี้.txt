@@ -1,5 +1,4 @@
-เปิดโปรแกรม: ดับเบิลคลิก demo/index.html
-เลือกโหมดที่หน้าแรก แล้วเข้าหน้าหลักระบบงาน 7 การ์ด
-ปีงบประมาณ 2570 หรือ 2569
-PA บุคคลากร กับ PA อาจารย์ คนละแบบ
-หรือเปิด PA/demo/index.html
+ดับเบิลคลิก เปิดตรงนี้.html
+ที่อยู่บน Windows ของ Agent Store:
+C:\Users\poohl\AppData\Local\Cursor\AgentStores\cursor_agent_stores\bc-f051f2a4-d271-4275-97e3-23a68972cd53\files\docs\เปิดตรงนี้.html
+อย่าเปิดไฟล์ .zip
