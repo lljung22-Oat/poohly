@@ -1161,71 +1161,113 @@ function viewLoginAdmin() {
     </div>`);
 }
 
+function cardBtn(c) {
+  return `<button class="dash-card${c.cream ? " cream" : ""}" type="button"
+    data-go="${c.go}"${c.focus ? ` data-focus="${c.focus}"` : ""}>
+    <div class="ico">${ico(c.ico)}</div>
+    <b>${esc(c.title)}</b>
+    <small class="${c.linkish ? "linkish" : ""}">${esc(c.sub)}</small>
+  </button>`;
+}
+
+function sectionBlock(title, note, cards, tone) {
+  const cols = cards.length === 1 ? "cols-1" : cards.length === 2 ? "cols-2" : "";
+  return `<section class="sec${tone ? " sec-" + tone : ""}">
+    <header class="sec-head">
+      <h2>${esc(title)}</h2>
+      ${note ? `<p>${esc(note)}</p>` : ""}
+    </header>
+    <div class="dash-grid ${cols}">${cards.map(cardBtn).join("")}</div>
+  </section>`;
+}
+
 function dashCards(cards) {
   return `
     <div class="dash">
       <h1>หน้าหลักระบบงาน (Dashboard)</h1>
       <div class="dash-grid">
-        ${cards.map((c) => `
-          <button class="dash-card${c.cream ? " cream" : ""}" type="button"
-            data-go="${c.go}"${c.focus ? ` data-focus="${c.focus}"` : ""}>
-            <div class="ico">${ico(c.ico)}</div>
-            <b>${esc(c.title)}</b>
-            <small class="${c.linkish ? "linkish" : ""}">${esc(c.sub)}</small>
-          </button>`).join("")}
+        ${cards.map(cardBtn).join("")}
       </div>
     </div>`;
 }
 
-function hrisCards() {
-  return [
-    { go: "profile", ico: "person", title: "ข้อมูลบุคลากร", sub: "ประวัติและข้อมูลส่วนบุคคล" },
-    { go: "leave", ico: "leave", title: "ข้อมูลวันลา", sub: "สถิติและการขออนุมัติวันลา" },
-    { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" },
-    { go: "paStaff", focus: "support", ico: "clip", title: "PA ประเมินภาระงาน", sub: "ข้อตกลง PA บุคคลากร แบบ 05–09", cream: !isFaculty() },
-    { go: "period", focus: "faculty", ico: "grad", title: "PA ภาระงานอาจารย์", sub: "ข้อตกลงตามประกาศสายวิชาการ / SHPA", cream: isFaculty() },
-    { go: "competency", ico: "target", title: "Functional Competency", sub: "ประเมินสมรรถนะเฉพาะงาน", linkish: true },
-    { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคล" }
-  ];
-}
-
 function viewHome() {
   if (isFaculty() || isSupport()) {
-    return chrome(dashCards(hrisCards()));
+    return chrome(`
+    <div class="dash">
+      <h1>หน้าหลักระบบงาน (Dashboard)</h1>
+      ${sectionBlock("ข้อมูลบุคลากร", "เข้าดูประวัติ วันลา และเวลาจากกลุ่มนี้ได้เลย", [
+        { go: "profile", ico: "person", title: "ข้อมูลบุคลากร", sub: "ประวัติและข้อมูลส่วนบุคคล" },
+        { go: "leave", ico: "leave", title: "ข้อมูลวันลา", sub: "สถิติและการขออนุมัติวันลา" },
+        { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" }
+      ], "info")}
+      ${sectionBlock("PA ภาระงานอาจารย์", "กดเข้าวงจรอาจารย์ได้เลย ไม่ต้องไล่หน้าปีงบประมาณ", [
+        { go: "modules", focus: "faculty", ico: "grad", title: "วงจร PMS", sub: "ข้อตกลง · รายงานผล · สมรรถนะ · รับทราบ", cream: isFaculty() },
+        { go: "pa", focus: "faculty", ico: "clip", title: "ข้อตกลง PA", sub: "ภาระงานที่ 1–4 ตามประกาศสายวิชาการ" }
+      ], "faculty")}
+      ${sectionBlock("PA ประเมินภาระงาน", "กดเข้าวงจรบุคคลากรได้เลย แบบ 05–09", [
+        { go: "modules", focus: "support", ico: "clip", title: "วงจรบุคคลากร", sub: "ข้อตกลง 05 · ติดตาม 06 · รายงาน 07 · สรุป 09 · แจ้งผล 08", cream: isSupport() },
+        { go: "pa", focus: "support", ico: "clip", title: "ข้อตกลง 05", sub: "กรอกข้อตกลงสายสนับสนุน" }
+      ], "staff")}
+      ${sectionBlock("สมรรถนะและแผนพัฒนา", "เข้า Functional Competency หรือ IDP ได้จากกลุ่มนี้", [
+        { go: "competency", ico: "target", title: "Functional Competency", sub: "ประเมินสมรรถนะเฉพาะงาน", linkish: true },
+        { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคล" }
+      ], "dev")}
+    </div>`);
   }
   if (isCommittee()) {
-    return chrome(dashCards([
-      { go: "evalHome", ico: "people", title: "รายชื่อผู้รับการประเมิน", sub: "คนที่ตนต้องให้ความเห็น" },
-      { go: "competency", ico: "target", title: "ประเมินผล", sub: "ให้ความเห็น PA / CC / FC แล้วส่งประธาน" },
-      { go: "report", ico: "chart", title: "สอบถาม / พิมพ์รายงาน", sub: "ดูสถานะและพิมพ์รายงาน" },
-      { go: "help", ico: "clip", title: "การช่วยเหลือ", sub: "หน้าที่กรรมการตาม UM-01 และ PMS" }
-    ]));
+    return chrome(`<div class="dash"><h1>หน้าหลักระบบงาน (Dashboard)</h1>
+      ${sectionBlock("ผู้รับการประเมิน", "เลือกรายชื่อแล้วเข้าให้ความเห็นได้เลย", [
+        { go: "evalHome", ico: "people", title: "รายชื่อผู้รับการประเมิน", sub: "คนที่ตนต้องให้ความเห็น" }
+      ], "eval")}
+      ${sectionBlock("ประเมินผล", "เข้าหน้าให้ความเห็นและรายงานได้เลย", [
+        { go: "competency", ico: "target", title: "ประเมินผล", sub: "ให้ความเห็น PA / CC / FC แล้วส่งประธาน" },
+        { go: "report", ico: "chart", title: "สอบถาม / พิมพ์รายงาน", sub: "ดูสถานะและพิมพ์รายงาน" }
+      ], "dev")}
+      ${sectionBlock("การช่วยเหลือ", "", [
+        { go: "help", ico: "clip", title: "การช่วยเหลือ", sub: "หน้าที่กรรมการตาม UM-01 และ PMS" }
+      ], "info")}
+    </div>`);
   }
   if (isChair()) {
-    return chrome(dashCards([
-      { go: "evalHome", ico: "people", title: "รายชื่อผู้รับการประเมิน", sub: "อนุมัติข้อตกลงและให้คะแนน" },
-      { go: "pa", ico: "grad", title: "อนุมัติข้อตกลง PA", sub: "ตรวจน้ำหนัก 100 แล้วนุมัติหรือส่งกลับ" },
-      { go: "competency", ico: "target", title: "ให้คะแนน PA + CC", sub: "Dialog สรุป 80 + 20 = 100" },
-      { go: "idp", ico: "chart", title: "อนุมัติ / ประเมิน IDP", sub: "เป็นไปตามที่คาดหวัง หรือไม่เป็นไป" },
-      { go: "report", ico: "cal", title: "รายงานภาพรวม", sub: "ติดตามสถานะรอบปี " + S.year },
-      { go: "help", ico: "clip", title: "การช่วยเหลือ", sub: "หน้าที่ประธานตามคำแนะนำ PMS" }
-    ]));
+    return chrome(`<div class="dash"><h1>หน้าหลักระบบงาน (Dashboard)</h1>
+      ${sectionBlock("ผู้รับการประเมิน", "เปิดรายชื่อแล้วเข้าคนนั้นได้เลย", [
+        { go: "evalHome", ico: "people", title: "รายชื่อผู้รับการประเมิน", sub: "อนุมัติข้อตกลงและให้คะแนน" }
+      ], "eval")}
+      ${sectionBlock("กลุ่ม PA", "อนุมัติข้อตกลงและให้คะแนน 80+20", [
+        { go: "pa", ico: "grad", title: "อนุมัติข้อตกลง PA", sub: "ตรวจน้ำหนัก 100 แล้วนุมัติหรือส่งกลับ" },
+        { go: "competency", ico: "target", title: "ให้คะแนน PA + CC", sub: "Dialog สรุป 80 + 20 = 100" }
+      ], "faculty")}
+      ${sectionBlock("กลุ่ม IDP", "อนุมัติและประเมินแผนพัฒนา", [
+        { go: "idp", ico: "chart", title: "อนุมัติ / ประเมิน IDP", sub: "เป็นไปตามที่คาดหวัง หรือไม่เป็นไป" }
+      ], "dev")}
+      ${sectionBlock("รายงาน", "", [
+        { go: "report", ico: "cal", title: "รายงานภาพรวม", sub: "ติดตามสถานะรอบปี " + S.year },
+        { go: "help", ico: "clip", title: "การช่วยเหลือ", sub: "หน้าที่ประธานตามคำแนะนำ PMS" }
+      ], "info")}
+    </div>`);
   }
   if (isHr()) {
-    return chrome(dashCards([
-      { go: "adminRound", ico: "cal", title: "รอบและปฏิทิน", sub: "สร้างรอบปีงบประมาณ 2569 / 2570" },
-      { go: "formset", ico: "clip", title: "ชุดประเมิน", sub: "ตรวจ PA IDP CC FC ให้ครบตามตำแหน่ง" },
-      { go: "adminPeople", ico: "people", title: "บุคลากรส่วนงาน", sub: "รายชื่อและผู้บังคับบัญชาในคณะ" },
-      { go: "report", ico: "chart", title: "ติดตามตามปฏิทิน", sub: "สถานะข้อตกลงและคะแนน" },
-      { go: "help", ico: "shield", title: "การช่วยเหลือ", sub: "หน้าที่ Admin ส่วนงาน" }
-    ]));
+    return chrome(`<div class="dash"><h1>หน้าหลักระบบงาน (Dashboard)</h1>
+      ${sectionBlock("รอบและชุดประเมิน", "เข้าตั้งรอบหรือตรวจชุดได้เลย", [
+        { go: "adminRound", ico: "cal", title: "รอบและปฏิทิน", sub: "สร้างรอบปีงบประมาณ 2569 / 2570" },
+        { go: "formset", ico: "clip", title: "ชุดประเมิน", sub: "ตรวจ PA IDP CC FC ให้ครบตามตำแหน่ง" }
+      ], "info")}
+      ${sectionBlock("บุคลากรและติดตาม", "", [
+        { go: "adminPeople", ico: "people", title: "บุคลากรส่วนงาน", sub: "รายชื่อและผู้บังคับบัญชาในคณะ" },
+        { go: "report", ico: "chart", title: "ติดตามตามปฏิทิน", sub: "สถานะข้อตกลงและคะแนน" }
+      ], "staff")}
+    </div>`);
   }
-  return chrome(dashCards([
-    { go: "users", ico: "people", title: "บัญชีและสิทธิ์", sub: "สร้างผู้ใช้ ตั้งรหัส กำหนดสิทธิ์ผู้ประเมิน" },
-    { go: "adminPeople", ico: "people", title: "โครงสร้างส่วนงาน", sub: "นำเข้าส่วนงาน บุคลากร ผู้บังคับบัญชา" },
-    { go: "adminRound", ico: "cal", title: "รอบประเมินทั้งมหาวิทยาลัย", sub: "ปีงบประมาณ 2569 และ 2570" },
-    { go: "help", ico: "shield", title: "ให้คำปรึกษาการใช้ระบบ", sub: "ช่องทางผู้ดูแลระบบ" }
-  ]));
+  return chrome(`<div class="dash"><h1>หน้าหลักระบบงาน (Dashboard)</h1>
+    ${sectionBlock("บัญชีและสิทธิ์", "สร้างผู้ประเมินแล้วกำหนดสิทธิ์ได้เลย", [
+      { go: "users", ico: "people", title: "บัญชีและสิทธิ์", sub: "สร้างผู้ใช้ ตั้งรหัส กำหนดสิทธิ์ผู้ประเมิน" }
+    ], "eval")}
+    ${sectionBlock("โครงสร้างและรอบ", "", [
+      { go: "adminPeople", ico: "people", title: "โครงสร้างส่วนงาน", sub: "นำเข้าส่วนงาน บุคลากร ผู้บังคับบัญชา" },
+      { go: "adminRound", ico: "cal", title: "รอบประเมินทั้งมหาวิทยาลัย", sub: "ปีงบประมาณ 2569 และ 2570" }
+    ], "info")}
+  </div>`);
 }
 
 function viewSoon(title, sub) {
@@ -1249,7 +1291,7 @@ function viewTime() {
 function viewPaStaff() {
   S.focus = "support";
   persist();
-  return viewPeriod();
+  return viewModules();
 }
 
 function viewHelp() {
@@ -1479,10 +1521,27 @@ function viewFormset() {
 function viewModules() {
   const list = currentModules();
   const staff = track() === "support";
-  const cards = list.map((m) => {
-    return `<button class="mod" type="button" data-go="${m.id}">
-      ${esc(m.title)}${m.sub ? `<small>${esc(m.sub)}</small>` : ""}
-    </button>`;
+  const groups = staff ? [
+    { title: "กลุ่ม PA บุคคลากร", note: "แบบ 05–09 กดเข้าหน้าได้เลย", ids: ["pa", "follow", "paReport", "competency", "scoreSum", "ack"] },
+    { title: "กลุ่ม IDP", note: "ผู้ปฏิบัติและผู้อนุมัติ", ids: ["idp", "idpEval"] },
+    { title: "กลุ่มรายงาน", note: "", ids: ["report"] }
+  ] : [
+    { title: "กลุ่ม PA อาจารย์", note: "ข้อตกลงตามประกาศ / SHPA กดเข้าได้เลย", ids: ["pa", "paReport", "competency", "ack"] },
+    { title: "กลุ่ม IDP", note: "แผนพัฒนารายบุคคล", ids: ["idp", "idpReport", "idpEval", "idpAck"] },
+    { title: "กลุ่มรายงาน", note: "", ids: ["report"] }
+  ];
+  const byId = Object.fromEntries(list.map((m) => [m.id, m]));
+  const blocks = groups.map((g) => {
+    const mods = g.ids.map((id) => byId[id]).filter(Boolean);
+    if (!mods.length) return "";
+    return `<div class="mod-group">
+      <h3>${esc(g.title)}</h3>
+      ${g.note ? `<p>${esc(g.note)}</p>` : ""}
+      <div class="mods">${mods.map((m) =>
+        `<button class="mod" type="button" data-go="${m.id}">
+          ${esc(m.title)}${m.sub ? `<small>${esc(m.sub)}</small>` : ""}
+        </button>`).join("")}</div>
+    </div>`;
   }).join("");
   const who = rateeAccount();
   return chrome(`
@@ -1493,7 +1552,7 @@ function viewModules() {
         <p class="hint" style="margin-top:18px">${esc(who.full)} · ${esc(who.position)}<br>${esc(FACULTY)}<br>ปีงบประมาณ ${esc(S.year)}</p>
         <p>PA ${statusPill(paStatus())} · IDP ${statusPill(idpStatus())}</p>
       </div>
-      <div class="mods">${cards}</div>
+      <div>${blocks}</div>
     </div>`);
 }
 
@@ -1528,59 +1587,80 @@ function extraFields(t, g, lock) {
   return html;
 }
 
+function facultyGroupRows(g, lock, chairOn) {
+  const rows = [];
+  g.agreements.forEach((a) => {
+    rows.push(`<tr class="a"><td>${canEditAgreement() ? `<button class="iconbtn" type="button" data-del-ag="${g.id}:${a.id}">−</button>` : ""}</td>
+      <td>ข้อตกลง ${esc(a.code)}</td>
+      <td colspan="7"><input data-pa="a:${a.id}:title" value="${esc(a.title)}" ${lock ? "disabled" : ""} /></td></tr>`);
+    a.kpis.forEach((k) => {
+      rows.push(`<tr class="k"><td></td><td>ตัวชี้วัด ${esc(k.code)}</td>
+        <td colspan="7"><input data-pa="k:${k.id}:title" value="${esc(k.title)}" ${lock ? "disabled" : ""} /></td></tr>`);
+      k.targets.forEach((t) => {
+        const cal = C.calcTarget(t, g.id);
+        const self = C.effectiveScore(t, g.id);
+        rows.push(`<tr>
+          <td></td>
+          <td>เป้าหมาย ${esc(t.code)}</td>
+          <td>
+            <input data-pa="t:${t.id}:title" value="${esc(t.title)}" ${lock ? "disabled" : ""} />
+            <div class="extra">${extraFields(t, g, lock)}
+              ${cal.blocked === "student" ? `<div class="warn-box">ผลงานร่วมนักศึกษาไม่นับในยุทธศาสตร์</div>` : ""}
+              ${cal.blocked === "db" ? `<div class="warn-box">ต้องปรากฏในฐานข้อมูลก่อนจึงคิดหน่วย</div>` : ""}
+            </div>
+          </td>
+          <td><select data-pa="t:${t.id}:kpiType" ${lock ? "disabled" : ""}>${C.KPI_TYPES.map((x) =>
+            `<option value="${x.id}" ${t.kpiType === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select></td>
+          <td><input type="number" data-pa="t:${t.id}:weight" value="${esc(t.weight)}" ${lock ? "disabled" : ""} /></td>
+          <td><select data-pa="t:${t.id}:criteriaId" ${lock ? "disabled" : ""}>${criteriaOptions(g.id, t.criteriaId)}</select>
+            <div class="hint">เกณฑ์ 5 ระดับ: สูงกว่า 9–10 · ตามเป้า 7–8 · ใกล้เคียง 5–6 · ต่ำกว่า 3–4 · ต่ำกว่ามาก 0–2</div></td>
+          <td>${chairOn ? `<select data-pa="t:${t.id}:approved">
+            <option value="wait" ${t.approved === "wait" ? "selected" : ""}>รออนุมัติ</option>
+            <option value="yes" ${t.approved === "yes" ? "selected" : ""}>อนุมัติ</option>
+            <option value="no" ${t.approved === "no" ? "selected" : ""}>ไม่อนุมัติ</option>
+          </select>` : `<span class="pill pill-gray">${t.approved === "yes" ? "อนุมัติ" : t.approved === "no" ? "ไม่อนุมัติ" : "รออนุมัติ"}</span>`}</td>
+          <td>
+            <div class="auto">${C.fmtUnit(cal.units)} หน่วย</div>
+            <div class="auto">คะแนน ${C.fmtScore(self)}</div>
+          </td>
+          <td>${chairOn ? `<input data-pa="t:${t.id}:approveReason" value="${esc(t.approveReason)}" placeholder="ความคิดเห็นผู้อนุมัติ" />` : esc(t.approveReason || "—")}</td>
+        </tr>`);
+      });
+    });
+  });
+  return rows.join("");
+}
+
 function viewPA() {
   if (track() === "support") return viewSupportPA();
   const lock = !canEditAgreement();
   const chairOn = canApproveAgreement();
   const w = checkWeight();
   const wcls = w === 100 ? "" : "warn";
-  const rows = [];
-  S.groups.forEach((g) => {
+  const jump = `<nav class="jump-bar">${C.GROUPS.map((meta) =>
+    `<button type="button" data-jump="pa-g-${meta.id}">${esc(meta.title)}</button>`
+  ).join("")}</nav>`;
+  const sections = S.groups.map((g) => {
     const meta = C.GROUPS.find((x) => x.id === g.id);
     const units = C.groupUnits(S.groups, g.id);
-    rows.push(`<tr class="g"><td></td><td>${esc(meta.title)}</td>
-      <td colspan="6">${esc(meta.name)} · น้ำหนักตามประกาศ ${meta.pct}% (เพดาน ${meta.cap} หน่วย) · ได้ ${C.fmtUnit(units)} หน่วย</td>
-      <td>${canEditAgreement() ? `<button class="iconbtn add" type="button" data-add-ag="${g.id}">+</button>` : ""}</td></tr>`);
-    g.agreements.forEach((a) => {
-      rows.push(`<tr class="a"><td>${canEditAgreement() ? `<button class="iconbtn" type="button" data-del-ag="${g.id}:${a.id}">−</button>` : ""}</td>
-        <td>ข้อตกลง ${esc(a.code)}</td>
-        <td colspan="7"><input data-pa="a:${a.id}:title" value="${esc(a.title)}" ${lock ? "disabled" : ""} /></td></tr>`);
-      a.kpis.forEach((k) => {
-        rows.push(`<tr class="k"><td></td><td>ตัวชี้วัด ${esc(k.code)}</td>
-          <td colspan="7"><input data-pa="k:${k.id}:title" value="${esc(k.title)}" ${lock ? "disabled" : ""} /></td></tr>`);
-        k.targets.forEach((t) => {
-          const cal = C.calcTarget(t, g.id);
-          const self = C.effectiveScore(t, g.id);
-          rows.push(`<tr>
-            <td></td>
-            <td>เป้าหมาย ${esc(t.code)}</td>
-            <td>
-              <input data-pa="t:${t.id}:title" value="${esc(t.title)}" ${lock ? "disabled" : ""} />
-              <div class="extra">${extraFields(t, g, lock)}
-                ${cal.blocked === "student" ? `<div class="warn-box">ผลงานร่วมนักศึกษาไม่นับในยุทธศาสตร์</div>` : ""}
-                ${cal.blocked === "db" ? `<div class="warn-box">ต้องปรากฏในฐานข้อมูลก่อนจึงคิดหน่วย</div>` : ""}
-              </div>
-            </td>
-            <td><select data-pa="t:${t.id}:kpiType" ${lock ? "disabled" : ""}>${C.KPI_TYPES.map((x) =>
-              `<option value="${x.id}" ${t.kpiType === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select></td>
-            <td><input type="number" data-pa="t:${t.id}:weight" value="${esc(t.weight)}" ${lock ? "disabled" : ""} /></td>
-            <td><select data-pa="t:${t.id}:criteriaId" ${lock ? "disabled" : ""}>${criteriaOptions(g.id, t.criteriaId)}</select>
-              <div class="hint">เกณฑ์ 5 ระดับ: สูงกว่า 9–10 · ตามเป้า 7–8 · ใกล้เคียง 5–6 · ต่ำกว่า 3–4 · ต่ำกว่ามาก 0–2</div></td>
-            <td>${chairOn ? `<select data-pa="t:${t.id}:approved">
-              <option value="wait" ${t.approved === "wait" ? "selected" : ""}>รออนุมัติ</option>
-              <option value="yes" ${t.approved === "yes" ? "selected" : ""}>อนุมัติ</option>
-              <option value="no" ${t.approved === "no" ? "selected" : ""}>ไม่อนุมัติ</option>
-            </select>` : `<span class="pill pill-gray">${t.approved === "yes" ? "อนุมัติ" : t.approved === "no" ? "ไม่อนุมัติ" : "รออนุมัติ"}</span>`}</td>
-            <td>
-              <div class="auto">${C.fmtUnit(cal.units)} หน่วย</div>
-              <div class="auto">คะแนน ${C.fmtScore(self)}</div>
-            </td>
-            <td>${chairOn ? `<input data-pa="t:${t.id}:approveReason" value="${esc(t.approveReason)}" placeholder="ความคิดเห็นผู้อนุมัติ" />` : esc(t.approveReason || "—")}</td>
-          </tr>`);
-        });
-      });
-    });
-  });
+    return `<section class="sec pa-sec sec-faculty" id="pa-g-${g.id}">
+      <header class="sec-head">
+        <div>
+          <h2>${esc(meta.title)} · ${esc(meta.name)}</h2>
+          <p>น้ำหนักตามประกาศ ${meta.pct}% · เพดาน ${meta.cap} หน่วย · ได้ ${C.fmtUnit(units)} หน่วย</p>
+        </div>
+        ${canEditAgreement() ? `<button class="btn-teal" type="button" data-add-ag="${g.id}">เพิ่มข้อตกลงกลุ่มนี้</button>` : ""}
+      </header>
+      <div class="pa-wrap"><table class="pa">
+        <thead><tr>
+          <th>จัดการ</th><th>ลำดับ</th><th>ภารกิจ</th><th>ประเภทตัวชี้วัด</th>
+          <th>ร้อยละ (ค่าน้ำหนัก)</th><th>เกณฑ์การประเมิน</th><th>อนุมัติ</th>
+          <th>หน่วย / คะแนนตนเอง</th><th>ความคิดเห็นของผู้อนุมัติ</th>
+        </tr></thead>
+        <tbody>${facultyGroupRows(g, lock, chairOn)}</tbody>
+      </table></div>
+    </section>`;
+  }).join("");
 
   const chairBar = chairOn ? `
     <div class="card chair-only">
@@ -1609,14 +1689,8 @@ function viewPA() {
     </div>
     ${paStatus() === "back" ? `<div class="warn-box">ส่งกลับแก้ไข: ${esc(reject)}</div>` : ""}
     ${chairBar}
-    <div class="pa-wrap"><table class="pa">
-      <thead><tr>
-        <th>จัดการ</th><th>ลำดับ</th><th>ภารกิจ</th><th>ประเภทตัวชี้วัด</th>
-        <th>ร้อยละ (ค่าน้ำหนัก)</th><th>เกณฑ์การประเมิน</th><th>อนุมัติ</th>
-        <th>หน่วย / คะแนนตนเอง</th><th>ความคิดเห็นของผู้อนุมัติ</th>
-      </tr></thead>
-      <tbody>${rows.join("")}</tbody>
-    </table></div>
+    ${jump}
+    ${sections}
     <div class="footbar">
       ${canEditAgreement() ? `<button class="btn-navy" type="button" id="btnSave">บันทึกฉบับร่าง</button>
       <button class="btn-navy" type="button" id="btnAsk">ขออนุมัติ</button>` : ""}
@@ -1626,31 +1700,54 @@ function viewPA() {
   `);
 }
 
+function supportItemRow(it, lock, chairOn) {
+  const autoW = ((Number(it.weight) || 0) * (Number(it.kpiWeight) || 0) / 100).toFixed(2);
+  return `<tr>
+    <td>${canEditAgreement() ? `<button class="iconbtn" data-del-sup="${it.id}">−</button>` : ""}</td>
+    <td>${esc(it.no)}</td>
+    <td><input data-sup="${it.id}:title" value="${esc(it.title)}" ${lock ? "disabled" : ""} /></td>
+    <td><input type="number" data-sup="${it.id}:weight" value="${esc(it.weight)}" ${lock ? "disabled" : ""} /></td>
+    <td><select data-sup="${it.id}:kpiType" ${lock ? "disabled" : ""}>${C.KPI_TYPES.map((x) =>
+      `<option value="${x.id}" ${it.kpiType === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select>
+      <input type="number" data-sup="${it.id}:kpiWeight" value="${esc(it.kpiWeight)}" ${lock ? "disabled" : ""} /></td>
+    <td class="auto">${autoW}</td>
+    <td><textarea data-sup="${it.id}:criteria" ${lock ? "disabled" : ""} placeholder="เกณฑ์ 5 ระดับ">${esc(it.criteria)}</textarea></td>
+    <td>${chairOn ? `<select data-sup="${it.id}:approved">
+      <option value="wait" ${it.approved === "wait" ? "selected" : ""}>รออนุมัติ</option>
+      <option value="yes" ${it.approved === "yes" ? "selected" : ""}>อนุมัติ</option>
+      <option value="no" ${it.approved === "no" ? "selected" : ""}>ไม่อนุมัติ</option>
+    </select>` : `<span class="pill pill-gray">${it.approved === "yes" ? "อนุมัติ" : it.approved === "no" ? "ไม่อนุมัติ" : "รออนุมัติ"}</span>`}</td>
+  </tr>`;
+}
+
 function viewSupportPA() {
   const lock = !canEditAgreement();
   const chairOn = canApproveAgreement();
   const w = checkWeight();
   const wcls = w === 100 ? "" : "warn";
-  const rows = S.supportItems.map((it) => {
-    const autoW = ((Number(it.weight) || 0) * (Number(it.kpiWeight) || 0) / 100).toFixed(2);
-    return `<tr>
-      <td>${canEditAgreement() ? `<button class="iconbtn" data-del-sup="${it.id}">−</button>` : ""}</td>
-      <td>${esc(it.no)}</td>
-      <td><select data-sup="${it.id}:workType" ${lock ? "disabled" : ""}>${C.WORK_TYPES.map((x) =>
-        `<option value="${x.id}" ${it.workType === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select></td>
-      <td><input data-sup="${it.id}:title" value="${esc(it.title)}" ${lock ? "disabled" : ""} /></td>
-      <td><input type="number" data-sup="${it.id}:weight" value="${esc(it.weight)}" ${lock ? "disabled" : ""} /></td>
-      <td><select data-sup="${it.id}:kpiType" ${lock ? "disabled" : ""}>${C.KPI_TYPES.map((x) =>
-        `<option value="${x.id}" ${it.kpiType === x.id ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select>
-        <input type="number" data-sup="${it.id}:kpiWeight" value="${esc(it.kpiWeight)}" ${lock ? "disabled" : ""} /></td>
-      <td class="auto">${autoW}</td>
-      <td><textarea data-sup="${it.id}:criteria" ${lock ? "disabled" : ""} placeholder="เกณฑ์ 5 ระดับ">${esc(it.criteria)}</textarea></td>
-      <td>${chairOn ? `<select data-sup="${it.id}:approved">
-        <option value="wait" ${it.approved === "wait" ? "selected" : ""}>รออนุมัติ</option>
-        <option value="yes" ${it.approved === "yes" ? "selected" : ""}>อนุมัติ</option>
-        <option value="no" ${it.approved === "no" ? "selected" : ""}>ไม่อนุมัติ</option>
-      </select>` : `<span class="pill pill-gray">${it.approved === "yes" ? "อนุมัติ" : it.approved === "no" ? "ไม่อนุมัติ" : "รออนุมัติ"}</span>`}</td>
-    </tr>`;
+  const jump = `<nav class="jump-bar">${C.WORK_TYPES.map((x) =>
+    `<button type="button" data-jump="pa-s-${x.id}">${esc(x.label)}</button>`
+  ).join("")}</nav>`;
+  const sections = C.WORK_TYPES.map((type) => {
+    const items = S.supportItems.filter((it) => it.workType === type.id);
+    const wsum = items.reduce((n, it) => n + (Number(it.weight) || 0), 0);
+    return `<section class="sec pa-sec sec-staff" id="pa-s-${type.id}">
+      <header class="sec-head">
+        <div>
+          <h2>${esc(type.label)}</h2>
+          <p>น้ำหนักกลุ่มนี้ ${wsum} · กดเข้ากลุ่มนี้จากแถบบนได้เลย</p>
+        </div>
+        ${canEditAgreement() ? `<button class="btn-teal" type="button" data-add-sup="${type.id}">เพิ่มข้อตกลงกลุ่มนี้</button>` : ""}
+      </header>
+      <div class="pa-wrap"><table class="pa">
+        <thead><tr>
+          <th></th><th>ลำดับ</th><th>ข้อตกลง (ภาระงาน)</th>
+          <th>ค่าน้ำหนัก</th><th>ตัวชี้วัด / น้ำหนักตัวชี้วัด</th><th>ร้อยละน้ำหนัก</th>
+          <th>เกณฑ์ 5 ระดับ</th><th>อนุมัติ</th>
+        </tr></thead>
+        <tbody>${items.map((it) => supportItemRow(it, lock, chairOn)).join("") || `<tr><td colspan="8">ยังไม่มีข้อตกลงในกลุ่มนี้</td></tr>`}</tbody>
+      </table></div>
+    </section>`;
   }).join("");
   const chairBar = chairOn ? `
     <div class="card chair-only">
@@ -1672,17 +1769,10 @@ function viewSupportPA() {
     </div>
     ${paStatus() === "back" ? `<div class="warn-box">ส่งกลับแก้ไข: ${esc(S.supportReject)}</div>` : ""}
     ${chairBar}
-    <div class="pa-wrap"><table class="pa">
-      <thead><tr>
-        <th></th><th>ลำดับ</th><th>ประเภทของงาน</th><th>ข้อตกลง (ภาระงาน)</th>
-        <th>ค่าน้ำหนัก</th><th>ตัวชี้วัด / น้ำหนักตัวชี้วัด</th><th>ร้อยละน้ำหนัก</th>
-        <th>เกณฑ์ 5 ระดับ</th><th>อนุมัติ</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div>
+    ${jump}
+    ${sections}
     <div class="footbar">
-      ${canEditAgreement() ? `<button class="btn-teal" type="button" id="btnAddSup">เพิ่มข้อตกลง</button>
-      <button class="btn-navy" type="button" id="btnSave">บันทึกฉบับร่าง</button>
+      ${canEditAgreement() ? `<button class="btn-navy" type="button" id="btnSave">บันทึกฉบับร่าง</button>
       <button class="btn-navy" type="button" id="btnAsk">ขออนุมัติ</button>` : ""}
       <button class="btn-ghost" type="button" data-go="${isEval() ? "evalHome" : "modules"}">กลับ</button>
     </div>
@@ -2155,6 +2245,12 @@ function bind() {
       go(id);
     });
   });
+  document.querySelectorAll("[data-jump]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const el = document.getElementById(b.getAttribute("data-jump"));
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
   document.querySelectorAll("[data-login-type]").forEach((b) => {
     b.addEventListener("click", () => {
       S.loginType = b.getAttribute("data-login-type");
@@ -2265,10 +2361,13 @@ function bind() {
       persist(); render();
     });
   });
-  const addSup = document.getElementById("btnAddSup");
-  if (addSup) addSup.addEventListener("click", () => {
-    S.supportItems.push(emptySupportItem(S.supportItems.length + 1));
-    persist(); render();
+  document.querySelectorAll("[data-add-sup]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const it = emptySupportItem(S.supportItems.length + 1);
+      it.workType = b.getAttribute("data-add-sup") || "main";
+      S.supportItems.push(it);
+      persist(); render();
+    });
   });
   document.querySelectorAll("[data-pa]").forEach((el) => {
     el.addEventListener("change", () => {
@@ -2439,7 +2538,7 @@ async function boot() {
           if (sess.year) setYear(sess.year);
           const rec = await DB.loadRecord(u.id, S.year);
           if (rec) {
-            const keep = { user: u, users: S.users, loggedIn: true, account: u.id, year: S.year };
+            const keep = { user: u, users: S.users, loggedIn: true, account: u.id, year: S.year, focus: u.track || "faculty" };
             S = hydrate(rec);
             Object.assign(S, keep);
           }
