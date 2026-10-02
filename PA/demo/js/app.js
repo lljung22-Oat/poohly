@@ -410,8 +410,8 @@ function isAdmin() { return account() && (account().role === "admin" || account(
 function isEval() { return account() && account().family === "eval"; }
 
 function track() {
+  if (isRatee() && account().track) return account().track;
   if (S.focus === "support" || S.focus === "faculty") return S.focus;
-  if (isRatee()) return account().track;
   return "faculty";
 }
 
@@ -450,6 +450,20 @@ function esc(s) {
 }
 
 function go(view) {
+  if (isRatee()) S.focus = account().track;
+  if (isFaculty() && ["paStaff", "follow", "scoreSum"].includes(view)) {
+    toast("แบบของเจ้าหน้าที่สายสนับสนุนไม่ใช้กับสายวิชาการ");
+    return;
+  }
+  if (isSupport() && view === "period") {
+    S.view = "modules";
+    S.modal = null;
+    persist();
+    location.hash = "modules";
+    render();
+    window.scrollTo(0, 0);
+    return;
+  }
   S.view = view;
   S.modal = null;
   persist();
@@ -1257,15 +1271,18 @@ function dashCards(cards) {
 }
 
 function hrisCards() {
-  return [
+  const personal = [
     { go: "profile", ico: "person", title: "ข้อมูลบุคลากร", sub: "ประวัติและข้อมูลส่วนบุคคล" },
     { go: "leave", ico: "leave", title: "ข้อมูลวันลา", sub: "สถิติและการขออนุมัติวันลา" },
-    { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" },
-    { go: "paStaff", focus: "support", ico: "clip", title: "PA ประเมินภาระงาน", sub: "(สายสนับสนุน / ตารางทั่วไป)" },
-    { go: "period", focus: "faculty", ico: "grad", title: "PA ภาระงานอาจารย์", sub: "(สายวิชาการ / ตารางแบบ Matrix)", cream: true },
+    { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" }
+  ];
+  const pa = isSupport()
+    ? [{ go: "paStaff", ico: "clip", title: "PA ประเมินภาระงาน", sub: "(สายสนับสนุน / ตารางทั่วไป)", cream: true }]
+    : [{ go: "period", ico: "grad", title: "PA ภาระงานอาจารย์", sub: "(สายวิชาการ / ตารางแบบ Matrix)", cream: true }];
+  return personal.concat(pa, [
     { go: "competency", ico: "target", title: "Functional Competency", sub: "ประเมินสมรรถนะเฉพาะสายงาน", linkish: true },
     { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคล" }
-  ];
+  ]);
 }
 
 function viewHome() {
@@ -1368,6 +1385,10 @@ function viewTime() {
 }
 
 function viewPaStaff() {
+  if (isFaculty()) {
+    return chrome(`<div class="warn-box">แบบประเมินภาระงานของเจ้าหน้าที่สายสนับสนุนไม่ใช้กับสายวิชาการ</div>
+      <button class="btn-navy" type="button" data-go="home">กลับหน้าหลักระบบงาน</button>`);
+  }
   S.focus = "support";
   persist();
   return viewModules();
@@ -2379,10 +2400,11 @@ function bind() {
     b.addEventListener("click", () => {
       const id = b.getAttribute("data-go");
       const focus = b.getAttribute("data-focus");
-      if (focus) S.focus = focus;
+      if (focus && !isRatee()) S.focus = focus;
+      if (isRatee()) S.focus = account().track;
       if (id === "home") { go("home"); return; }
-      if (id === "paStaff") S.focus = "support";
-      if (id === "period" && !focus) S.focus = S.focus || (isRatee() ? account().track : "faculty");
+      if (id === "paStaff" && !isFaculty()) S.focus = "support";
+      if (id === "period" && !isRatee()) S.focus = S.focus || "faculty";
       go(id);
     });
   });
