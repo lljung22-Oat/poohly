@@ -1,4 +1,4 @@
-const KEY = "mu-pms-demo-v4";
+const KEY = "mu-pms-demo-v5";
 const C = PAScore;
 
 const FACULTY = "คณะสังคมศาสตร์และมนุษยศาสตร์";
@@ -17,7 +17,7 @@ const ACCOUNTS = {
     track: "faculty",
     roleLabel: "ผู้รับการประเมิน",
     roleSub: "อาจารย์",
-    hint: "กรอกข้อตกลง รายงานผล ประเมินตนเอง และรับทราบผลของตนเอง",
+    hint: "กรอกข้อตกลงตามประกาศสายวิชาการ รายงานผล ประเมินตนเอง และรับทราบผลของตนเอง",
     tone: "ratee"
   },
   support: {
@@ -33,7 +33,7 @@ const ACCOUNTS = {
     track: "support",
     roleLabel: "ผู้รับการประเมิน",
     roleSub: "บุคลากรสายสนับสนุน",
-    hint: "กรอกข้อตกลงหน้า A รายงานผล และรับทราบผลของตนเอง",
+    hint: "กรอกแบบข้อตกลง PA บุคคลากร (แบบ 05–11) รายงานผล และรับทราบผลของตนเอง — ไม่ใช้ตารางหน่วยอาจารย์",
     tone: "support"
   },
   committee: {
@@ -126,6 +126,20 @@ const MODULES = [
   { id: "idpEval", title: "ประเมินผลการพัฒนารายบุคคล (IDP)", need: "idpReported", sub: "เป็นไปตามที่คาดหวัง / ไม่เป็นไปตามที่คาดหวัง" },
   { id: "idpAck", title: "แจ้งผลและรับทราบผลการพัฒนารายบุคคล (IDP)", need: "idpEval" },
   { id: "report", title: "รายงานและติดตามผลการดำเนินการ (REPORT)", need: null }
+];
+
+/* วงจร PA บุคคลากร — จากชุดเอกสารสายสนับสนุน ไม่ปนประกาศหน่วยอาจารย์ */
+const STAFF_MODULES = [
+  { id: "pa", title: "แบบข้อตกลงและประเมินผลการปฏิบัติงาน (แบบ 05)", need: null },
+  { id: "follow", title: "แบบติดตามผลการปฏิบัติงาน (แบบ 06)", need: "approved" },
+  { id: "paReport", title: "แบบรายงานผลการปฏิบัติงาน (แบบ 07)", need: "approved" },
+  { id: "competency", title: "ประเมินสมรรถนะหลัก / ตามสายงาน", need: "reported" },
+  { id: "scoreSum", title: "แบบสรุปคะแนนผลการประเมิน (แบบ 09)", need: "chair" },
+  { id: "ack", title: "แบบสรุปและแจ้งผลการประเมิน (แบบ 08)", need: "chair" },
+  { id: "pledge", title: "แบบคำมั่น (แบบ 11)", need: null },
+  { id: "idp", title: "IDP ผู้ปฏิบัติ", need: null },
+  { id: "idpEval", title: "IDP ผู้อนุมัติ", need: "idpReported", sub: "เป็นไปตามที่คาดหวัง / ไม่เป็นไปตามที่คาดหวัง" },
+  { id: "report", title: "รายงานและติดตามผลการดำเนินการ", need: null }
 ];
 
 function uid() {
@@ -332,6 +346,12 @@ function defaultState() {
     supportIdpReject: "",
     supportIdpDisagree: "",
     supportIdp: blankIdp("support"),
+    supportFollow: [],
+    supportPledge: {
+      text: "ข้าพเจ้าจะปฏิบัติงานตามข้อตกลงที่ได้รับอนุมัติ และพัฒนาสมรรถนะตามแผน IDP ในปีงบประมาณนี้",
+      rateeSigned: false,
+      chairSigned: false
+    },
     modal: null
   };
 }
@@ -344,6 +364,10 @@ function load() {
     if (!s.groups || !s.groups.length) s.groups = defaultGroups();
     if (!s.supportItems || !s.supportItems.length) s.supportItems = defaultSupportItems();
     if (!s.year || !["2569", "2570"].includes(String(s.year))) s.year = "2570";
+    if (!s.supportFollow) s.supportFollow = [];
+    if (!s.supportPledge) {
+      s.supportPledge = defaultState().supportPledge;
+    }
     s.modal = null;
     return s;
   } catch {
@@ -556,12 +580,28 @@ function canOpen(mod) {
   return true;
 }
 
+function currentModules() {
+  return track() === "support" ? STAFF_MODULES : MODULES;
+}
+
 function moduleAllowed(mod) {
-  if (isHr() || isAdmin()) return mod.id === "report";
+  if (isHr() || isAdmin()) return ["report", "formset", "adminRound", "adminPeople"].includes(mod.id);
   if (isCommittee()) return ["competency", "report"].includes(mod.id);
   if (isChair()) return true;
   if (isRatee()) return !["idpEval"].includes(mod.id) || canOpen(mod);
   return false;
+}
+
+function supportFollowRows() {
+  S.supportFollow = S.supportFollow || [];
+  return S.supportItems.map((it) => {
+    let row = S.supportFollow.find((x) => x.itemId === it.id);
+    if (!row) {
+      row = { id: uid(), itemId: it.id, progress: "", problem: "", help: "" };
+      S.supportFollow.push(row);
+    }
+    return { it, row };
+  });
 }
 
 function forEachTarget(fn) {
@@ -932,6 +972,7 @@ function modeBanner() {
       <label>ปีงบประมาณ
         <select id="yearSel">${yearOptions()}</select>
       </label>
+      <button type="button" id="btnReset">เริ่มเดโมใหม่</button>
       <button type="button" id="btnSwitch">เปลี่ยนโหมด</button>
     </div>
   </div>`;
@@ -939,21 +980,42 @@ function modeBanner() {
 
 function flowTabs() {
   if (isHr() || isAdmin()) return "";
-  const pa = ["period", "profile", "rounds", "formset", "modules", "pa", "paReport", "competency", "ack", "report"].includes(S.view);
+  const staffPa = ["period", "profile", "rounds", "formset", "modules", "pa", "follow", "paReport", "competency", "scoreSum", "ack", "pledge", "report"].includes(S.view);
+  const facPa = ["period", "profile", "rounds", "formset", "modules", "pa", "paReport", "competency", "ack", "report"].includes(S.view);
   const idp = ["idp", "idpReport", "idpEval", "idpAck"].includes(S.view);
-  if (!pa && !idp) return "";
-  const items = pa ? [
-    ["modules", "วงจร PMS"],
-    ["pa", "ข้อตกลง PA"],
-    ["paReport", "รายงานผล"],
-    ["competency", "สมรรถนะ"],
-    ["ack", "รับทราบ"]
-  ] : [
-    ["idp", "จัดทำ IDP"],
-    ["idpReport", "รายงาน IDP"],
-    ["idpEval", "ประเมิน IDP"],
-    ["idpAck", "รับทราบ IDP"]
-  ];
+  if (!staffPa && !facPa && !idp) return "";
+  let items;
+  if (idp) {
+    items = track() === "support" ? [
+      ["idp", "IDP ผู้ปฏิบัติ"],
+      ["idpReport", "รายงาน IDP"],
+      ["idpEval", "IDP ผู้อนุมัติ"],
+      ["idpAck", "รับทราบ IDP"]
+    ] : [
+      ["idp", "จัดทำ IDP"],
+      ["idpReport", "รายงาน IDP"],
+      ["idpEval", "ประเมิน IDP"],
+      ["idpAck", "รับทราบ IDP"]
+    ];
+  } else if (track() === "support") {
+    items = [
+      ["modules", "วงจรบุคคลากร"],
+      ["pa", "ข้อตกลง 05"],
+      ["follow", "ติดตาม 06"],
+      ["paReport", "รายงาน 07"],
+      ["scoreSum", "สรุปคะแนน 09"],
+      ["ack", "แจ้งผล 08"],
+      ["pledge", "คำมั่น 11"]
+    ];
+  } else {
+    items = [
+      ["modules", "วงจร PMS"],
+      ["pa", "ข้อตกลง PA"],
+      ["paReport", "รายงานผล"],
+      ["competency", "สมรรถนะ"],
+      ["ack", "รับทราบ"]
+    ];
+  }
   return `<nav class="flow">${items.map(([id, t]) =>
     `<button type="button" class="flow-a ${S.view === id ? "on" : ""}" data-go="${id}">${esc(t)}</button>`
   ).join("")}</nav>`;
@@ -963,14 +1025,15 @@ function chrome(inner) {
   const a = account();
   const home = S.view === "home";
   return `
-  <div class="app ${home ? "app-home" : ""} tone-${a ? a.tone : "ratee"}">
+  <div class="app ${home ? "app-home" : ""}">
     <header class="topbar">
       <div class="brand-text">ระบบสารสนเทศเพื่อการบริหารจัดการบุคลากร</div>
       <div class="who">
         <span class="uname">${esc(a ? a.full : "")}</span>
-        <span class="role-chip">${esc(a ? a.roleLabel : "")}</span>
         <span class="sep">|</span>
-        <span class="year-inline">ปี ${esc(S.year)}</span>
+        <span class="uline">${esc(a ? a.roleLabel + " · " + a.roleSub : "")}</span>
+        <span class="sep">|</span>
+        <span class="year-inline">ปีงบประมาณ ${esc(S.year)}</span>
         <span class="sep">|</span>
         <button type="button" id="btnSwitch">เปลี่ยนโหมด</button>
         <button type="button" id="btnOut">ออกจากระบบ</button>
@@ -978,7 +1041,7 @@ function chrome(inner) {
     </header>
     ${modeBanner()}
     ${home ? "" : `<div class="subbar">
-      <button type="button" class="back" data-go="home">← กลับหน้าหลักของโหมดนี้</button>
+      <button type="button" class="back" data-go="home">← กลับหน้าหลักระบบงาน</button>
       <button type="button" id="btnReset">เริ่มเดโมใหม่</button>
     </div>`}
     <main class="main ${home ? "main-home" : ""}">${home ? "" : flowTabs()}${inner}</main>
@@ -1033,7 +1096,7 @@ function viewLogin() {
     </div>
     <div class="login-box login-modes">
       <h2>เลือกโหมดการใช้งาน</h2>
-      <p class="hint">แต่ละโหมดเห็นเมนูและหน้าที่ต่างกันตามคู่มือ UM-01 / UM-03 / PMS · ปีงบประมาณเริ่มต้น <b>2570</b> เลือก 2569 ได้</p>
+      <p class="hint">เลือกโหมดก่อน แล้วเข้าหน้าหลักระบบงาน 7 การ์ด · PA บุคคลากร กับ PA อาจารย์คนละเอกสาร · ปีงบประมาณเริ่มต้น <b>2570</b> เลือก 2569 ได้</p>
       <div class="year-pick login-year">
         <label for="yearSel">ปีงบประมาณ</label>
         <select id="yearSel">${yearOptions()}</select>
@@ -1061,43 +1124,45 @@ function dashCards(cards) {
   return `
     <div class="dash">
       <h1>หน้าหลักระบบงาน (Dashboard)</h1>
-      <p class="dash-lead">${esc(account().roleLabel)} · ${esc(account().full)} · ปีงบประมาณ ${esc(S.year)}</p>
-      <div class="year-pick">
-        <label for="yearSel">ปีงบประมาณ</label>
-        <select id="yearSel">${yearOptions()}</select>
-        <button type="button" id="btnReset">เริ่มเดโมใหม่</button>
-      </div>
-      <div class="dash-grid cols-${cards.length > 6 ? 3 : cards.length === 4 ? 2 : 3}">
+      <div class="dash-grid">
         ${cards.map((c) => `
-          <button class="dash-card${c.cream ? " cream" : ""}" type="button" data-go="${c.go}">
+          <button class="dash-card${c.cream ? " cream" : ""}${c.locked ? " locked" : ""}" type="button"
+            ${c.locked ? `data-lock="${esc(c.lockMsg || "ไม่ใช่แบบของโหมดนี้")}"` : `data-go="${c.go}"`}>
             <div class="ico">${ico(c.ico)}</div>
             <b>${esc(c.title)}</b>
-            <small>${esc(c.sub)}</small>
+            <small class="${c.linkish ? "linkish" : ""}">${esc(c.sub)}</small>
           </button>`).join("")}
       </div>
     </div>`;
 }
 
+function hrisCards() {
+  const facultyLock = isSupport();
+  const staffLock = isFaculty();
+  return [
+    { go: "profile", ico: "person", title: "ข้อมูลบุคลากร", sub: "ประวัติและข้อมูลส่วนบุคคล" },
+    { go: "leave", ico: "leave", title: "ข้อมูลวันลา", sub: "สถิติและการขออนุมัติวันลา" },
+    { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" },
+    {
+      go: "paStaff", ico: "clip", title: "PA ประเมินภาระงาน",
+      sub: "(สายสนับสนุน / บุคลากรทั่วไป)",
+      locked: staffLock,
+      lockMsg: "แบบของบุคลากร ตามเอกสาร PA บุคคลากร — เข้าด้วยโหมดสายสนับสนุน"
+    },
+    {
+      go: "period", ico: "grad", title: "PA ภาระงานอาจารย์",
+      sub: "(สายวิชาการ / กรอบแบบฟอร์ม Matrix)", cream: true,
+      locked: facultyLock,
+      lockMsg: "แบบของอาจารย์ ตามประกาศค่าน้ำหนักและ SHPA — เข้าด้วยโหมดอาจารย์"
+    },
+    { go: "competency", ico: "target", title: "Functional Competency", sub: "ประเมินสมรรถนะเฉพาะงาน", linkish: true },
+    { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคล" }
+  ];
+}
+
 function viewHome() {
-  if (isFaculty()) {
-    return chrome(dashCards([
-      { go: "profile", ico: "person", title: "ข้อมูลบุคลากร", sub: "ยืนยันประวัติก่อนจัดทำข้อตกลง" },
-      { go: "leave", ico: "leave", title: "ข้อมูลวันลา", sub: "สถิติและการขออนุมัติวันลา" },
-      { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" },
-      { go: "period", ico: "grad", title: "PA ภาระงานอาจารย์", sub: "จัดทำข้อตกลงตามประกาศสายวิชาการ", cream: true },
-      { go: "competency", ico: "target", title: "Functional Competency", sub: "ประเมินตนเองตามสายอาชีพอาจารย์" },
-      { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคลของตนเอง" }
-    ]));
-  }
-  if (isSupport()) {
-    return chrome(dashCards([
-      { go: "profile", ico: "person", title: "ข้อมูลบุคลากร", sub: "ยืนยันประวัติก่อนจัดทำข้อตกลง" },
-      { go: "leave", ico: "leave", title: "ข้อมูลวันลา", sub: "สถิติและการขออนุมัติวันลา" },
-      { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" },
-      { go: "period", ico: "clip", title: "PA ประเมินภาระงาน", sub: "ข้อตกลงหน้า A ของสายสนับสนุน", cream: true },
-      { go: "competency", ico: "target", title: "Functional Competency", sub: "ประเมินตนเองตามสายสนับสนุน" },
-      { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคลของตนเอง" }
-    ]));
+  if (isFaculty() || isSupport()) {
+    return chrome(dashCards(hrisCards()));
   }
   if (isCommittee()) {
     return chrome(dashCards([
@@ -1135,12 +1200,12 @@ function viewHome() {
 
 function viewSoon(title, sub) {
   return chrome(`
-    <p class="crumb">หน้าหลักของโหมดนี้</p>
+    <p class="crumb">หน้าหลักระบบงาน</p>
     <h1 class="page-title">${esc(title)}</h1>
     <div class="card">
       <p>${esc(sub)}</p>
-      <p class="hint">โมดูลนี้เป็นส่วนของระบบบุคลากร · เดโมคณะสังคมฯ เน้นวงจรประเมินตามโหมดที่เลือก</p>
-      <button class="btn-navy" type="button" data-go="home">กลับหน้าหลัก</button>
+      <p class="hint">โมดูลนี้เป็นส่วนของระบบบุคลากรตามหน้าหลัก · เดโมคณะสังคมฯ ใช้งานจริงที่การ์ด PA ของโหมดที่เลือก</p>
+      <button class="btn-navy" type="button" data-go="home">กลับหน้าหลักระบบงาน</button>
     </div>`);
 }
 
@@ -1151,11 +1216,24 @@ function viewTime() {
   return viewSoon("ข้อมูลเวลาเข้า-ออกงาน", "ลงเวลาปฏิบัติงานประจำวัน");
 }
 
+function viewPaStaff() {
+  if (isFaculty()) {
+    return chrome(`<div class="warn-box">การ์ดนี้เป็นแบบของบุคลากรสายสนับสนุน ตามเอกสาร PA บุคคลากร ไม่ใช่แบบอาจารย์</div>
+      <button class="btn-navy" data-go="period">ไป PA ภาระงานอาจารย์</button>`);
+  }
+  if (isEval()) {
+    S.focus = "support";
+    persist();
+    return viewPeriod();
+  }
+  return viewPeriod();
+}
+
 function viewHelp() {
   const a = account();
   const blocks = {
-    faculty: ["ยืนยันประวัติก่อนกรอกข้อตกลง (UM-03)", "กรอก PA ภาระงาน 1–4 น้ำหนักรวม 100", "หน่วยและคะแนนตนเองคำนวณจากประกาศสายวิชาการ", "ส่งรายงานผลแล้วแก้ไม่ได้", "รับทราบ PA+CC พร้อมกัน · FC รับทราบแยก", "ไม่มีปุ่มอนุมัติหรือให้คะแนนของประธาน"],
-    support: ["ยืนยันประวัติก่อนกรอกข้อตกลง (UM-03 หน้า A)", "ประเภทงาน น้ำหนักรวม 100 เกณฑ์ 5 ระดับ", "ประกาศหน่วยภาระงานสายวิชาการไม่ใช้กับสายสนับสนุน", "ส่งรายงานผลแล้วแก้ไม่ได้", "ไม่มีเมนู PA ของอาจารย์"],
+    faculty: ["ยืนยันประวัติก่อนกรอกข้อตกลง", "กรอก PA ภาระงานอาจารย์ตามประกาศค่าน้ำหนัก / SHPA", "หน่วยและคะแนนตนเองคำนวณจากประกาศสายวิชาการ ฐาน 1,820", "ส่งรายงานผลแล้วแก้ไม่ได้", "รับทราบ PA+CC พร้อมกัน · FC รับทราบแยก", "การ์ด PA ประเมินภาระงานของบุคลากรเปิดไม่ได้ในโหมดนี้"],
+    support: ["ยืนยันประวัติก่อนกรอกข้อตกลง", "ใช้เอกสาร PA บุคคลากร แบบ 05–11 ไม่ใช่ตารางหน่วยอาจารย์", "น้ำหนักรวม 100 เกณฑ์ 5 ระดับ ตาม rubrics สายสนับสนุน", "ติดตามกลางปีด้วยแบบ 06 · รายงานผลด้วยแบบ 07", "สรุปคะแนน 09 · แจ้งผล 08 · คำมั่น 11 · IDP ผู้ปฏิบัติ/ผู้อนุมัติ", "การ์ด PA ภาระงานอาจารย์เปิดไม่ได้ในโหมดนี้"],
     committee: ["เข้าจากรายชื่อผู้รับการประเมิน (UM-01)", "ให้ความเห็น PA / CC / FC เมื่อส่งรายงานแล้ว", "ส่งให้ประธาน — ไม่ใช่คะแนนหลัก", "ไม่มีหน้ากรอกข้อตกลง และไม่อนุมัติ"],
     chair: ["ค้นผู้รับการประเมินแล้วเข้ากำหนดตัวชี้วัด", "อนุมัติ/ไม่อนุมัติข้อตกลงเมื่อสถานะขออนุมัติ", "ให้คะแนน PA 80 + CC 20 แล้วส่งคะแนน", "ประเมิน IDP เป็นไปตามที่คาดหวัง / ไม่เป็นไป", "ไม่กรอกภาระงานแทนผู้รับการประเมิน"],
     hr: ["สร้างรอบและปฏิทินของส่วนงาน", "ตรวจชุดประเมิน PA IDP CC FC MC ให้ครบตามตำแหน่ง", "นำเข้ากรรมการ · ติดตามตามปฏิทิน", "ไม่ให้คะแนนและไม่กรอก PA"],
@@ -1320,15 +1398,17 @@ function viewFormset() {
 
 function viewModules() {
   if (isHr() || isAdmin()) {
-    return chrome(`<div class="warn-box">วงจร 9 โมดูลเป็นของผู้อยู่ในรอบประเมิน ไม่ใช่หน้าที่ฝ่ายบุคคลากร/Admin</div>
+    return chrome(`<div class="warn-box">วงจรประเมินเป็นของผู้อยู่ในรอบ ไม่ใช่หน้าที่ฝ่ายบุคคลากร/Admin</div>
       <button class="btn-navy" data-go="formset">ไปชุดประเมิน</button>`);
   }
-  const cards = MODULES.map((m) => {
+  const list = currentModules();
+  const staff = track() === "support";
+  const cards = list.map((m) => {
     const allowed = moduleAllowed(m);
     const open = canOpen(m);
     const dis = allowed && open ? "" : "disabled";
     let why = "";
-    if (!allowed) why = isCommittee() ? "โมดูลนี้ไม่ใช่หน้าที่กรรมการ" : isRatee() && m.id === "idpEval" ? "ประเมิน IDP เป็นหน้าที่ประธาน" : "ไม่ใช่หน้าที่ของโหมดนี้";
+    if (!allowed) why = isCommittee() ? "โมดูลนี้ไม่ใช่หน้าที่กรรมการ" : isRatee() && m.id === "idpEval" ? "ประเมิน IDP เป็นหน้าที่ผู้อนุมัติ" : "ไม่ใช่หน้าที่ของโหมดนี้";
     else if (!open) why = "ยังไม่ถึงขั้นตอนนี้";
     return `<button class="mod" type="button" data-go="${m.id}" ${dis}>
       ${esc(m.title)}${m.sub ? `<small>${esc(m.sub)}</small>` : ""}
@@ -1340,7 +1420,7 @@ function viewModules() {
     <div class="pms-home">
       <div class="left">
         <h1>PA</h1>
-        <p>${who.track === "support" ? "ภาระงานสายสนับสนุน" : "ภาระงานอาจารย์"} · วงจร PMS</p>
+        <p>${staff ? "วงจร PA บุคคลากร" : "วงจร PA อาจารย์"} · ${staff ? "เอกสารสายสนับสนุน" : "ประกาศค่าน้ำหนัก / SHPA"}</p>
         <p class="hint" style="margin-top:18px">${esc(who.full)} · ${esc(who.position)}<br>${esc(FACULTY)}<br>ปีงบประมาณ ${esc(S.year)}</p>
         <p>PA ${statusPill(paStatus())} · IDP ${statusPill(idpStatus())}</p>
       </div>
@@ -1473,7 +1553,7 @@ function viewPA() {
       <button class="btn-navy" type="button" id="btnAsk">ขออนุมัติ</button>` : ""}
       <button class="btn-ghost" type="button" data-go="${isEval() ? "evalHome" : "modules"}">กลับ</button>
     </div>
-    <p class="hint">ช่องหน่วยภาระงานและคะแนนประเมินตนเองคำนวณอัตโนมัติจากประกาศคณะฯ พ.ศ. 2568 สายวิชาการ (ฐาน 1,820 หน่วย · PA 80 + CC 20) · ปีงบประมาณ ${esc(S.year)}</p>
+    <p class="hint">แบบของอาจารย์ตามเอกสาร DOC-PA.อ · หน่วยและคะแนนคำนวณจากประกาศคณะฯ พ.ศ. 2568 สายวิชาการ (ฐาน 1,820 หน่วย · PA 80 + CC 20) · ปีงบประมาณ ${esc(S.year)} · ไม่ใช้แบบข้อตกลงของบุคลากร</p>
   `);
 }
 
@@ -1537,8 +1617,97 @@ function viewSupportPA() {
       <button class="btn-navy" type="button" id="btnAsk">ขออนุมัติ</button>` : ""}
       <button class="btn-ghost" type="button" data-go="${isEval() ? "evalHome" : "modules"}">กลับ</button>
     </div>
-    <p class="hint">สายสนับสนุนใช้น้ำหนักรวม 100 ตาม UM-03 · ประกาศหน่วยภาระงานสายวิชาการไม่ใช้กับหน้านี้</p>
+    <p class="hint">แบบของบุคลากรตามเอกสาร PA บุคคลากร: ข้อตกลง 05 · ติดตาม 06 · รายงานผล 07 · แจ้งผล 08 · สรุปคะแนน 09 · คำมั่น 11 · IDP ผู้ปฏิบัติ/ผู้อนุมัติ · น้ำหนักรวม 100 · ประกาศหน่วย 1,820 ของอาจารย์ไม่ใช้กับหน้านี้</p>
   `);
+}
+
+function viewFollow() {
+  if (track() !== "support") {
+    return chrome(`<div class="warn-box">แบบติดตามผลการปฏิบัติงาน (แบบ 06) เป็นของบุคลากรสายสนับสนุน</div>
+      <button class="btn-navy" data-go="home">กลับหน้าหลักระบบงาน</button>`);
+  }
+  if (!canOpen({ need: "approved" })) {
+    return chrome(`<div class="warn-box">ติดตามผลได้เมื่อประธานอนุมัติข้อตกลงแล้ว</div>
+      <button class="btn-navy" data-go="pa">ไปแบบข้อตกลง 05</button>`);
+  }
+  const lock = !isRatee() && !isChair();
+  const rows = supportFollowRows().map(({ it, row }) => `<tr>
+    <td>${esc(it.no)}</td>
+    <td>${esc(it.title)}</td>
+    <td><input data-fol="${row.id}:progress" value="${esc(row.progress)}" placeholder="ความก้าวหน้า %" ${lock ? "disabled" : ""} /></td>
+    <td><textarea data-fol="${row.id}:problem" ${lock ? "disabled" : ""} placeholder="ปัญหา / อุปสรรค">${esc(row.problem)}</textarea></td>
+    <td><textarea data-fol="${row.id}:help" ${lock ? "disabled" : ""} placeholder="ความช่วยเหลือที่ต้องการ">${esc(row.help)}</textarea></td>
+  </tr>`).join("");
+  return chrome(`
+    <p class="crumb">PA บุคคลากร · แบบ 06 · ${esc(rateeAccount().full)}</p>
+    <h1 class="page-title">แบบติดตามผลการปฏิบัติงาน</h1>
+    <p class="hint">ตามเอกสาร PA บุคคลากร แบบ 06 · ไม่ใช่แบบรายงานผลปลายปี และไม่ใช่ตารางหน่วยอาจารย์</p>
+    <div class="pa-wrap"><table class="pa" style="min-width:1100px">
+      <thead><tr><th>ลำดับ</th><th>ข้อตกลง</th><th>ความก้าวหน้า</th><th>ปัญหาอุปสรรค</th><th>ความช่วยเหลือ</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <div class="footbar">
+      ${isRatee() || isChair() ? `<button class="btn-navy" type="button" id="btnSaveFollow">บันทึกการติดตาม</button>` : ""}
+      <button class="btn-ghost" data-go="modules">กลับวงจรบุคคลากร</button>
+    </div>`);
+}
+
+function viewScoreSum() {
+  if (track() !== "support") {
+    return chrome(`<div class="warn-box">แบบสรุปคะแนน (แบบ 09) เป็นของบุคลากรสายสนับสนุน</div>
+      <button class="btn-navy" data-go="report">ไปรายงานอาจารย์</button>`);
+  }
+  if (!canOpen({ need: "chair" })) {
+    return chrome(`<div class="warn-box">สรุปคะแนนได้เมื่อประธานส่งคะแนนแล้ว</div>
+      <button class="btn-navy" data-go="competency">ไปประเมินสมรรถนะ</button>`);
+  }
+  const tot = currentTotal(true);
+  const rows = S.supportItems.map((it) => `<tr>
+    <td>${esc(it.no)}</td><td>${esc(it.title)}</td><td>${esc(it.weight)}</td>
+    <td>${C.fmtScore(it.selfScore)}</td><td>${C.fmtScore(it.chairScore)}</td>
+  </tr>`).join("");
+  return chrome(`
+    <p class="crumb">PA บุคคลากร · แบบ 09 · ${esc(rateeAccount().full)}</p>
+    <h1 class="page-title">แบบสรุปคะแนนผลการประเมินการปฏิบัติงาน</h1>
+    ${profileBox()}
+    <div class="card">
+      <table class="data">
+        <thead><tr><th>ลำดับ</th><th>ข้อตกลง</th><th>น้ำหนัก</th><th>ตนเอง</th><th>ประธาน</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p class="score-big">${C.fmtScore(tot.total)} คะแนน · ${esc(tot.level)}</p>
+      <table class="data">
+        <tr><td>ผลการปฏิบัติงาน (Performance)</td><td>80</td><td>${C.fmtScore(tot.pa)}</td></tr>
+        <tr><td>สมรรถนะหลัก (Core Competency)</td><td>20</td><td>${C.fmtScore(tot.cc)}</td></tr>
+        <tr><td>รวม</td><td>100</td><td>${C.fmtScore(tot.total)}</td></tr>
+      </table>
+      <p class="hint">ระดับ: ดีเด่น 90–100 · ดีมาก 80–89.99 · ดี 70–79.99 · พอใช้ 60–69.99 · ควรปรับปรุง ต่ำกว่า 60</p>
+    </div>
+    <button class="btn-navy" data-go="ack">ไปแบบสรุปและแจ้งผล 08</button>`);
+}
+
+function viewPledge() {
+  if (track() !== "support") {
+    return chrome(`<div class="warn-box">แบบคำมั่น (แบบ 11) เป็นของบุคลากรสายสนับสนุน</div>
+      <button class="btn-navy" data-go="home">กลับหน้าหลักระบบงาน</button>`);
+  }
+  const p = S.supportPledge || { text: "", rateeSigned: false, chairSigned: false };
+  const rateeOn = isRatee();
+  const chairOn = isChair();
+  return chrome(`
+    <p class="crumb">PA บุคคลากร · แบบ 11 · ${esc(rateeAccount().full)}</p>
+    <h1 class="page-title">แบบคำมั่น ปีงบประมาณ ${esc(S.year)}</h1>
+    <div class="card">
+      <p>ผู้รับการประเมินให้คำมั่นต่อผู้บังคับบัญชาชั้นต้น ตามเอกสาร PA บุคคลากร แบบ 11</p>
+      <label>ข้อความคำมั่น</label>
+      <textarea id="pledgeText" ${rateeOn ? "" : "disabled"}>${esc(p.text)}</textarea>
+      <label class="chk"><input type="checkbox" id="pledgeRatee" ${p.rateeSigned ? "checked" : ""} ${rateeOn ? "" : "disabled"} /> ผู้รับการประเมินลงนามคำมั่น</label>
+      <label class="chk"><input type="checkbox" id="pledgeChair" ${p.chairSigned ? "checked" : ""} ${chairOn ? "" : "disabled"} /> ผู้บังคับบัญชาชั้นต้นรับทราบคำมั่น</label>
+      <div class="footbar">
+        ${rateeOn || chairOn ? `<button class="btn-navy" type="button" id="btnSavePledge">บันทึกแบบคำมั่น</button>` : ""}
+        <button class="btn-ghost" data-go="modules">กลับวงจรบุคคลากร</button>
+      </div>
+    </div>`);
 }
 
 function viewPaReport() {
@@ -1933,7 +2102,8 @@ function render() {
     competency: viewCompetency, ack: viewAck, idp: viewIdp, idpReport: viewIdpReport,
     idpEval: viewIdpEval, idpAck: viewIdpAck, report: viewReport,
     evalHome: viewEvalHome, adminPeople: viewAdminPeople, adminRound: viewAdminRound,
-    leave: viewLeave, time: viewTime, help: viewHelp
+    leave: viewLeave, time: viewTime, help: viewHelp,
+    paStaff: viewPaStaff, follow: viewFollow, scoreSum: viewScoreSum, pledge: viewPledge
   };
   root.innerHTML = (map[v] || viewHome)();
   bind();
@@ -1955,19 +2125,22 @@ function readCcFc() {
 }
 
 function bind() {
+  document.querySelectorAll("[data-lock]").forEach((b) => {
+    b.addEventListener("click", () => toast(b.getAttribute("data-lock")));
+  });
   document.querySelectorAll("[data-go]").forEach((b) => {
     b.addEventListener("click", () => {
       const id = b.getAttribute("data-go");
       const focus = b.getAttribute("data-focus");
       if (focus) S.focus = focus;
       if (id === "home") { go("home"); return; }
-      if (["period", "profile", "modules", "pa", "paReport", "ack", "idp", "idpReport", "idpAck", "competency"].includes(id)) {
+      if (["period", "profile", "modules", "pa", "paReport", "follow", "scoreSum", "pledge", "ack", "idp", "idpReport", "idpAck", "competency", "paStaff"].includes(id)) {
         if (isRatee() && S.focus !== account().track) S.focus = account().track;
       }
-      const mod = MODULES.find((m) => m.id === id);
+      const mod = currentModules().find((m) => m.id === id);
       if (mod && !moduleAllowed(mod)) { toast("โมดูลนี้ไม่ใช่หน้าที่ของโหมด " + account().roleLabel); return; }
-      if (mod && isRatee() && !canOpen(mod) && !["pa", "idp", "report"].includes(id)) {
-        toast("ยังไม่ถึงขั้นตอนนี้ตามวงจร PMS"); return;
+      if (mod && isRatee() && !canOpen(mod) && !["pa", "idp", "report", "competency", "pledge", "follow"].includes(id)) {
+        toast("ยังไม่ถึงขั้นตอนนี้ของวงจรที่เลือก"); return;
       }
       go(id);
     });
@@ -2102,6 +2275,30 @@ function bind() {
   if (iack) iack.addEventListener("click", () => ackIdp(true));
   const idis = document.getElementById("btnIdpDis");
   if (idis) idis.addEventListener("click", () => ackIdp(false));
+
+  const sf = document.getElementById("btnSaveFollow");
+  if (sf) sf.addEventListener("click", () => {
+    document.querySelectorAll("[data-fol]").forEach((el) => {
+      const [id, field] = el.dataset.fol.split(":");
+      const row = (S.supportFollow || []).find((x) => x.id === id);
+      if (row) row[field] = el.value;
+    });
+    persist();
+    toast("บันทึกแบบติดตาม 06 แล้ว");
+  });
+  const sp = document.getElementById("btnSavePledge");
+  if (sp) sp.addEventListener("click", () => {
+    S.supportPledge = S.supportPledge || {};
+    const t = document.getElementById("pledgeText");
+    const r = document.getElementById("pledgeRatee");
+    const c = document.getElementById("pledgeChair");
+    if (t && isRatee()) S.supportPledge.text = t.value;
+    if (r && isRatee()) S.supportPledge.rateeSigned = r.checked;
+    if (c && isChair()) S.supportPledge.chairSigned = c.checked;
+    persist();
+    toast("บันทึกแบบคำมั่น 11 แล้ว");
+    render();
+  });
 }
 
 window.addEventListener("hashchange", () => {
