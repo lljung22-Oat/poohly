@@ -1,4 +1,5 @@
 ดับเบิลคลิก เปิดตรงนี้.html
-ที่อยู่บน Windows ของ Agent Store:
-C:\Users\poohl\AppData\Local\Cursor\AgentStores\cursor_agent_stores\bc-f051f2a4-d271-4275-97e3-23a68972cd53\files\docs\เปิดตรงนี้.html
+อาจารย์: porntipa.c / 123456
+เจ้าหน้าที่: staff.sh / 123456
+ผู้ดูแล: admin.mu / Admin#2570
 อย่าเปิดไฟล์ .zip

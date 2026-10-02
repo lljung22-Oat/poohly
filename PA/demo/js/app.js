@@ -1,5 +1,6 @@
-const KEY = "mu-pms-demo-v5";
+const KEY = "mu-pms-demo-v6";
 const C = PAScore;
+const DB = window.PMSDB;
 
 const FACULTY = "คณะสังคมศาสตร์และมนุษยศาสตร์";
 
@@ -352,56 +353,63 @@ function defaultState() {
       rateeSigned: false,
       chairSigned: false
     },
-    modal: null
+    modal: null,
+    user: null,
+    users: [],
+    loginGate: "public",
+    loginType: ""
   };
 }
 
-function load() {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return defaultState();
-    const s = { ...defaultState(), ...JSON.parse(raw) };
-    if (!s.groups || !s.groups.length) s.groups = defaultGroups();
-    if (!s.supportItems || !s.supportItems.length) s.supportItems = defaultSupportItems();
-    if (!s.year || !["2569", "2570"].includes(String(s.year))) s.year = "2570";
-    if (!s.supportFollow) s.supportFollow = [];
-    if (!s.supportPledge) {
-      s.supportPledge = defaultState().supportPledge;
-    }
-    s.modal = null;
-    return s;
-  } catch {
-    return defaultState();
-  }
+function hydrate(raw) {
+  const s = { ...defaultState(), ...(raw || {}) };
+  if (!s.groups || !s.groups.length) s.groups = defaultGroups();
+  if (!s.supportItems || !s.supportItems.length) s.supportItems = defaultSupportItems();
+  if (!s.year || !["2569", "2570"].includes(String(s.year))) s.year = "2570";
+  if (!s.supportFollow) s.supportFollow = [];
+  if (!s.supportPledge) s.supportPledge = defaultState().supportPledge;
+  s.modal = null;
+  return s;
 }
 
 function persist() {
-  const copy = { ...S, modal: null };
-  localStorage.setItem(KEY, JSON.stringify(copy));
+  const copy = { ...S, modal: null, users: undefined };
+  try { localStorage.setItem(KEY, JSON.stringify(copy)); } catch { /* ignore */ }
+  if (DB && S.user && S.loggedIn) {
+    DB.saveRecord(S.user.id, S.year, copy);
+    DB.saveSession({ userId: S.user.id, year: S.year, view: S.view });
+    DB.audit(S.user.username, "save", S.view || "state");
+  }
 }
 
-let S = load();
+let S = hydrate();
 
 function account() {
-  return ACCOUNTS[S.account] || null;
+  return S.user || ACCOUNTS[S.account] || null;
 }
 
 function isRatee() { return account() && account().family === "ratee"; }
-function isFaculty() { return S.account === "faculty"; }
-function isSupport() { return S.account === "support"; }
-function isCommittee() { return S.account === "committee"; }
-function isChair() { return S.account === "chair"; }
-function isHr() { return S.account === "hr"; }
-function isAdmin() { return S.account === "admin"; }
-function isEval() { return isCommittee() || isChair(); }
+function isFaculty() { return account() && account().family === "ratee" && account().track === "faculty"; }
+function isSupport() { return account() && account().family === "ratee" && account().track === "support"; }
+function isCommittee() { return account() && account().family === "eval" && !account().canChair; }
+function isChair() { return account() && (account().role === "chair" || account().canChair); }
+function isHr() { return account() && account().role === "hr"; }
+function isAdmin() { return account() && (account().role === "admin" || account().canAdmin); }
+function isEval() { return account() && account().family === "eval"; }
 
 function track() {
   if (isRatee()) return account().track;
   return S.focus === "support" ? "support" : "faculty";
 }
 
+function rateeUsers() {
+  return (S.users || []).filter((u) => u.family === "ratee" && u.active);
+}
+
 function rateeAccount() {
-  return ACCOUNTS[track()] || ACCOUNTS.faculty;
+  const id = track();
+  return (S.users || []).find((u) => u.id === id || (u.track === id && u.family === "ratee"))
+    || ACCOUNTS[id] || ACCOUNTS.faculty;
 }
 
 function paStatus() { return track() === "support" ? S.supportStatus : S.paStatus; }
@@ -440,24 +448,59 @@ function go(view) {
 function logout() {
   S.loggedIn = false;
   S.account = "";
+  S.user = null;
   S.view = "login";
+  S.loginGate = "public";
+  S.loginType = "";
+  if (DB) DB.clearSession();
   persist();
   render();
 }
 
-function resetDemo() {
-  if (!confirm("ล้างข้อมูลเดโมแล้วเริ่มใหม่? โหมดที่ใช้อยู่ยังเป็นคนเดิม")) return;
-  const acc = S.account;
+async function resetDemo() {
+  if (!confirm("ล้างข้อมูลในฐานข้อมูลแล้วเริ่มใหม่?")) return;
+  const user = S.user;
   const year = S.year;
-  S = defaultState();
-  S.loggedIn = true;
-  S.account = acc;
+  if (DB) {
+    await DB.wipeDemo();
+    await DB.open();
+    await DB.seed();
+    S.users = await DB.listUsers();
+  }
+  S = hydrate();
   S.year = year;
   S.round = "รอบประเมินปีงบประมาณ " + year;
-  S.view = "home";
+  if (user) {
+    S.user = (S.users || []).find((u) => u.id === user.id) || user;
+    S.account = S.user.id;
+    S.loggedIn = true;
+    S.view = "home";
+  } else {
+    S.view = "login";
+  }
   persist();
   render();
-  toast("เริ่มเดโมใหม่แล้ว");
+  toast("ล้างฐานข้อมูลแล้ว");
+}
+
+async function enterUser(user) {
+  S.loggedIn = true;
+  S.user = user;
+  S.account = user.id;
+  S.focus = user.track || S.focus || "faculty";
+  let rec = null;
+  if (DB) rec = await DB.loadRecord(user.id, S.year);
+  if (rec) {
+    const keep = { user: S.user, users: S.users, loggedIn: true, account: user.id, year: S.year };
+    S = hydrate(rec);
+    Object.assign(S, keep);
+  }
+  S.view = "home";
+  S.round = "รอบประเมินปีงบประมาณ " + S.year;
+  persist();
+  location.hash = "home";
+  render();
+  window.scrollTo(0, 0);
 }
 
 function yearOptions() {
@@ -472,16 +515,10 @@ function setYear(y) {
 }
 
 function enterAccount(id) {
-  const acc = ACCOUNTS[id];
+  const fromDb = (S.users || []).find((u) => u.id === id);
+  const acc = fromDb || ACCOUNTS[id];
   if (!acc) { toast("ไม่พบบัญชีนี้"); return; }
-  S.loggedIn = true;
-  S.account = id;
-  S.focus = acc.track || S.focus || "faculty";
-  S.view = "home";
-  persist();
-  location.hash = "home";
-  render();
-  window.scrollTo(0, 0);
+  enterUser(acc);
 }
 
 function ico(name) {
@@ -973,7 +1010,7 @@ function modeBanner() {
         <select id="yearSel">${yearOptions()}</select>
       </label>
       <button type="button" id="btnReset">เริ่มเดโมใหม่</button>
-      <button type="button" id="btnSwitch">เปลี่ยนโหมด</button>
+      <button type="button" id="btnOut">ออกจากระบบ</button>
     </div>
   </div>`;
 }
@@ -1035,7 +1072,6 @@ function chrome(inner) {
         <span class="sep">|</span>
         <span class="year-inline">ปีงบประมาณ ${esc(S.year)}</span>
         <span class="sep">|</span>
-        <button type="button" id="btnSwitch">เปลี่ยนโหมด</button>
         <button type="button" id="btnOut">ออกจากระบบ</button>
       </div>
     </header>
@@ -1069,24 +1105,7 @@ function stepperHtml() {
   }).join("")}</div>`;
 }
 
-function viewLogin() {
-  const groups = [
-    {
-      title: "ผู้รับการประเมิน",
-      note: "คนที่ถูกประเมิน — อาจารย์กับสายสนับสนุนคนละแบบฟอร์ม",
-      ids: ["faculty", "support"]
-    },
-    {
-      title: "คณะประเมิน",
-      note: "กรรมการให้ความเห็น · ประธานอนุมัติและให้คะแนน",
-      ids: ["committee", "chair"]
-    },
-    {
-      title: "ฝ่ายบุคคลากร / ผู้ดูแลระบบ",
-      note: "ไม่ใช่ผู้ประเมิน และไม่กรอกภาระงาน",
-      ids: ["hr", "admin"]
-    }
-  ];
+function loginShell(inner) {
   return `
   <div class="login-wrap">
     <div class="login-head">
@@ -1094,30 +1113,82 @@ function viewLogin() {
       <h1>มหาวิทยาลัยมหิดล</h1>
       <p>ระบบสารสนเทศเพื่อการบริหารจัดการบุคลากร · คณะสังคมศาสตร์และมนุษยศาสตร์</p>
     </div>
-    <div class="login-box login-modes">
-      <h2>เลือกโหมดการใช้งาน</h2>
-      <p class="hint">เลือกโหมดก่อน แล้วเข้าหน้าหลักระบบงาน 7 การ์ด · PA บุคคลากร กับ PA อาจารย์คนละเอกสาร · ปีงบประมาณเริ่มต้น <b>2570</b> เลือก 2569 ได้</p>
-      <div class="year-pick login-year">
-        <label for="yearSel">ปีงบประมาณ</label>
-        <select id="yearSel">${yearOptions()}</select>
-      </div>
-      ${groups.map((g) => `
-        <h3 class="mode-group-title">${esc(g.title)}</h3>
-        <p class="mode-group-note">${esc(g.note)}</p>
-        <div class="mode-cards">
-          ${g.ids.map((id) => {
-            const a = ACCOUNTS[id];
-            return `<button type="button" class="mode-card tone-${a.tone}" data-enter="${a.id}">
-              <b>${esc(a.roleLabel)}</b>
-              <span class="who-line">${esc(a.full)}</span>
-              <small>${esc(a.roleSub)} · ${esc(a.position)}</small>
-              <em>${esc(a.hint)}</em>
-              <span class="user-tag">${esc(a.username)}</span>
-            </button>`;
-          }).join("")}
-        </div>`).join("")}
-    </div>
+    ${inner}
   </div>`;
+}
+
+function viewLogin() {
+  if (S.loginGate === "admin") return viewLoginAdmin();
+  if (S.loginGate === "eval") return viewLoginEval();
+  const picked = S.loginType;
+  return loginShell(`
+    <div class="login-box">
+      <h2>เข้าสู่ระบบ</h2>
+      <p class="hint">เลือกประเภทของตนเองเท่านั้น · ผู้ประเมินเข้าได้เมื่อผู้ดูแลสร้างบัญชีให้ · ปีงบประมาณเริ่มต้น <b>2570</b></p>
+      <div class="type-pick">
+        <button type="button" class="type-btn ${picked === "support" ? "on" : ""}" data-login-type="support">เจ้าหน้าที่</button>
+        <button type="button" class="type-btn ${picked === "faculty" ? "on" : ""}" data-login-type="faculty">อาจารย์</button>
+      </div>
+      ${picked ? `
+        <form id="loginForm">
+          <label>ชื่อผู้ใช้</label>
+          <input id="loginUser" autocomplete="username" required />
+          <label>รหัสผ่าน</label>
+          <input id="loginPass" type="password" autocomplete="current-password" required />
+          <div class="year-pick login-year">
+            <label for="yearSel">ปีงบประมาณ</label>
+            <select id="yearSel">${yearOptions()}</select>
+          </div>
+          <button class="btn-navy full" type="submit">เข้าสู่ระบบ</button>
+        </form>
+        <p class="hint">บัญชีตัวอย่าง${picked === "faculty" ? " อาจารย์: porntipa.c / 123456" : " เจ้าหน้าที่: staff.sh / 123456"}</p>
+      ` : `<p class="hint">เลือกเจ้าหน้าที่ หรือ อาจารย์ ก่อนกรอกชื่อผู้ใช้</p>`}
+      <p class="login-links">
+        <button type="button" class="linkish" data-gate="eval">สำหรับผู้ประเมินที่ได้รับสิทธิ์</button>
+        <button type="button" class="linkish quiet" data-gate="admin">ช่องทางผู้ดูแลระบบ</button>
+      </p>
+    </div>`);
+}
+
+function viewLoginEval() {
+  return loginShell(`
+    <div class="login-box">
+      <h2>เข้าสู่ระบบผู้ประเมิน</h2>
+      <p class="hint">เฉพาะบัญชีที่ผู้ดูแลสร้างและกำหนดสิทธิ์แล้ว</p>
+      <form id="loginForm">
+        <label>ชื่อผู้ใช้</label>
+        <input id="loginUser" autocomplete="username" required />
+        <label>รหัสผ่าน</label>
+        <input id="loginPass" type="password" autocomplete="current-password" required />
+        <div class="year-pick login-year">
+          <label for="yearSel">ปีงบประมาณ</label>
+          <select id="yearSel">${yearOptions()}</select>
+        </div>
+        <button class="btn-navy full" type="submit">เข้าสู่ระบบ</button>
+      </form>
+      <p class="login-links"><button type="button" class="linkish" data-gate="public">กลับเข้าสู่ระบบบุคลากร / อาจารย์</button></p>
+    </div>`);
+}
+
+function viewLoginAdmin() {
+  return loginShell(`
+    <div class="login-box">
+      <h2>ช่องทางผู้ดูแลระบบ</h2>
+      <p class="hint">ไม่แสดงในหน้าเข้าสู่ระบบทั่วไป · ใช้สร้างบัญชีและกำหนดสิทธิ์ผู้ประเมิน</p>
+      <form id="loginForm">
+        <label>ชื่อผู้ใช้ผู้ดูแล</label>
+        <input id="loginUser" autocomplete="username" required />
+        <label>รหัสผ่าน</label>
+        <input id="loginPass" type="password" autocomplete="current-password" required />
+        <div class="year-pick login-year">
+          <label for="yearSel">ปีงบประมาณ</label>
+          <select id="yearSel">${yearOptions()}</select>
+        </div>
+        <button class="btn-navy full" type="submit">เข้าช่องทางผู้ดูแล</button>
+      </form>
+      <p class="hint">บัญชีตั้งต้น admin.mu / Admin#2570</p>
+      <p class="login-links"><button type="button" class="linkish" data-gate="public">กลับเข้าสู่ระบบทั่วไป</button></p>
+    </div>`);
 }
 
 function dashCards(cards) {
@@ -1137,24 +1208,14 @@ function dashCards(cards) {
 }
 
 function hrisCards() {
-  const facultyLock = isSupport();
-  const staffLock = isFaculty();
+  const pa = isFaculty()
+    ? { go: "period", ico: "grad", title: "PA ภาระงานอาจารย์", sub: "ข้อตกลงตามประกาศสายวิชาการ / SHPA", cream: true }
+    : { go: "paStaff", ico: "clip", title: "PA ประเมินภาระงาน", sub: "ข้อตกลง PA บุคคลากร แบบ 05–11", cream: true };
   return [
     { go: "profile", ico: "person", title: "ข้อมูลบุคลากร", sub: "ประวัติและข้อมูลส่วนบุคคล" },
     { go: "leave", ico: "leave", title: "ข้อมูลวันลา", sub: "สถิติและการขออนุมัติวันลา" },
     { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" },
-    {
-      go: "paStaff", ico: "clip", title: "PA ประเมินภาระงาน",
-      sub: "(สายสนับสนุน / บุคลากรทั่วไป)",
-      locked: staffLock,
-      lockMsg: "แบบของบุคลากร ตามเอกสาร PA บุคคลากร — เข้าด้วยโหมดสายสนับสนุน"
-    },
-    {
-      go: "period", ico: "grad", title: "PA ภาระงานอาจารย์",
-      sub: "(สายวิชาการ / กรอบแบบฟอร์ม Matrix)", cream: true,
-      locked: facultyLock,
-      lockMsg: "แบบของอาจารย์ ตามประกาศค่าน้ำหนักและ SHPA — เข้าด้วยโหมดอาจารย์"
-    },
+    pa,
     { go: "competency", ico: "target", title: "Functional Competency", sub: "ประเมินสมรรถนะเฉพาะงาน", linkish: true },
     { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคล" }
   ];
@@ -1192,9 +1253,10 @@ function viewHome() {
     ]));
   }
   return chrome(dashCards([
+    { go: "users", ico: "people", title: "บัญชีและสิทธิ์", sub: "สร้างผู้ใช้ ตั้งรหัส กำหนดสิทธิ์ผู้ประเมิน" },
     { go: "adminPeople", ico: "people", title: "โครงสร้างส่วนงาน", sub: "นำเข้าส่วนงาน บุคลากร ผู้บังคับบัญชา" },
     { go: "adminRound", ico: "cal", title: "รอบประเมินทั้งมหาวิทยาลัย", sub: "ปีงบประมาณ 2569 และ 2570" },
-    { go: "help", ico: "shield", title: "ให้คำปรึกษาการใช้ระบบ", sub: "หน้าที่ Admin มหาวิทยาลัย" }
+    { go: "help", ico: "shield", title: "ให้คำปรึกษาการใช้ระบบ", sub: "ช่องทางผู้ดูแลระบบ" }
   ]));
 }
 
@@ -1237,13 +1299,13 @@ function viewHelp() {
     committee: ["เข้าจากรายชื่อผู้รับการประเมิน (UM-01)", "ให้ความเห็น PA / CC / FC เมื่อส่งรายงานแล้ว", "ส่งให้ประธาน — ไม่ใช่คะแนนหลัก", "ไม่มีหน้ากรอกข้อตกลง และไม่อนุมัติ"],
     chair: ["ค้นผู้รับการประเมินแล้วเข้ากำหนดตัวชี้วัด", "อนุมัติ/ไม่อนุมัติข้อตกลงเมื่อสถานะขออนุมัติ", "ให้คะแนน PA 80 + CC 20 แล้วส่งคะแนน", "ประเมิน IDP เป็นไปตามที่คาดหวัง / ไม่เป็นไป", "ไม่กรอกภาระงานแทนผู้รับการประเมิน"],
     hr: ["สร้างรอบและปฏิทินของส่วนงาน", "ตรวจชุดประเมิน PA IDP CC FC MC ให้ครบตามตำแหน่ง", "นำเข้ากรรมการ · ติดตามตามปฏิทิน", "ไม่ให้คะแนนและไม่กรอก PA"],
-    admin: ["นำเข้าโครงสร้างส่วนงาน บุคลากร ผู้บังคับบัญชา", "ให้คำปรึกษาการใช้ระบบ", "ไม่ใช่ผู้ประเมิน"]
+    admin: ["เข้าด้วยช่องทางผู้ดูแลระบบเท่านั้น", "สร้างบัญชีและกำหนดสิทธิ์ผู้ประเมิน", "ผู้ประเมินเห็นเฉพาะเมนูประเมิน", "บันทึกบัญชีและข้อตกลงลงฐานข้อมูล"]
   };
   return chrome(`
     <h1 class="page-title">การช่วยเหลือ · ${esc(a.roleLabel)}</h1>
     <div class="card">
       <p>${esc(a.hint)}</p>
-      <ul>${(blocks[a.id] || []).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+      <ul>${(blocks[a.role] || blocks[a.id] || []).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
     </div>`);
 }
 
@@ -1252,18 +1314,18 @@ function viewEvalHome() {
     return chrome(`<div class="warn-box">หน้ารายชื่อผู้รับการประเมินเป็นของกรรมการ ประธาน และฝ่ายบุคคลากร</div>
       <button class="btn-navy" data-go="home">กลับหน้าหลักของโหมดนี้</button>`);
   }
-  const rows = RATEES.map((r) => {
-    const st = r.id === "support" ? S.supportStatus : S.paStatus;
-    const idp = r.id === "support" ? S.supportIdpStatus : S.idpStatus;
+  const rows = rateeUsers().map((r) => {
+    const st = r.track === "support" ? S.supportStatus : S.paStatus;
+    const idp = r.track === "support" ? S.supportIdpStatus : S.idpStatus;
     return `<tr>
-      <td>${esc(r.name)}</td>
+      <td>${esc(r.full)}</td>
       <td>${esc(r.position)}<div class="hint">${esc(r.type)}</div></td>
       <td>${statusPill(st)}</td>
       <td>${statusPill(idp)}</td>
       <td>
-        <button class="act" data-focus="${r.id}" data-go="${isCommittee() ? "competency" : "pa"}">${isChair() ? "เปิดข้อตกลง" : "ให้ความเห็น"}</button>
-        ${isChair() ? `<button class="act" data-focus="${r.id}" data-go="competency">ให้คะแนน</button>
-        <button class="act" data-focus="${r.id}" data-go="idp">IDP</button>` : ""}
+        <button class="act" data-focus="${r.track || r.id}" data-go="${isCommittee() ? "competency" : "pa"}">${isChair() ? "เปิดข้อตกลง" : "ให้ความเห็น"}</button>
+        ${isChair() ? `<button class="act" data-focus="${r.track || r.id}" data-go="competency">ให้คะแนน</button>
+        <button class="act" data-focus="${r.track || r.id}" data-go="idp">IDP</button>` : ""}
       </td>
     </tr>`;
   }).join("");
@@ -1274,6 +1336,67 @@ function viewEvalHome() {
       <p class="hint">เลือกคนก่อน แล้วระบบจะเปิดหน้าที่ของโหมดนี้เท่านั้น · ปีงบประมาณ ${esc(S.year)}</p>
       <table class="data">
         <thead><tr><th>ชื่อ</th><th>ตำแหน่ง</th><th>สถานะ PA</th><th>สถานะ IDP</th><th>Action</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`);
+}
+
+function rolePreset(role) {
+  const map = {
+    faculty: { family: "ratee", track: "faculty", role: "faculty", roleLabel: "ผู้รับการประเมิน", roleSub: "อาจารย์", type: "สายวิชาการ", tone: "ratee", hint: "กรอกข้อตกลงสายวิชาการของตนเอง" },
+    support: { family: "ratee", track: "support", role: "support", roleLabel: "ผู้รับการประเมิน", roleSub: "บุคลากรสายสนับสนุน", type: "สายสนับสนุน", tone: "support", hint: "กรอกแบบ PA บุคคลากรของตนเอง" },
+    committee: { family: "eval", track: null, role: "committee", roleLabel: "กรรมการประเมิน", roleSub: "ผู้ประเมิน", type: "คณะประเมิน", tone: "eval", canEval: true, hint: "ให้ความเห็นแล้วส่งประธาน" },
+    chair: { family: "eval", track: null, role: "chair", roleLabel: "ประธานกรรมการประเมิน", roleSub: "ผู้ประเมิน", type: "ผู้ประเมิน", tone: "chair", canEval: true, canChair: true, hint: "อนุมัติข้อตกลงและให้คะแนน" },
+    hr: { family: "admin", track: null, role: "hr", roleLabel: "ฝ่ายบุคคลากร", roleSub: "Admin ส่วนงาน", type: "ฝ่ายบุคคลากรส่วนงาน", tone: "hr", canHr: true, hint: "รอบและชุดประเมิน ไม่ให้คะแนน" }
+  };
+  return map[role] || map.committee;
+}
+
+function viewUsers() {
+  if (!isAdmin()) {
+    return chrome(`<div class="warn-box">สร้างบัญชีและกำหนดสิทธิ์ได้เฉพาะช่องทางผู้ดูแลระบบ</div>
+      <button class="btn-navy" data-go="home">กลับหน้าหลัก</button>`);
+  }
+  const rows = (S.users || []).map((u) => `<tr>
+    <td>${esc(u.username)}</td>
+    <td>${esc(u.full)}</td>
+    <td>${esc(u.roleLabel)} · ${esc(u.roleSub)}</td>
+    <td>${u.active ? `<span class="pill pill-green">ใช้งาน</span>` : `<span class="pill pill-red">ปิด</span>`}</td>
+    <td>
+      <button class="act" data-toggle-user="${u.id}">${u.active ? "ปิดบัญชี" : "เปิดบัญชี"}</button>
+      <button class="act" data-reset-user="${u.id}">ตั้งรหัสใหม่</button>
+    </td>
+  </tr>`).join("");
+  return chrome(`
+    <p class="crumb">ผู้ดูแลระบบ · ความปลอดภัย</p>
+    <h1 class="page-title">บัญชีผู้ใช้และสิทธิ์</h1>
+    <div class="card">
+      <h3>สร้างบัญชีผู้ประเมิน / บุคลากร</h3>
+      <p class="hint">ผู้ประเมินเข้าได้เฉพาะช่องทางผู้ประเมิน หลังผู้ดูแลสร้างให้แล้ว</p>
+      <form id="createUserForm" class="user-form">
+        <label>ประเภทสิทธิ์</label>
+        <select id="newRole">
+          <option value="committee">กรรมการประเมิน</option>
+          <option value="chair">ประธานกรรมการประเมิน</option>
+          <option value="faculty">อาจารย์ (ผู้รับการประเมิน)</option>
+          <option value="support">เจ้าหน้าที่ (ผู้รับการประเมิน)</option>
+          <option value="hr">ฝ่ายบุคคลากร</option>
+        </select>
+        <label>ชื่อ-นามสกุล</label>
+        <input id="newFull" required />
+        <label>ชื่อผู้ใช้</label>
+        <input id="newUser" required />
+        <label>รหัสผ่าน</label>
+        <input id="newPass" type="password" required minlength="4" />
+        <label>ตำแหน่ง</label>
+        <input id="newPos" />
+        <button class="btn-navy" type="submit">บันทึกลงฐานข้อมูล</button>
+      </form>
+    </div>
+    <div class="card">
+      <h3>บัญชีในฐานข้อมูล</h3>
+      <table class="data">
+        <thead><tr><th>ผู้ใช้</th><th>ชื่อ</th><th>สิทธิ์</th><th>สถานะ</th><th></th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>`);
@@ -2103,7 +2226,8 @@ function render() {
     idpEval: viewIdpEval, idpAck: viewIdpAck, report: viewReport,
     evalHome: viewEvalHome, adminPeople: viewAdminPeople, adminRound: viewAdminRound,
     leave: viewLeave, time: viewTime, help: viewHelp,
-    paStaff: viewPaStaff, follow: viewFollow, scoreSum: viewScoreSum, pledge: viewPledge
+    paStaff: viewPaStaff, follow: viewFollow, scoreSum: viewScoreSum, pledge: viewPledge,
+    users: viewUsers
   };
   root.innerHTML = (map[v] || viewHome)();
   bind();
@@ -2145,11 +2269,80 @@ function bind() {
       go(id);
     });
   });
-  document.querySelectorAll("[data-enter]").forEach((b) => {
+  document.querySelectorAll("[data-login-type]").forEach((b) => {
     b.addEventListener("click", () => {
-      const sel = document.getElementById("yearSel");
-      if (sel) setYear(sel.value);
-      enterAccount(b.getAttribute("data-enter"));
+      S.loginType = b.getAttribute("data-login-type");
+      render();
+    });
+  });
+  document.querySelectorAll("[data-gate]").forEach((b) => {
+    b.addEventListener("click", () => {
+      S.loginGate = b.getAttribute("data-gate");
+      S.loginType = "";
+      render();
+    });
+  });
+  const loginForm = document.getElementById("loginForm");
+  if (loginForm) loginForm.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const sel = document.getElementById("yearSel");
+    if (sel) setYear(sel.value);
+    const username = (document.getElementById("loginUser") || {}).value || "";
+    const password = (document.getElementById("loginPass") || {}).value || "";
+    if (!DB) { toast("ฐานข้อมูลยังไม่พร้อม"); return; }
+    let gate = "eval";
+    if (S.loginGate === "admin") gate = "admin";
+    else if (S.loginGate === "public" && S.loginType === "faculty") gate = "ratee-faculty";
+    else if (S.loginGate === "public" && S.loginType === "support") gate = "ratee-support";
+    const res = await DB.verify(username, password, gate);
+    if (!res.ok) { toast(res.reason); return; }
+    S.users = await DB.listUsers();
+    await enterUser(res.user);
+    toast("เข้าสู่ระบบแล้ว · บันทึกลงฐานข้อมูล");
+  });
+  const cu = document.getElementById("createUserForm");
+  if (cu) cu.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    if (!isAdmin() || !DB) return;
+    try {
+      const preset = rolePreset(document.getElementById("newRole").value);
+      await DB.createUser({
+        ...preset,
+        username: document.getElementById("newUser").value,
+        password: document.getElementById("newPass").value,
+        full: document.getElementById("newFull").value,
+        position: document.getElementById("newPos").value
+      }, account().username);
+      S.users = await DB.listUsers();
+      persist();
+      render();
+      toast("สร้างบัญชีลงฐานข้อมูลแล้ว");
+    } catch (err) {
+      toast(err.message || String(err));
+    }
+  });
+  document.querySelectorAll("[data-toggle-user]").forEach((b) => {
+    b.addEventListener("click", async () => {
+      if (!isAdmin() || !DB) return;
+      const u = (S.users || []).find((x) => x.id === b.getAttribute("data-toggle-user"));
+      if (!u) return;
+      if (u.canAdmin) { toast("ปิดบัญชีผู้ดูแลตั้งต้นไม่ได้"); return; }
+      await DB.setActive(u.id, !u.active, account().username);
+      S.users = await DB.listUsers();
+      render();
+    });
+  });
+  document.querySelectorAll("[data-reset-user]").forEach((b) => {
+    b.addEventListener("click", async () => {
+      if (!isAdmin() || !DB) return;
+      const pass = prompt("รหัสผ่านใหม่ (อย่างน้อย 4 ตัว)");
+      if (!pass) return;
+      try {
+        await DB.setPassword(b.getAttribute("data-reset-user"), pass, account().username);
+        toast("ตั้งรหัสใหม่ลงฐานข้อมูลแล้ว");
+      } catch (err) {
+        toast(err.message || String(err));
+      }
     });
   });
   const yp = document.getElementById("goProfile");
@@ -2304,22 +2497,33 @@ function bind() {
 window.addEventListener("hashchange", () => {
   const h = location.hash.replace("#", "");
   if (!h) return;
-  if (!S.loggedIn && h !== "login") return;
+  if (!S.loggedIn) {
+    if (h === "admin") { S.loginGate = "admin"; render(); }
+    return;
+  }
   S.view = h;
   render();
 });
 
-(function applyQuery() {
+function applyQuery() {
   const q = new URLSearchParams(location.search);
+  if (q.get("admin") === "1" || location.hash === "#admin") S.loginGate = "admin";
   const view = q.get("view");
   const seed = q.get("seed");
   const acc = q.get("account");
-  if (acc && ACCOUNTS[acc]) {
-    S.loggedIn = true;
-    S.account = acc;
+  if (acc) {
+    const u = (S.users || []).find((x) => x.id === acc || x.username === acc) || ACCOUNTS[acc];
+    if (u) {
+      S.loggedIn = true;
+      S.user = u;
+      S.account = u.id;
+    }
   }
   if (view || seed) {
-    if (!S.account) S.account = "faculty";
+    if (!S.user && ACCOUNTS.faculty) {
+      S.user = ACCOUNTS.faculty;
+      S.account = "faculty";
+    }
     S.loggedIn = true;
     if (seed === "approved") setPaStatus("approved");
     if (seed === "reported") {
@@ -2340,6 +2544,39 @@ window.addEventListener("hashchange", () => {
   }
   const h = location.hash.replace("#", "");
   if (h && S.loggedIn) S.view = h;
-})();
+}
 
+applyQuery();
 render();
+
+async function boot() {
+  try {
+    if (DB) {
+      await DB.open();
+      await DB.seed();
+      S.users = await DB.listUsers();
+      const sess = await DB.loadSession();
+      if (sess && sess.userId && !new URLSearchParams(location.search).get("account")) {
+        const u = await DB.getUser(sess.userId);
+        if (u && u.active) {
+          S.user = u;
+          S.account = u.id;
+          S.loggedIn = true;
+          if (sess.year) setYear(sess.year);
+          const rec = await DB.loadRecord(u.id, S.year);
+          if (rec) {
+            const keep = { user: u, users: S.users, loggedIn: true, account: u.id, year: S.year };
+            S = hydrate(rec);
+            Object.assign(S, keep);
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error(err);
+  }
+  applyQuery();
+  render();
+}
+
+boot();
