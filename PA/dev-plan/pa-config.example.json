@@ -1,0 +1,76 @@
+{
+  "facultyName": "คณะสังคมศาสตร์และมนุษยศาสตร์",
+  "sampleRatee": {
+    "full": "น.ส.พรทิพา เซี่ยงฉิน",
+    "position": "อาจารย์",
+    "track": "faculty",
+    "staffId": "10101642",
+    "username": "porntipa.c"
+  },
+  "years": ["2570", "2569"],
+  "defaultYear": "2570",
+  "tracks": ["faculty", "support"],
+  "form11": { "enabled": false, "sourceFile": "11 แบบคำมั่น 2569.docx" },
+  "paReport": {
+    "mode": "numericSelfScore",
+    "allowLongNarrative": false,
+    "selfScoreMin": 0,
+    "selfScoreMax": 10
+  },
+  "labelMap": {
+    "ratee": "ผู้รับการประเมิน",
+    "firstHead": "หัวหน้างานขั้นต้น",
+    "head": "หัวหน้างาน",
+    "facultySign": "คณะติดลงนาม",
+    "hr": "ฝ่ายบุคคลากร",
+    "admin": "Admin มหาวิทยาลัย",
+    "pmsCommitteeWord": "กรรมการประเมิน",
+    "pmsChairWord": "ประธานกรรมการประเมิน"
+  },
+  "roles": ["faculty", "support", "firstHead", "head", "hr", "admin"],
+  "weights": { "pa": 80, "cc": 20 },
+  "faculty": {
+    "totalUnits": 1820,
+    "groups": [
+      { "id": "strat", "no": 1, "pct": 25, "cap": 455 },
+      { "id": "main", "no": 2, "pct": 55, "cap": 1000 },
+      { "id": "assign", "no": 3, "pct": 15, "cap": 273 },
+      { "id": "community", "no": 4, "pct": 5, "cap": 92 }
+    ]
+  },
+  "cc": { "count": 7, "maxEach": 10 },
+  "idp": {
+    "maxItemsHint": 2,
+    "hardBlockOverMax": false,
+    "methods": ["70", "20", "10"],
+    "resultLabels": ["เป็นไปตามที่คาดหวัง", "ไม่เป็นไปตามที่คาดหวัง"]
+  },
+  "scale5": [
+    { "min": 9, "max": 10, "label": "สูงกว่าเป้าหมาย" },
+    { "min": 7, "max": 8, "label": "ตามเป้าหมาย" },
+    { "min": 5, "max": 6, "label": "ใกล้เคียงเป้าหมาย" },
+    { "min": 3, "max": 4, "label": "ต่ำกว่าเป้าหมาย" },
+    { "min": 0, "max": 2, "label": "ต่ำกว่าเป้าหมายมาก" }
+  ],
+  "levels": [
+    { "min": 90, "max": 100, "label": "ดีเด่น" },
+    { "min": 80, "max": 89.99, "label": "ดีมาก" },
+    { "min": 70, "max": 79.99, "label": "ดี" },
+    { "min": 60, "max": 69.99, "label": "พอใช้" },
+    { "min": 0, "max": 59.99, "label": "ควรปรับปรุง" }
+  ],
+  "lockAfterSend": true,
+  "staffRubrics": "SOURCE_MISSING",
+  "staffFormFields": {
+    "form05": "SOURCE_MISSING",
+    "form06": "SOURCE_MISSING",
+    "form07": "SOURCE_MISSING",
+    "form08": "SOURCE_MISSING",
+    "form09": "SOURCE_MISSING"
+  },
+  "sourcePacks": {
+    "personnel": "docs/pa-dev-plan/01-บัญชีเอกสารและชื่อเรียก.md#ชุดที่-1",
+    "faculty": "docs/pa-dev-plan/01-บัญชีเอกสารและชื่อเรียก.md#ชุดที่-2",
+    "manuals": "docs/pa-manuals-digest.md"
+  }
+}
