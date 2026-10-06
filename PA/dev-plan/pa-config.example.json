@@ -1,4 +1,21 @@
 {
+  "stack": {
+    "frontend": {
+      "framework": "React",
+      "markup": "HTML/CSS",
+      "css": "Tailwind CSS",
+      "duties": ["ui-components", "state-management", "api-requests"]
+    },
+    "backend": {
+      "chosen": "Node.js (Express)",
+      "allowed": ["Node.js (Express)", "Python (FastAPI)", "C# (.NET)"],
+      "duties": ["rest-and-or-graphql", "business-logic", "authentication-jwt"]
+    },
+    "database": {
+      "engine": "MySQL",
+      "duties": ["schema", "crud"]
+    }
+  },
   "facultyName": "คณะสังคมศาสตร์และมนุษยศาสตร์",
   "sampleRatee": {
     "full": "น.ส.พรทิพา เซี่ยงฉิน",
