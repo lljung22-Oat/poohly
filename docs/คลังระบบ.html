@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>คลังระบบประเมินผลการปฏิบัติงาน</title>
+  <style>
+    :root { --ink:#1a2744; --navy:#1e3a5f; --line:#c9d4e4; --bg:#f4f1ea; --card:#fff; --miss:#8a1c1c; --ok:#1b4d3e; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Sarabun", "Thonburi", sans-serif; font-size: 22px; line-height: 1.55; }
+    body { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+    nav { background: var(--navy); color: #fff; padding: 24px 18px; position: sticky; top: 0; height: 100vh; overflow: auto; }
+    nav h1 { font-size: 26px; margin: 0 0 16px; line-height: 1.3; }
+    nav button { display: block; width: 100%; text-align: left; background: transparent; color: #fff; border: 0; border-bottom: 1px solid rgba(255,255,255,.15); padding: 14px 8px; font-size: 20px; cursor: pointer; }
+    nav button.on { background: #c9a227; color: #1a1404; font-weight: 700; }
+    main { padding: 28px 36px 80px; max-width: 1100px; }
+    h2 { font-size: 36px; margin: 0 0 16px; }
+    h3 { font-size: 28px; margin: 28px 0 12px; }
+    p, li { font-size: 22px; }
+    table { width: 100%; border-collapse: collapse; background: var(--card); margin: 12px 0 24px; }
+    th, td { border: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; font-size: 20px; }
+    th { background: #e8eef6; }
+    .card { background: var(--card); border: 1px solid var(--line); padding: 18px 20px; margin: 0 0 18px; }
+    .miss { color: var(--miss); font-weight: 700; }
+    .ok { color: var(--ok); font-weight: 700; }
+    .hide { display: none; }
+    code { font-size: 18px; background: #eee8d8; padding: 0 6px; }
+    @media (max-width: 900px) {
+      body { grid-template-columns: 1fr; }
+      nav { height: auto; position: relative; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <h1>คลังระบบประเมินผลการปฏิบัติงาน</h1>
+    <button class="on" data-go="home">ภาพรวม</button>
+    <button data-go="roles">บทบาท</button>
+    <button data-go="screens">หน้าจอ</button>
+    <button data-go="vars">ตัวแปร</button>
+    <button data-go="formulas">ชื่อสูตร</button>
+    <button data-go="files">แผนที่แฟ้ม</button>
+    <button data-go="packets">เจ้าของซองงาน</button>
+  </nav>
+  <main id="view"></main>
+  <script>
+  const CFG = {
+    stack: {
+      frontend: "React + HTML/CSS + Tailwind CSS",
+      backendChosen: "Express",
+      backendImplementation: "Node.js (Express)",
+      parallel: false,
+      allowedDocumented: ["Node.js (Express)", "Python (FastAPI)", "C# (.NET)"],
+      database: "MySQL"
+    },
+    facultyName: "คณะสังคมศาสตร์และมนุษยศาสตร์",
+    years: ["2570", "2569"],
+    defaultYear: "2570",
+    tracks: ["faculty", "support"],
+    roles: ["faculty", "support", "firstHead", "head", "hr", "admin"],
+    labelMap: {
+      ratee: "ผู้รับการประเมิน",
+      firstHead: "หัวหน้างานขั้นต้น",
+      head: "หัวหน้างาน",
+      facultySign: "คณะติดลงนาม",
+      hr: "ฝ่ายบุคคลากร",
+      admin: "ผู้ดูแลระบบมหาวิทยาลัย"
+    },
+    weights: { pa: 80, cc: 20 },
+    faculty: { totalUnits: 1820, groups: [
+      { id: "strat", no: 1, pct: 25, cap: 455, name: "งานตามภารกิจที่สอดคล้องกับประเด็นยุทธศาสตร์ของมหาวิทยาลัยและแผนกลยุทธ์ของส่วนงาน" },
+      { id: "main", no: 2, pct: 55, cap: 1000, name: "งานตามภารกิจหลักของตำแหน่งงาน ตามหน้าที่ความรับผิดชอบ ตามคำบรรยายลักษณะงาน" },
+      { id: "assign", no: 3, pct: 15, cap: 273, name: "งานที่ได้รับมอบหมาย" },
+      { id: "community", no: 4, pct: 5, cap: 92, name: "งานเพื่อส่วนรวม" }
+    ]},
+    cc: { count: 7 },
+    paReport: { mode: "numericSelfScore" },
+    form11: { enabled: false },
+    missing: ["staffRubrics", "staffFormFields.form05", "staffFormFields.form06", "staffFormFields.form07", "staffFormFields.form08", "staffFormFields.form09"]
+  };
+
+  const PAGES = {
+    home: () => `
+      <h2>ภาพรวมระบบ</h2>
+      <div class="card">
+        <p>ส่วนงาน ${CFG.facultyName}</p>
+        <p>ส่วนติดต่อผู้ใช้ ${CFG.stack.frontend}</p>
+        <p>ส่วนบริการที่สร้างจริง <b>${CFG.stack.backendChosen}</b> คือ ${CFG.stack.backendImplementation}</p>
+        <p>ฐานข้อมูล ${CFG.stack.database}</p>
+        <p>ทางเลือกในเอกสารเท่านั้น ${CFG.stack.allowedDocumented.slice(1).join(" และ ")} — ห้ามสร้างขนาน</p>
+        <p>ปีงบประมาณ ${CFG.years.join(" และ ")} ค่าเริ่มต้น ${CFG.defaultYear}</p>
+      </div>
+      <div class="card">
+        <p class="miss">SOURCE_MISSING หลักเกณฑ์สายสนับสนุนและช่องแบบพิมพ์ 05 ถึง 09 จนกว่าจะคัดจากต้นฉบับ</p>
+        <p>ห้ามคิดเกณฑ์เอง ห้ามเพิ่มตัวแปรใหม่นอกแฟ้มกำหนดค่า</p>
+      </div>
+    `,
+    roles: () => `
+      <h2>บทบาท</h2>
+      <table>
+        <tr><th>รหัส</th><th>ป้ายบนจอ</th><th>หน้าที่</th><th>หน้าหลักที่เห็น</th></tr>
+        <tr><td>faculty</td><td>${CFG.labelMap.ratee} สายวิชาการ</td><td>จัดทำข้อตกลงตามประกาศ ประเมินตนเอง รับทราบ จัดทำแผนพัฒนารายบุคคล</td><td>ข้อมูลบุคลากร ข้อตกลงสายวิชาการ ประเมินผลงาน สมรรถนะ รับทราบ แผนพัฒนา</td></tr>
+        <tr><td>support</td><td>${CFG.labelMap.ratee} สายสนับสนุน</td><td>จัดทำข้อตกลงตามแบบพิมพ์บุคคลากร ประเมินตนเอง รับทราบ จัดทำแผนพัฒนารายบุคคล</td><td>ข้อมูลบุคลากร แบบข้อตกลง แบบติดตาม ประเมินผลงาน สรุปและแจ้งผล แผนพัฒนา</td></tr>
+        <tr><td>firstHead</td><td>${CFG.labelMap.firstHead}</td><td>ให้คะแนนแล้วส่ง${CFG.labelMap.head}</td><td>รายชื่อผู้รับการประเมิน ประเมินผล รายงาน การช่วยเหลือ</td></tr>
+        <tr><td>head</td><td>${CFG.labelMap.head}</td><td>อนุมัติข้อตกลง ให้คะแนน ส่งคะแนน อนุมัติและประเมินแผนพัฒนารายบุคคล</td><td>รายชื่อ อนุมัติข้อตกลง ให้คะแนน แผนพัฒนา รายงาน</td></tr>
+        <tr><td>hr</td><td>${CFG.labelMap.hr}</td><td>รอบ ปฏิทิน ชุดประเมิน นำเข้าผู้ประเมิน ห้ามให้คะแนน</td><td>รอบและปฏิทิน ชุดประเมิน บุคลากร ติดตาม</td></tr>
+        <tr><td>admin</td><td>${CFG.labelMap.admin}</td><td>โครงสร้าง บัญชี สิทธิ์ ห้ามกรอกข้อตกลงแทน</td><td>โครงสร้างและบัญชี</td></tr>
+      </table>
+    `,
+    screens: () => `
+      <h2>หน้าจอตามบทบาท</h2>
+      <table>
+        <tr><th>หน้า</th><th>สายวิชาการ</th><th>สายสนับสนุน</th><th>หัวหน้างานขั้นต้น</th><th>หัวหน้างาน</th><th>ฝ่ายบุคคลากร</th><th>ผู้ดูแลระบบ</th></tr>
+        <tr><td>เข้าสู่ระบบบุคลากรหรืออาจารย์</td><td>เปิด</td><td>เปิด</td><td>ซ่อน</td><td>ซ่อน</td><td>ซ่อน</td><td>ซ่อน</td></tr>
+        <tr><td>ช่องทางผู้ประเมิน</td><td>ซ่อน</td><td>ซ่อน</td><td>เปิด</td><td>เปิด</td><td>ซ่อน</td><td>ซ่อน</td></tr>
+        <tr><td>ช่องทางผู้ดูแลระบบ</td><td>ซ่อน</td><td>ซ่อน</td><td>ซ่อน</td><td>ซ่อน</td><td>ตามสิทธิ์</td><td>เปิด</td></tr>
+        <tr><td>ข้อตกลงสายวิชาการและ SHPA</td><td>เปิด</td><td>ซ่อน</td><td>ดูเมื่อดูแลสายนี้</td><td>อนุมัติเมื่อดูแลสายนี้</td><td>ตรวจชุด</td><td>ห้ามให้คะแนน</td></tr>
+        <tr><td>แบบพิมพ์ 05 ถึง 09</td><td>ซ่อน</td><td>เปิด</td><td>ดูเมื่อดูแลสายนี้</td><td>อนุมัติเมื่อดูแลสายนี้</td><td>ตรวจชุด</td><td>ห้ามให้คะแนน</td></tr>
+        <tr><td>ประเมินผลงาน ตัวเลขและประเมินตนเอง</td><td>เปิดของตน</td><td>เปิดของตน</td><td>ห้ามกรอกแทน</td><td>ห้ามกรอกแทน</td><td>ซ่อน</td><td>ซ่อน</td></tr>
+        <tr><td>ประเมินสมรรถนะ</td><td>ประเมินตนเอง</td><td>ประเมินตนเอง</td><td>ให้คะแนนแล้วส่ง</td><td>ให้คะแนน ตรวจสอบ ส่งคะแนน</td><td>ห้ามให้คะแนน</td><td>ห้ามให้คะแนน</td></tr>
+        <tr><td>แผนพัฒนารายบุคคลผู้ปฏิบัติ</td><td>เปิดของตน</td><td>เปิดของตน</td><td>ดู</td><td>อนุมัติและประเมินผล</td><td>ตรวจว่ามีชุด</td><td>ซ่อน</td></tr>
+        <tr><td>แบบคำมั่น</td><td colspan="6">ปิด เพราะ form11.enabled เป็นเท็จ</td></tr>
+      </table>
+      <p>วงจรเก้าขั้นตามคำแนะนำระบบบริหารผลการปฏิบัติงาน ชื่อโมดูลใช้ตามต้นฉบับ คู่กับชื่อแบบพิมพ์เมื่อเป็นสายสนับสนุน</p>
+    `,
+    vars: () => `
+      <h2>ตัวแปรในแฟ้มกำหนดค่า</h2>
+      <p>ใช้ได้เฉพาะคีย์ที่มีอยู่แล้ว ห้ามเพิ่มฟิลด์</p>
+      <table>
+        <tr><th>คีย์</th><th>ค่า</th></tr>
+        <tr><td>stack.backend.chosen</td><td>${CFG.stack.backendChosen}</td></tr>
+        <tr><td>stack.backend.implementation</td><td>${CFG.stack.backendImplementation}</td></tr>
+        <tr><td>stack.backend.parallelImplementations</td><td>${CFG.stack.parallel}</td></tr>
+        <tr><td>stack.frontend</td><td>${CFG.stack.frontend}</td></tr>
+        <tr><td>stack.database</td><td>${CFG.stack.database}</td></tr>
+        <tr><td>facultyName</td><td>${CFG.facultyName}</td></tr>
+        <tr><td>years / defaultYear</td><td>${CFG.years.join(", ")} / ${CFG.defaultYear}</td></tr>
+        <tr><td>tracks</td><td>${CFG.tracks.join(", ")}</td></tr>
+        <tr><td>roles</td><td>${CFG.roles.join(", ")}</td></tr>
+        <tr><td>labelMap.firstHead / head</td><td>${CFG.labelMap.firstHead} / ${CFG.labelMap.head}</td></tr>
+        <tr><td>weights.pa / weights.cc</td><td>${CFG.weights.pa} / ${CFG.weights.cc}</td></tr>
+        <tr><td>faculty.totalUnits</td><td>${CFG.faculty.totalUnits}</td></tr>
+        <tr><td>cc.count</td><td>${CFG.cc.count}</td></tr>
+        <tr><td>paReport.mode</td><td>${CFG.paReport.mode}</td></tr>
+        <tr><td>form11.enabled</td><td>${CFG.form11.enabled}</td></tr>
+      </table>
+      <h3>เพดานกลุ่มสายวิชาการตามประกาศที่คัดแล้ว</h3>
+      <table>
+        <tr><th>ภาระงานที่</th><th>ร้อยละ</th><th>เพดานหน่วย</th><th>ชื่อตามคำแนะนำระบบ</th></tr>
+        ${CFG.faculty.groups.map(g => `<tr><td>${g.no}</td><td>${g.pct}</td><td>${g.cap}</td><td>${g.name}</td></tr>`).join("")}
+      </table>
+      <h3 class="miss">SOURCE_MISSING</h3>
+      <ul>${CFG.missing.map(x => `<li class="miss">${x}</li>`).join("")}</ul>
+    `,
+    formulas: () => `
+      <h2>ชื่อสูตรที่อนุญาตให้เขียนในแกน</h2>
+      <table>
+        <tr><th>ชื่อ</th><th>ที่มา</th><th>หมายเหตุ</th></tr>
+        <tr><td>หน่วยภาระงานสายวิชาการ</td><td>ประกาศหลักเกณฑ์ค่าน้ำหนัก</td><td>ฐาน ${CFG.faculty.totalUnits} คูณบทบาทตามประกาศ</td></tr>
+        <tr><td>คะแนนรายการสมรรถนะ C = B / (A × 10) × 100</td><td>คู่มือผู้ประเมิน UM-01</td><td>A จำนวนพฤติกรรมย่อย B ผลรวมคะแนน</td></tr>
+        <tr><td>คะแนนประเภทสมรรถนะ D = A × C / B</td><td>คู่มือผู้ประเมิน UM-01</td><td>ใช้เมื่อคิดสัดส่วนประเภท</td></tr>
+        <tr><td>รวมผลการประเมิน weights.pa และ weights.cc</td><td>ตัวอย่างในคำแนะนำระบบ</td><td>${CFG.weights.pa} + ${CFG.weights.cc} หากส่วนงานมิได้ประกาศเป็นอย่างอื่น</td></tr>
+        <tr><td>น้ำหนักข้อตกลงทั้งฉบับเท่ากับหนึ่งร้อย</td><td>คู่มือจัดทำข้อตกลง UM-03</td><td>น้ำหนักตัวชี้วัดต่อข้อเท่ากับหนึ่งร้อย</td></tr>
+        <tr><td>หลักเกณฑ์สายสนับสนุน</td><td>แฟ้ม rubrics สายสนับสนุน</td><td class="miss">SOURCE_MISSING</td></tr>
+        <tr><td>ช่องแบบพิมพ์ 05 ถึง 09</td><td>แบบพิมพ์ Word</td><td class="miss">SOURCE_MISSING</td></tr>
+      </table>
+    `,
+    files: () => `
+      <h2>แผนที่แฟ้ม</h2>
+      <table>
+        <tr><th>แฟ้ม</th><th>สาระ</th></tr>
+        <tr><td>docs/pa-dev-plan/README.md</td><td>ทางเข้าแผน สแตกที่ล็อกแล้ว</td></tr>
+        <tr><td>docs/pa-dev-plan/00-กฏเหล็ก.md</td><td>ห้ามคิดเอง ห้ามสร้างขนาน</td></tr>
+        <tr><td>docs/pa-dev-plan/01-บัญชีเอกสารและชื่อเรียก.md</td><td>ชื่อไฟล์ต้นฉบับสองชุด</td></tr>
+        <tr><td>docs/pa-dev-plan/02-บทบาทและหน้าจอ.md</td><td>เมทริกซ์สิทธิ์</td></tr>
+        <tr><td>docs/pa-dev-plan/03-วงจรและเงื่อนไขจากคู่มือ.md</td><td>เงื่อนไขจากคู่มือและคำแนะนำระบบ</td></tr>
+        <tr><td>docs/pa-dev-plan/04-ตัวแปรและการตั้งค่า.md</td><td>คำอธิบายตัวแปร</td></tr>
+        <tr><td>docs/pa-dev-plan/pa-config.example.json</td><td>แฟ้มกำหนดค่า ห้ามเพิ่มฟิลด์</td></tr>
+        <tr><td>docs/pa-dev-plan/05-แบ่งงาน-AI.md</td><td>ซองงาน สัญญาคืนงาน รายการตรวจเข้ากันได้</td></tr>
+        <tr><td>docs/manuals/writer.md</td><td>คู่มือผู้เขียนระบบ</td></tr>
+        <tr><td>docs/manuals/admin.md</td><td>คู่มือผู้ดูแลระบบ</td></tr>
+        <tr><td>docs/manuals/user.md</td><td>คู่มือผู้ใช้งานแยกบทบาท</td></tr>
+        <tr><td>docs/คลังระบบ.html</td><td>แฟ้มนี้ เปิดในเบราว์เซอร์ ไม่ใช้เครื่องแม่ข่าย</td></tr>
+        <tr><td>PA/dev-plan/</td><td>สำเนาแผนในคลังรหัส</td></tr>
+      </table>
+    `,
+    packets: () => `
+      <h2>เจ้าของซองงาน</h2>
+      <table>
+        <tr><th>รหัส</th><th>เจ้าของ</th><th>งาน</th></tr>
+        <tr><td>C1</td><td>หัวหน้าชุดนี้ เขียนภายหลัง</td><td>สูตรหน่วยสายวิชาการ</td></tr>
+        <tr><td>C2</td><td>หัวหน้าชุดนี้ เขียนภายหลัง</td><td>ตารางหลักเกณฑ์และ SHPA</td></tr>
+        <tr><td>C3</td><td>หัวหน้าชุดนี้ เขียนภายหลัง</td><td>เครื่องสถานะข้อตกลงคู่สมรรถนะหลัก</td></tr>
+        <tr><td>C4</td><td>หัวหน้าชุดนี้ เขียนภายหลัง</td><td>แยกสายและประตูหน้าจอ</td></tr>
+        <tr><td>C5</td><td>หัวหน้าชุดนี้ เขียนภายหลัง</td><td>ป้ายหัวหน้างานขั้นต้นและหัวหน้างาน</td></tr>
+        <tr><td>C6</td><td>หัวหน้าชุดนี้ เขียนภายหลัง</td><td>สูตรสมรรถนะและการรวมแปดสิบกับยี่สิบ</td></tr>
+        <tr><td>C7</td><td>หัวหน้าชุดนี้ เขียนภายหลัง</td><td>ผลการดำเนินงานเป็นตัวเลขและประเมินตนเอง</td></tr>
+        <tr><td>C10</td><td>หัวหน้าชุดนี้ เขียนภายหลัง</td><td>JWT และประตูสิทธิ์</td></tr>
+        <tr><td>C11</td><td>หัวหน้าชุดนี้ เขียนภายหลัง</td><td>โครงสร้าง MySQL ตามช่องต้นฉบับ</td></tr>
+        <tr><td>S1 ถึง S19</td><td>ผู้เขียนซองอื่น ส่งคืนให้ตรวจเข้ากันได้</td><td>ป้าย หน้า React การบันทึกผ่าน Express ตามโครงสร้างที่แกนกำหนด ห้ามแตะสูตร</td></tr>
+      </table>
+      <p>การคืนซองต้องมีรายการแฟ้มที่แตะและรายการตัวแปรที่ใช้ ตัวแปรทุกตัวต้องมีในแฟ้มกำหนดค่าแล้ว</p>
+    `
+  };
+
+  const view = document.getElementById("view");
+  function show(id) {
+    view.innerHTML = PAGES[id]();
+    document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.go === id));
+  }
+  document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => show(b.dataset.go)));
+  show("home");
+  </script>
+</body>
+</html>

@@ -7,7 +7,9 @@
       "duties": ["ui-components", "state-management", "api-requests"]
     },
     "backend": {
-      "chosen": "Node.js (Express)",
+      "chosen": "Express",
+      "implementation": "Node.js (Express)",
+      "parallelImplementations": false,
       "allowed": ["Node.js (Express)", "Python (FastAPI)", "C# (.NET)"],
       "duties": ["rest-and-or-graphql", "business-logic", "authentication-jwt"]
     },
