@@ -91,10 +91,13 @@
     "personnel": "docs/pa-dev-plan/01-บัญชีเอกสารและชื่อเรียก.md#ชุดที่-1",
     "faculty": "docs/pa-dev-plan/01-บัญชีเอกสารและชื่อเรียก.md#ชุดที่-2",
     "manuals": "docs/pa-manuals-digest.md",
-    "unitPaFy2570": "docs/pa-dev-plan/07-ตัวชี้วัด-PA-2570-ส่วนงาน.md"
+    "unitPaFy2570": "docs/pa-dev-plan/07-ตัวชี้วัด-PA-2570-ส่วนงาน.md",
+    "facultyResearchTracking2570": "docs/pa-dev-plan/09-แบบติดตามโครงการวิจัย-2570-อาจารย์.md"
   },
   "unitPaFy2570": {
-    "layer": "unit",
+    "layer": "unit-source-used-on-faculty",
+    "usedOnTrack": "faculty",
+    "sourceSaysUnitPa": true,
     "doNotMergeIntoIndividualShpa": true,
     "sourceFile": "คำอธิบายตัวชี้วัด PA 2570 (ฉบับจัดทำ PA).pdf",
     "title": "คำอธิบายตัวชี้วัดตามแผนยุทธศาสตร์มหาวิทยาลัย ปีงบประมาณ พ.ศ. 2570",
@@ -145,5 +148,47 @@
       { "id": "4.11.4", "title": "ค่า ROA มากกว่าร้อยละ 5", "inUnitPa": true, "unit": "ร้อยละ", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "formula": "กำไรสุทธิ/รวมสินทรัพย์×100", "thresholdPct": 5, "erpTCode": "ZGLRP003" },
       { "id": "4.12", "title": "ร้อยละของห้องปฏิบัติการที่มีการใช้สารเคมีได้รับการรับรองมาตรฐานห้องปฏิบัติการปลอดภัยในรูปแบบ Peer Evaluation", "inUnitPa": true, "unit": "ร้อยละ", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "checklist": "ESPReL Checklist 137 ข้อ", "formulaDenominator": "SOURCE_MISSING" }
     ]
+  },
+  "facultyResearchTracking2570": {
+    "track": "faculty",
+    "notStaffForm06": true,
+    "sourceFile": "แบบติดตามข้อมูลโครงการวิจัย ปี 2570.xlsx",
+    "sampleRowsAreNotRateeData": true,
+    "sampleAffiliationInFile": "ศึกษาศาสตร์",
+    "doNotReplaceFacultyName": true,
+    "countPersonalFundInKpi19": "SOURCE_MISSING",
+    "actualDisbursementColumn": "SOURCE_MISSING",
+    "otherStatuses": "SOURCE_MISSING",
+    "otherRemarks": "SOURCE_MISSING",
+    "sheets": {
+      "iNT": {
+        "columns": [
+          "สถานะ",
+          "ที่",
+          "ชื่อโครงการ",
+          "หัวหน้าโครงการ",
+          "สังกัด",
+          "ชื่อแหล่งทุน",
+          "ระยะเวลาเริ่มโครงการ",
+          "ระยะเวลาสิ้นสุดโครงการ",
+          "จำนวนเงินตลอดโครงการ",
+          "วัตถุประสงค์",
+          "ประโยชน์ของโครงการ",
+          "ผลผลิต (output)",
+          "สัญญาเลขที่"
+        ],
+        "statusValuesFound": ["รออนุมัติดำเนินโครงการ"]
+      },
+      "แจ้งทำวิจัย": {
+        "columns": [
+          "ที่",
+          "ชื่อโครงการ",
+          "หัวหน้าโครงการ",
+          "สังกัด",
+          "หมายเหตุ"
+        ],
+        "remarkValuesFound": ["ทุนส่วนตัว"]
+      }
+    }
   }
 }
