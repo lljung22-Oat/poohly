@@ -41,6 +41,7 @@
     <button data-go="formulas">ชื่อสูตร</button>
     <button data-go="files">แผนที่แฟ้ม</button>
     <button data-go="packets">เจ้าของซองงาน</button>
+    <button data-go="kpi2570">ตัวชี้วัดส่วนงาน 2570</button>
   </nav>
   <main id="view"></main>
   <script>
@@ -93,6 +94,8 @@
       <div class="card">
         <p class="miss">SOURCE_MISSING หลักเกณฑ์สายสนับสนุนและช่องแบบพิมพ์ 05 ถึง 09 จนกว่าจะคัดจากต้นฉบับ</p>
         <p>ห้ามคิดเกณฑ์เอง ห้ามเพิ่มตัวแปรใหม่นอกแฟ้มกำหนดค่า</p>
+        <p>บัญชีตัวชี้วัด PA ปี 2570 เจ้าของงานใช้ฝั่งอาจารย์ คนละสูตรกับตารางหน่วย</p>
+        <p>แบบติดตามโครงการวิจัยปี 2570 เป็นของสายวิชาการ มิใช่แบบติดตามสายสนับสนุน</p>
       </div>
     `,
     roles: () => `
@@ -143,6 +146,11 @@
         <tr><td>cc.count</td><td>${CFG.cc.count}</td></tr>
         <tr><td>paReport.mode</td><td>${CFG.paReport.mode}</td></tr>
         <tr><td>form11.enabled</td><td>${CFG.form11.enabled}</td></tr>
+        <tr><td>unitPaFy2570.layer</td><td>unit</td></tr>
+        <tr><td>unitPaFy2570.doNotMergeIntoIndividualShpa</td><td>true</td></tr>
+        <tr><td>unitPaFy2570.usedOnTrack</td><td>faculty</td></tr>
+        <tr><td>facultyResearchTracking2570.track</td><td>faculty</td></tr>
+        <tr><td>facultyResearchTracking2570.notStaffForm06</td><td>true</td></tr>
       </table>
       <h3>เพดานกลุ่มสายวิชาการตามประกาศที่คัดแล้ว</h3>
       <table>
@@ -163,6 +171,9 @@
         <tr><td>น้ำหนักข้อตกลงทั้งฉบับเท่ากับหนึ่งร้อย</td><td>คู่มือจัดทำข้อตกลง UM-03</td><td>น้ำหนักตัวชี้วัดต่อข้อเท่ากับหนึ่งร้อย</td></tr>
         <tr><td>หลักเกณฑ์สายสนับสนุน</td><td>แฟ้ม rubrics สายสนับสนุน</td><td class="miss">SOURCE_MISSING</td></tr>
         <tr><td>ช่องแบบพิมพ์ 05 ถึง 09</td><td>แบบพิมพ์ Word</td><td class="miss">SOURCE_MISSING</td></tr>
+        <tr><td>ร้อยละหลักสูตร 2.2.1 / 2.2.2 / 2.3</td><td>คำอธิบายตัวชี้วัด PA ส่วนงาน 2570</td><td>ตัวหาร 79 / 248 / 26 ตามเล่ม ใช้ชั้นส่วนงานเท่านั้น</td></tr>
+        <tr><td>ประสิทธิภาพงบ 4.10 และอัตราส่วนการเงิน 4.11.3 4.11.4</td><td>คำอธิบายตัวชี้วัด PA ส่วนงาน 2570</td><td>ใช้สูตรที่เล่มเขียนครบเท่านั้น</td></tr>
+        <tr><td>ตัวหารห้องปฏิบัติการ 4.12 และสูตรร้อยละ 4.4</td><td>คำอธิบายตัวชี้วัด PA ส่วนงาน 2570</td><td class="miss">SOURCE_MISSING</td></tr>
       </table>
     `,
     files: () => `
@@ -178,6 +189,9 @@
         <tr><td>docs/pa-dev-plan/pa-config.example.json</td><td>แฟ้มกำหนดค่า ห้ามเพิ่มฟิลด์</td></tr>
         <tr><td>docs/pa-dev-plan/05-แบ่งงาน-AI.md</td><td>ซองงาน สัญญาคืนงาน รายการตรวจเข้ากันได้</td></tr>
         <tr><td>docs/pa-dev-plan/06-เครื่องมือ-AI.md</td><td>ChatGPT Plus Gemini EDU MUGPT ใช้คู่กัน</td></tr>
+        <tr><td>docs/pa-dev-plan/07-ตัวชี้วัด-PA-2570-ส่วนงาน.md</td><td>บัญชีตัวชี้วัด PA ส่วนงานปี 2570</td></tr>
+        <tr><td>docs/pa-dev-plan/08-รายการส่งไฟล์ต่อซอง.md</td><td>ซองไหนส่งให้ AI ตัวไหน ต้องแนบไฟล์อะไร</td></tr>
+        <tr><td>docs/pa-dev-plan/09-แบบติดตามโครงการวิจัย-2570-อาจารย์.md</td><td>แบบโครงการวิจัยฝั่งอาจารย์ ปี 2570</td></tr>
         <tr><td>docs/manuals/writer.md</td><td>คู่มือผู้เขียนระบบ</td></tr>
         <tr><td>docs/manuals/admin.md</td><td>คู่มือผู้ดูแลระบบ</td></tr>
         <tr><td>docs/manuals/user.md</td><td>คู่มือผู้ใช้งานแยกบทบาท</td></tr>
@@ -199,8 +213,39 @@
         <tr><td>C10</td><td>หัวหน้าชุดนี้ เขียนภายหลัง</td><td>JWT และประตูสิทธิ์</td></tr>
         <tr><td>C11</td><td>หัวหน้าชุดนี้ เขียนภายหลัง</td><td>โครงสร้าง MySQL ตามช่องต้นฉบับ</td></tr>
         <tr><td>S1 ถึง S19</td><td>ผู้เขียนซองอื่น ส่งคืนให้ตรวจเข้ากันได้</td><td>ป้าย หน้า React การบันทึกผ่าน Express ตามโครงสร้างที่แกนกำหนด ห้ามแตะสูตร</td></tr>
+        <tr><td>S20</td><td>ผู้เขียนซองอื่น ส่งคืนให้ตรวจเข้ากันได้</td><td>แสดงนิยาม unitPaFy2570 ฝั่งอาจารย์ ห้ามทับ SHPA ห้ามคิดหน่วย</td></tr>
+        <tr><td>S21</td><td>ผู้เขียนซองอื่น ส่งคืนให้ตรวจเข้ากันได้</td><td>คอลัมน์แบบโครงการวิจัย facultyResearchTracking2570 ห้ามเป็นแบบ 06</td></tr>
       </table>
       <p>การคืนซองต้องมีรายการแฟ้มที่แตะและรายการตัวแปรที่ใช้ ตัวแปรทุกตัวต้องมีในแฟ้มกำหนดค่าแล้ว</p>
+    `,
+    kpi2570: () => `
+      <h2>ตัวชี้วัด PA ส่วนงาน ปีงบประมาณ 2570</h2>
+      <div class="card">
+        <p>ปกเล่มเขียนว่าข้อตกลงส่วนงาน เจ้าของงานใช้ฝั่งอาจารย์</p>
+        <p>ห้ามรวมสูตรเข้าตาราง SHPA หรือแบบพิมพ์ 05 ถึง 09</p>
+        <p>แบบติดตามโครงการวิจัยปี 2570 เป็นแบบฝั่งอาจารย์ สองชีต iNT และแจ้งทำวิจัย มิใช่แบบ 06</p>
+      </div>
+      <table>
+        <tr><th>รหัส</th><th>จัดทำ PA กับส่วนงาน</th><th>หน่วยนับ</th></tr>
+        <tr><td>Number of International Publications</td><td>ไม่</td><td>เรื่อง</td></tr>
+        <tr><td>1.1 Q1</td><td>ใช่</td><td>เรื่อง</td></tr>
+        <tr><td>1.2 Top10</td><td>ใช่</td><td>เรื่อง</td></tr>
+        <tr><td>1.3 Academic-Corporate Collaboration</td><td>ใช่</td><td>เรื่อง</td></tr>
+        <tr><td>1.9.1 ทุนในประเทศ</td><td>ใช่</td><td>บาท เงินสัญญา ไม่นับเบิกจ่ายจริงใน PA ส่วนงาน</td></tr>
+        <tr><td>1.9.2 ทุนต่างประเทศ</td><td>ใช่</td><td>บาท</td></tr>
+        <tr><td>1.9.3 CTA</td><td>ใช่</td><td>บาท</td></tr>
+        <tr><td>2.1.1 MUPSF ระดับ 3 และ 4 หรือ UKPSF SF/PF</td><td>ใช่</td><td>คน</td></tr>
+        <tr><td>2.1.2 MUPSF ระดับ 2 หรือ UKPSF Fellow</td><td>ใช่</td><td>คน</td></tr>
+        <tr><td>2.2.1 หลักสูตรปริญญาตรี</td><td>ใช่</td><td>ร้อยละ ตัวหาร 79</td></tr>
+        <tr><td>2.2.2 หลักสูตรบัณฑิตศึกษา</td><td>ใช่</td><td>ร้อยละ ตัวหาร 248</td></tr>
+        <tr><td>2.3 วิทยาศาสตร์สุขภาพที่ครบวงรอบ</td><td>ใช่</td><td>ร้อยละ ตัวหาร 26</td></tr>
+        <tr><td>2.16.1 ถึง 2.16.4 inbound/outbound</td><td>ใช่</td><td>คน ปีการศึกษา 2569 Physical Mobility</td></tr>
+        <tr><td>3.1 นโยบายชี้นำสังคม</td><td>ใช่</td><td>เรื่อง ไม่สะสมปีก่อน</td></tr>
+        <tr><td>3.2 Changemaker/Change Agent</td><td>ใช่</td><td>คน มติคณะกรรมการเป็นที่สุด</td></tr>
+        <tr><td>4.4 รายงาน SFM</td><td>ใช่</td><td>ร้อยละ สูตรยังไม่มีในเล่ม</td></tr>
+        <tr><td>4.10.1 ถึง 4.11.4 การเงิน</td><td>ใช่</td><td>ตามเล่ม ERP ZGLRP003</td></tr>
+        <tr><td>4.12 ห้องปฏิบัติการ Peer Evaluation</td><td>ใช่</td><td>ร้อยละ ตัวหารยังไม่มีในเล่ม</td></tr>
+      </table>
     `
   };
 
