@@ -1,0 +1,14 @@
+ข้อมูลจากคลาวด์อยู่ในโฟลเดอร์ .PA cursor ที่รากรีโปนี้
+
+ถ้าโปรเจกต์บนเครื่องคือ C:\Users\poohl\appscript\PA
+ให้ดึงสาขา cursor/pa-local-pack-7c6d แล้วไฟล์จะอยู่ที่
+C:\Users\poohl\appscript\PA\.PA cursor
+
+ใน File Explorer โฟลเดอร์ที่ขึ้นต้นด้วยจุดถูกซ่อน
+เปิด View > Show > Hidden items
+
+คำสั่งใน PowerShell ถ้ายังไม่มีโฟลเดอร์นี้หลังดึง Git แล้ว
+
+git fetch origin cursor/pa-local-pack-7c6d
+git checkout cursor/pa-local-pack-7c6d
+dir -Force ".\.PA cursor"

@@ -90,6 +90,105 @@
   "sourcePacks": {
     "personnel": "docs/pa-dev-plan/01-บัญชีเอกสารและชื่อเรียก.md#ชุดที่-1",
     "faculty": "docs/pa-dev-plan/01-บัญชีเอกสารและชื่อเรียก.md#ชุดที่-2",
-    "manuals": "docs/pa-manuals-digest.md"
+    "manuals": "docs/pa-manuals-digest.md",
+    "unitPaFy2570": "docs/pa-dev-plan/07-ตัวชี้วัด-PA-2570-ส่วนงาน.md",
+    "facultyResearchTracking2570": "docs/pa-dev-plan/09-แบบติดตามโครงการวิจัย-2570-อาจารย์.md"
+  },
+  "unitPaFy2570": {
+    "layer": "unit-source-used-on-faculty",
+    "usedOnTrack": "faculty",
+    "sourceSaysUnitPa": true,
+    "doNotMergeIntoIndividualShpa": true,
+    "sourceFile": "คำอธิบายตัวชี้วัด PA 2570 (ฉบับจัดทำ PA).pdf",
+    "title": "คำอธิบายตัวชี้วัดตามแผนยุทธศาสตร์มหาวิทยาลัย ปีงบประมาณ พ.ศ. 2570",
+    "contact": {
+      "email": "pavisit.oppl@mahidol.ac.th",
+      "phone": "02 849 6142-45"
+    },
+    "publicationPull": {
+      "databases": ["SciVal", "Scopus"],
+      "dedupe": "ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน",
+      "quarterly": [
+        { "q": 1, "range": "1 ตุลาคม - 31 ธันวาคม 2569", "pullYear": 2026, "asOf": "31 ธันวาคม 2569", "baselineAsOf": "30 กันยายน 2569", "baselineYear": 2026 },
+        { "q": 2, "range": "1 ตุลาคม 2569 - 31 มีนาคม 2570", "pullYear": 2027, "asOf": "31 มีนาคม 2570", "addQuarter1": true, "dropDuplicateTitles": true },
+        { "q": 3, "range": "1 ตุลาคม 2569 - 30 มิถุนายน 2570", "pullYear": 2027, "asOf": "30 มิถุนายน 2570", "addQuarter1": true, "dropDuplicateTitles": true },
+        { "q": 4, "range": "1 ตุลาคม 2569 - 30 กันยายน 2570", "pullYear": 2027, "asOf": "30 กันยายน 2570", "addQuarter1": true, "dropDuplicateTitles": true }
+      ],
+      "monthlyNote": "ทำแบบไตรมาสที่ 1 ใช้เดือนก่อนหน้าเป็น baseline ยกเว้นมกราคม 2570 ไม่ต้องลบ baseline"
+    },
+    "openUnitAgreementScreen": false,
+    "catalog": [
+      { "id": "intl-pub", "title": "Number of International Publications", "inUnitPa": false, "unit": "เรื่อง", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "usesPublicationPull": true },
+      { "id": "1.1", "title": "Number of International Publications in Q1 Journal", "inUnitPa": true, "unit": "เรื่อง", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "usesPublicationPull": true, "ranking": "SJR Quartile 1" },
+      { "id": "1.2", "title": "Number of International Publications in Top 10 Journal", "inUnitPa": true, "unit": "เรื่อง", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "usesPublicationPull": true, "ranking": "SJR Top10 Percentile" },
+      { "id": "1.3", "title": "Number of Publications with Academic-Corporate Collaboration", "inUnitPa": true, "unit": "เรื่อง", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "usesPublicationPull": true },
+      { "id": "1.9", "title": "จำนวนเงินทุนสนับสนุนการวิจัย", "inUnitPa": null, "kind": "heading" },
+      { "id": "1.9.1", "title": "จำนวนเงินทุนวิจัยจากแหล่งทุนภายนอก (ในประเทศ)", "inUnitPa": true, "unit": "บาท", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "countContractAmount": true, "countActualDisbursementInUnitPa": false, "exclude": ["Fundamental Fund", "เงินทุนรับทำวิจัย", "เงินสนับสนุนโครงการวิจัยทางคลินิก"] },
+      { "id": "1.9.2", "title": "จำนวนเงินทุนวิจัยจากแหล่งทุนภายนอก (ต่างประเทศ)", "inUnitPa": true, "unit": "บาท", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "countContractAmount": true, "countActualDisbursementInUnitPa": false, "exclude": ["เงินทุนรับทำวิจัย", "เงินสนับสนุนโครงการวิจัยทางคลินิก"] },
+      { "id": "1.9.3", "title": "จำนวนเงินทุนวิจัยจากการวิจัยทางคลินิก (CTA) ทั้งในประเทศและต่างประเทศ", "inUnitPa": true, "unit": "บาท", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "countContractAmount": true, "countActualDisbursementInUnitPa": false },
+      { "id": "2.1", "title": "จำนวนอาจารย์ที่มีคุณภาพการจัดการเรียนการสอนตามเกณฑ์มาตรฐานคุณภาพอาจารย์ของมหาวิทยาลัยมหิดล (MUPSF)", "inUnitPa": null, "kind": "heading" },
+      { "id": "2.1.1", "title": "ระดับ 3 การจัดการเรียนการสอนข้ามศาสตร์ หรือเทียบเท่า", "inUnitPa": true, "unit": "คน", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "include": ["MUPSF ระดับ 3", "MUPSF ระดับ 4", "UKPSF Senior Fellow", "UKPSF Principal Fellow"] },
+      { "id": "2.1.2", "title": "ระดับ 2 การจัดการเรียนการสอนเฉพาะกลุ่ม หรือเทียบเท่า", "inUnitPa": true, "unit": "คน", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "include": ["MUPSF ระดับ 2", "UKPSF Fellow"] },
+      { "id": "2.2.1", "title": "ร้อยละของหลักสูตรระดับปริญญาตรีที่ได้รับการรับรองคุณภาพตามมาตรฐานระดับสากล", "inUnitPa": true, "unit": "ร้อยละ", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "denominator": 79, "excludeProgramsOpenLessThanYears": 7, "mustNameProgramsInUnitPaForm": true },
+      { "id": "2.2.2", "title": "ร้อยละของหลักสูตรระดับบัณฑิตศึกษาที่ได้รับการรับรองคุณภาพตามมาตรฐานระดับสากล", "inUnitPa": true, "unit": "ร้อยละ", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "denominator": 248, "excludeProgramsOpenLessThanYears": 5, "jointProgramCountsWithChairFaculty": true, "mustNameProgramsInUnitPaForm": true },
+      { "id": "2.3", "title": "ร้อยละของหลักสูตรระดับปริญญาตรี สาขาวิชาวิทยาศาสตร์สุขภาพที่ครบวงรอบ ที่ได้รับการรับรองคุณภาพตามมาตรฐานระดับสากล", "inUnitPa": true, "unit": "ร้อยละ", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "denominator": 26, "completedCycleYears": 5, "excludeProgramsOpenLessThanYears": 7, "mustNameProgramsInUnitPaForm": true },
+      { "id": "2.16.1", "title": "นักศึกษา inbound ระยะเวลาตั้งแต่ 12 สัปดาห์ขึ้นไป", "inUnitPa": true, "unit": "คน", "dataYear": "2569", "dataYearKind": "academic", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "mobility": "Physical Mobility", "duration": "ตั้งแต่ 12 สัปดาห์ขึ้นไป" },
+      { "id": "2.16.2", "title": "นักศึกษา inbound ระยะเวลาน้อยกว่า 12 สัปดาห์", "inUnitPa": true, "unit": "คน", "dataYear": "2569", "dataYearKind": "academic", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "mobility": "Physical Mobility", "duration": "น้อยกว่า 12 สัปดาห์" },
+      { "id": "2.16.3", "title": "นักศึกษา outbound ระยะเวลาตั้งแต่ 12 สัปดาห์ขึ้นไป", "inUnitPa": true, "unit": "คน", "dataYear": "2569", "dataYearKind": "academic", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "mobility": "Physical Mobility", "duration": "ตั้งแต่ 12 สัปดาห์ขึ้นไป" },
+      { "id": "2.16.4", "title": "นักศึกษา outbound ระยะเวลาน้อยกว่า 12 สัปดาห์", "inUnitPa": true, "unit": "คน", "dataYear": "2569", "dataYearKind": "academic", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "mobility": "Physical Mobility", "duration": "น้อยกว่า 12 สัปดาห์" },
+      { "id": "3.1", "title": "จำนวนนโยบายชี้นำสังคมของมหาวิทยาลัยที่สำคัญระดับชาติและนานาชาติ", "inUnitPa": true, "unit": "เรื่อง", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "cumulativePriorYears": false },
+      { "id": "3.2", "title": "จำนวน Changemaker/ Change Agent", "inUnitPa": true, "unit": "คน", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "committeeDecisionIsFinal": true, "cumulativePriorYears": false, "excludePublicationOnly": true },
+      { "id": "4.4", "title": "รายงานการวิเคราะห์การจัดการทางการเงินเชิงกลยุทธ์ (Strategic Financial Management) ที่เป็นปัจจุบันเพื่อการบริหาร", "inUnitPa": true, "unit": "ร้อยละ", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 1 ครั้ง (รายไตรมาส)", "formula": "SOURCE_MISSING" },
+      { "id": "4.10.1", "title": "ประสิทธิภาพการใช้งบประมาณแผ่นดิน เมื่อจบปีงบประมาณ", "inUnitPa": true, "unit": "ร้อยละ", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "formula": "(ใช้จริง+ผูกพัน)/(ต้นปี+เพิ่มเติมกลางปี)×100" },
+      { "id": "4.10.2", "title": "ประสิทธิภาพการใช้งบประมาณเงินรายได้ เมื่อจบปีงบประมาณ", "inUnitPa": true, "unit": "ร้อยละ", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "formula": "(ใช้จริง+ผูกพัน)/(ต้นปี+เพิ่มเติมกลางปี)×100", "includeUniversityRevenue": true },
+      { "id": "4.11.1.1", "title": "ค่า EBIDA เป็นบวก (รวมทุกแหล่งเงิน)", "inUnitPa": true, "unit": "เป็นบวก/เป็นลบ", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "sourceTerms": ["EBIDA", "EBITDA"], "erpTCode": "ZGLRP003" },
+      { "id": "4.11.1.2", "title": "ค่า EBIDA เป็นบวก (ไม่รวมรายได้จากรัฐบาล)", "inUnitPa": true, "unit": "เป็นบวก/เป็นลบ", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "erpTCode": "ZGLRP003" },
+      { "id": "4.11.2", "title": "ค่า Net Income เป็นบวก", "inUnitPa": true, "unit": "เป็นบวก/เป็นลบ", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "erpTCode": "ZGLRP003" },
+      { "id": "4.11.3", "title": "ค่า Net Profit Margin มากกว่าร้อยละ 5", "inUnitPa": true, "unit": "ร้อยละ", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "formula": "กำไรสุทธิ×100/รายได้รวม", "thresholdPct": 5, "erpTCode": "ZGLRP003" },
+      { "id": "4.11.4", "title": "ค่า ROA มากกว่าร้อยละ 5", "inUnitPa": true, "unit": "ร้อยละ", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "formula": "กำไรสุทธิ/รวมสินทรัพย์×100", "thresholdPct": 5, "erpTCode": "ZGLRP003" },
+      { "id": "4.12", "title": "ร้อยละของห้องปฏิบัติการที่มีการใช้สารเคมีได้รับการรับรองมาตรฐานห้องปฏิบัติการปลอดภัยในรูปแบบ Peer Evaluation", "inUnitPa": true, "unit": "ร้อยละ", "dataYear": "2570", "dataYearKind": "fiscal", "reportTimes": "ปีละ 4 ครั้ง (รายไตรมาส)", "checklist": "ESPReL Checklist 137 ข้อ", "formulaDenominator": "SOURCE_MISSING" }
+    ]
+  },
+  "facultyResearchTracking2570": {
+    "track": "faculty",
+    "notStaffForm06": true,
+    "sourceFile": "แบบติดตามข้อมูลโครงการวิจัย ปี 2570.xlsx",
+    "sampleRowsAreNotRateeData": true,
+    "sampleAffiliationInFile": "ศึกษาศาสตร์",
+    "doNotReplaceFacultyName": true,
+    "countPersonalFundInKpi19": "SOURCE_MISSING",
+    "actualDisbursementColumn": "SOURCE_MISSING",
+    "otherStatuses": "SOURCE_MISSING",
+    "otherRemarks": "SOURCE_MISSING",
+    "sheets": {
+      "iNT": {
+        "columns": [
+          "สถานะ",
+          "ที่",
+          "ชื่อโครงการ",
+          "หัวหน้าโครงการ",
+          "สังกัด",
+          "ชื่อแหล่งทุน",
+          "ระยะเวลาเริ่มโครงการ",
+          "ระยะเวลาสิ้นสุดโครงการ",
+          "จำนวนเงินตลอดโครงการ",
+          "วัตถุประสงค์",
+          "ประโยชน์ของโครงการ",
+          "ผลผลิต (output)",
+          "สัญญาเลขที่"
+        ],
+        "statusValuesFound": ["รออนุมัติดำเนินโครงการ"]
+      },
+      "แจ้งทำวิจัย": {
+        "columns": [
+          "ที่",
+          "ชื่อโครงการ",
+          "หัวหน้าโครงการ",
+          "สังกัด",
+          "หมายเหตุ"
+        ],
+        "remarkValuesFound": ["ทุนส่วนตัว"]
+      }
+    }
   }
 }
