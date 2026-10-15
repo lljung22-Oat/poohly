@@ -31,7 +31,7 @@ export default function ResearchPage() {
         ))}
       </div>
       <p className="text-sm">{sheet === "iNT" ? `สถานะที่พบในไฟล์: ${(data.knownStatus || []).join(", ")} · สถานะอื่น ${data.otherStatuses}` : `หมายเหตุที่พบในไฟล์: ${(data.knownRemark || []).join(", ")} · หมายเหตุอื่น ${data.otherRemarks}`}</p>
-      <div className="overflow-x-auto">
+      <div className="max-w-full overflow-x-auto">
         <table className="min-w-full border text-sm">
           <thead>
             <tr>{data.columns.map((column) => <th key={column} className="border px-2 py-1 text-left">{column}</th>)}<th className="border px-2 py-1" /></tr>

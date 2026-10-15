@@ -20,6 +20,14 @@ export function TimePage() {
   );
 }
 
+const staffTitles = {
+  form05: "แบบ 05",
+  form06: "แบบ 06 ติดตาม",
+  form07: "ประเมินผลงาน (แบบ 07)",
+  form08: "แบบ 08",
+  form09: "แบบ 09",
+};
+
 export function StaffPage() {
   const { form } = useParams();
   const [data, setData] = useState(null);
@@ -29,7 +37,7 @@ export function StaffPage() {
   }, [form]);
   return (
     <div>
-      <h2 className="text-xl font-semibold">{form}</h2>
+      <h2 className="text-xl font-semibold">{staffTitles[form] || form}</h2>
       {message ? <p className="mt-2 text-sm">{message}</p> : null}
       {data ? <p className="mt-2 rounded bg-[#f6f1e4] px-3 py-2 text-sm">ช่องแบบพิมพ์: {data.source} · rubrics: {data.rubrics}</p> : null}
     </div>

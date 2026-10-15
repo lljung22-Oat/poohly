@@ -93,7 +93,7 @@ export default function App() {
             </Link>
           ))}
         </nav>
-        <main className="rounded-lg bg-white p-4 shadow-sm">
+        <main className="min-w-0 rounded-lg bg-white p-4 shadow-sm">
           {error ? <p className="mb-3 rounded bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p> : null}
           <Routes>
             <Route path="/" element={<Home session={session} />} />
