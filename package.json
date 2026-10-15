@@ -1,0 +1,9 @@
+{
+  "name": "pa-2570",
+  "private": true,
+  "scripts": {
+    "start": "npm start --prefix server",
+    "test": "npm test --prefix server",
+    "build": "npm run build --prefix client"
+  }
+}
