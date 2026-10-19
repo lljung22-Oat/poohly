@@ -1,0 +1,27 @@
+const assert = require("assert");
+const fs = require("fs");
+const path = require("path");
+const F = require("./faculty-2570.js");
+const C = require("./criteria.js");
+
+assert.ok(F.UNIT_KPI_2570.some((k) => k.id === "1.1" && k.inUnitPa === true));
+assert.ok(F.UNIT_KPI_2570.some((k) => k.id === "intl-pub" && k.inUnitPa === false));
+assert.strictEqual(F.INT_COLS.length, 13);
+assert.strictEqual(F.NOTIFY_COLS.length, 5);
+assert.deepStrictEqual(F.STATUS_FOUND, ["รออนุมัติดำเนินโครงการ"]);
+assert.deepStrictEqual(F.REMARK_FOUND, ["ทุนส่วนตัว"]);
+assert.ok(!JSON.stringify(F).includes("ศึกษาศาสตร์"));
+const sources = path.join(__dirname, "..", "sources");
+assert.ok(fs.existsSync(path.join(sources, "คำอธิบายตัวชี้วัด-PA-2570-ฉบับจัดทำ-PA.pdf")));
+assert.ok(fs.existsSync(path.join(sources, "แบบติดตามข้อมูลโครงการวิจัย-ปี-2570.xlsx")));
+
+const crit = fs.readFileSync(path.join(__dirname, "criteria.js"), "utf8");
+assert.doesNotMatch(crit, /ตารางที่/);
+const app = fs.readFileSync(path.join(__dirname, "app.js"), "utf8");
+assert.doesNotMatch(app, /ตารางที่/);
+assert.match(app, /function viewKpi2570/);
+assert.match(app, /function viewResearchTrack/);
+assert.match(C.CATALOG.main[1].label, /สอนป\.โท/);
+assert.ok(!C.CATALOG.main[1].label.includes("ตารางที่"));
+
+console.log("faculty-2570.test.js ok");

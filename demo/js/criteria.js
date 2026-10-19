@@ -83,7 +83,7 @@
     { id: "10", label: "10 : เรียนรู้จากหลักสูตร อบรม" }
   ];
 
-  /* ตารางที่ 1 ยุทธศาสตร์การวิจัย */
+  /* ยุทธศาสตร์การวิจัย */
   const PUB = [
     { id: "pub_top1", label: "บทความตีพิมพ์วารสารนานาชาติ Top1", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Top1 (455 หน่วย / 10 คะแนน)", units: 455, score: 10, pub: true },
     { id: "pub_top10", label: "บทความตีพิมพ์วารสารนานาชาติ Top10", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Top10 (410 หน่วย / 9 คะแนน)", units: 410, score: 9, pub: true },
@@ -155,22 +155,22 @@
     ],
     main: [
       { id: "", label: "-- เลือกเกณฑ์จากประกาศ --" },
-      { id: "teach_grad_main", label: "ตารางที่ 4 สอนป.โท/เอก ผู้สอนหลัก (1 ชม. = 4 หน่วย) กรอกชั่วโมง", kind: "hours", per: 4 },
-      { id: "teach_ug_lec", label: "ตารางที่ 4 สอนป.ตรี บรรยาย ผู้สอนหลัก (1 ชม. = 3 หน่วย) กรอกชั่วโมง", kind: "hours", per: 3 },
-      { id: "teach_ug_lab", label: "ตารางที่ 4 สอนป.ตรี ปฏิบัติ ผู้สอนหลัก (1 ชม. = 1.5 หน่วย) กรอกชั่วโมง", kind: "hours", per: 1.5 },
-      { id: "thesis_ug", label: "ตารางที่ 9 ควบคุมโครงงานป.ตรี (1 หน่วย/สัปดาห์/คน) กรอกจำนวน", kind: "count", per: 1 },
-      { id: "course_proj", label: "ตารางที่ 10 โครงการหลักสูตร (1 ชม. = 3 หน่วย) กรอกชั่วโมง", kind: "hours", per: 3 },
-      { id: "res_proc_1", label: "ตารางที่ 11 กระบวนการวิจัย ระดับ 1 สัญญา/ธุรการ (80 หน่วย)", kind: "fixed", units: 80, score: null },
-      { id: "res_proc_2", label: "ตารางที่ 11 กระบวนการวิจัย ระดับ 2 ก้าวหน้า 20% หรือมี IRB (120)", kind: "fixed", units: 120, score: null },
-      { id: "res_proc_3", label: "ตารางที่ 11 กระบวนการวิจัย ระดับ 3 ก้าวหน้า 21–50% (160)", kind: "fixed", units: 160, score: null },
-      { id: "res_proc_4", label: "ตารางที่ 11 กระบวนการวิจัย ระดับ 4 ก้าวหน้า 51–90% (200)", kind: "fixed", units: 200, score: null },
-      { id: "res_proc_5", label: "ตารางที่ 11 กระบวนการวิจัย ระดับ 5 ร่างรายงานขั้นสุดท้าย (240)", kind: "fixed", units: 240, score: null }
+      { id: "teach_grad_main", label: "สอนป.โท/เอก ผู้สอนหลัก (1 ชม. = 4 หน่วย) กรอกชั่วโมง", kind: "hours", per: 4 },
+      { id: "teach_ug_lec", label: "สอนป.ตรี บรรยาย ผู้สอนหลัก (1 ชม. = 3 หน่วย) กรอกชั่วโมง", kind: "hours", per: 3 },
+      { id: "teach_ug_lab", label: "สอนป.ตรี ปฏิบัติ ผู้สอนหลัก (1 ชม. = 1.5 หน่วย) กรอกชั่วโมง", kind: "hours", per: 1.5 },
+      { id: "thesis_ug", label: "ควบคุมโครงงานป.ตรี (1 หน่วย/สัปดาห์/คน) กรอกจำนวน", kind: "count", per: 1 },
+      { id: "course_proj", label: "โครงการหลักสูตร (1 ชม. = 3 หน่วย) กรอกชั่วโมง", kind: "hours", per: 3 },
+      { id: "res_proc_1", label: "กระบวนการวิจัย ระดับ 1 สัญญา/ธุรการ (80 หน่วย)", kind: "fixed", units: 80, score: null },
+      { id: "res_proc_2", label: "กระบวนการวิจัย ระดับ 2 ก้าวหน้า 20% หรือมี IRB (120)", kind: "fixed", units: 120, score: null },
+      { id: "res_proc_3", label: "กระบวนการวิจัย ระดับ 3 ก้าวหน้า 21–50% (160)", kind: "fixed", units: 160, score: null },
+      { id: "res_proc_4", label: "กระบวนการวิจัย ระดับ 4 ก้าวหน้า 51–90% (200)", kind: "fixed", units: 200, score: null },
+      { id: "res_proc_5", label: "กระบวนการวิจัย ระดับ 5 ร่างรายงานขั้นสุดท้าย (240)", kind: "fixed", units: 240, score: null }
     ],
     assign: [
       { id: "", label: "-- เลือกเกณฑ์จากประกาศ --" },
-      { id: "asg_chair", label: "ตารางที่ 21 ประธานกรรมการ/เลขานุการ 1 โครงการ = 20 หน่วย", kind: "count", per: 20 },
-      { id: "asg_member", label: "ตารางที่ 21 กรรมการ 1 โครงการ = 15 หน่วย", kind: "count", per: 15 },
-      { id: "asg_attend", label: "ตารางที่ 21 เข้าร่วม 1 โครงการ = 10 หน่วย", kind: "count", per: 10 },
+      { id: "asg_chair", label: "ประธานกรรมการ/เลขานุการ 1 โครงการ = 20 หน่วย", kind: "count", per: 20 },
+      { id: "asg_member", label: "กรรมการ 1 โครงการ = 15 หน่วย", kind: "count", per: 15 },
+      { id: "asg_attend", label: "เข้าร่วม 1 โครงการ = 10 หน่วย", kind: "count", per: 10 },
       { id: "asg_prog_chair", label: "ประธานคณะกรรมการบริหาร 1 หลักสูตร = 78 หน่วย", kind: "fixed", units: 78, score: null },
       { id: "asg_prog_sec", label: "กรรมการและเลขานุการบริหารหลักสูตร = 62 หน่วย", kind: "fixed", units: 62, score: null },
       { id: "asg_prog_mem", label: "กรรมการบริหารหลักสูตร = 15 หน่วย", kind: "fixed", units: 15, score: null },
@@ -180,9 +180,9 @@
     ],
     community: [
       { id: "", label: "-- เลือกเกณฑ์จากประกาศ --" },
-      { id: "com_chair", label: "ตารางที่ 22 ประธาน/เลขานุการกิจกรรมนักศึกษา = 20 หน่วย", kind: "count", per: 20 },
-      { id: "com_member", label: "ตารางที่ 22 กรรมการกิจกรรมนักศึกษา = 15 หน่วย", kind: "count", per: 15 },
-      { id: "com_attend", label: "ตารางที่ 22 เข้าร่วมกิจกรรมนักศึกษา = 5 หน่วย", kind: "count", per: 5 },
+      { id: "com_chair", label: "ประธาน/เลขานุการกิจกรรมนักศึกษา = 20 หน่วย", kind: "count", per: 20 },
+      { id: "com_member", label: "กรรมการกิจกรรมนักศึกษา = 15 หน่วย", kind: "count", per: 15 },
+      { id: "com_attend", label: "เข้าร่วมกิจกรรมนักศึกษา = 5 หน่วย", kind: "count", per: 5 },
       { id: "sport_fac", label: "กีฬา ระดับส่วนงาน = 10 หน่วย", kind: "fixed", units: 10, score: null },
       { id: "sport_uni", label: "กีฬา ระดับมหาวิทยาลัย = 15 หน่วย", kind: "fixed", units: 15, score: null },
       { id: "sport_nat", label: "กีฬา ระดับชาติ = 20 หน่วย", kind: "fixed", units: 20, score: null },
@@ -425,7 +425,7 @@
     return x.toFixed(2);
   }
 
-  /* compatibility with เดโมตารางที่ 1 เดิม */
+  /* compatibility with เดโมเดิม */
   function calc(w) {
     const t = {
       criteriaId: w.crit ? "pub_" + w.crit.replace(/^pub_/, "") : w.other,

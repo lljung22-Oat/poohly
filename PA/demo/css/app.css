@@ -244,6 +244,7 @@ a { color: #1565a8; }
   background: transparent; border: 0; color: var(--muted); text-decoration: underline;
   min-height: auto; padding: 4px; font-size: 15px; font-weight: 700;
 }
+.wide-track { min-width: 1600px; }
 .dash-grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
 }

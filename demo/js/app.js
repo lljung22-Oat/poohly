@@ -213,7 +213,7 @@ function defaultGroups() {
         {
           id: uid(), code: "2.1", title: "ภาระงานสอน",
           kpis: [{
-            id: uid(), code: "2.1.1", title: "ชั่วโมงสอนตามตารางที่ 4",
+            id: uid(), code: "2.1.1", title: "ชั่วโมงสอน",
             targets: [{
               ...emptyTarget("2.1.1.1", 30),
               title: "สอนภาคบรรยาย ปริญญาโท/เอก",
@@ -224,7 +224,7 @@ function defaultGroups() {
         {
           id: uid(), code: "2.2", title: "ภาระงานวิจัย",
           kpis: [{
-            id: uid(), code: "2.2.1", title: "ความก้าวหน้ากระบวนการวิจัย ตารางที่ 11",
+            id: uid(), code: "2.2.1", title: "ความก้าวหน้ากระบวนการวิจัย",
             targets: [{
               ...emptyTarget("2.2.1.1", 15),
               title: "โครงการวิจัยที่อยู่ในระหว่างดำเนินการ",
@@ -369,8 +369,21 @@ function defaultState() {
     loginGate: "public",
     loginType: "",
     leaveRows: defaultLeaveRows(),
-    timeRows: defaultTimeRows()
+    timeRows: defaultTimeRows(),
+    researchInt: [emptyResearchInt()],
+    researchNotify: [emptyResearchNotify()]
   };
+}
+
+function emptyResearchInt() {
+  return {
+    id: uid(), status: "", no: "", name: "", lead: "", dept: "", funder: "",
+    start: "", end: "", amount: "", objective: "", benefit: "", output: "", contract: ""
+  };
+}
+
+function emptyResearchNotify() {
+  return { id: uid(), no: "", name: "", lead: "", dept: "", remark: "" };
 }
 
 function defaultLeaveRows() {
@@ -394,6 +407,8 @@ function hydrate(raw) {
   if (!s.supportPledge) s.supportPledge = defaultState().supportPledge;
   if (!s.leaveRows || !s.leaveRows.length) s.leaveRows = defaultLeaveRows();
   if (!s.timeRows || !s.timeRows.length) s.timeRows = defaultTimeRows();
+  if (!s.researchInt || !s.researchInt.length) s.researchInt = [emptyResearchInt()];
+  if (!s.researchNotify || !s.researchNotify.length) s.researchNotify = [emptyResearchNotify()];
   s.modal = null;
   return s;
 }
@@ -467,6 +482,10 @@ function go(view) {
   if (isRatee()) S.focus = account().track;
   if (isFaculty() && ["paStaff", "follow", "scoreSum"].includes(view)) {
     toast("แบบของเจ้าหน้าที่สายสนับสนุนไม่ใช้กับสายวิชาการ");
+    return;
+  }
+  if (isSupport() && ["kpi2570", "researchTrack"].includes(view)) {
+    toast("คำอธิบายตัวชี้วัดและแบบติดตามโครงการวิจัยปี 2570 เป็นของสายวิชาการ");
     return;
   }
   if (isSupport() && view === "period") {
@@ -1081,7 +1100,7 @@ function lookingLine() {
 function flowTabs() {
   if (isHr() || isAdmin()) return "";
   const staffPa = ["period", "profile", "rounds", "formset", "modules", "pa", "follow", "paReport", "competency", "scoreSum", "ack", "report"].includes(S.view);
-  const facPa = ["period", "profile", "rounds", "formset", "modules", "pa", "paReport", "competency", "ack", "report"].includes(S.view);
+  const facPa = ["period", "profile", "rounds", "formset", "modules", "pa", "kpi2570", "researchTrack", "paReport", "competency", "ack", "report"].includes(S.view);
   const idp = ["idp", "idpReport", "idpEval", "idpAck"].includes(S.view);
   if (!staffPa && !facPa && !idp) return "";
   let items;
@@ -1110,6 +1129,8 @@ function flowTabs() {
     items = [
       ["modules", "วงจร PMS"],
       ["pa", "ข้อตกลง PA"],
+      ["kpi2570", "ตัวชี้วัด 2570"],
+      ["researchTrack", "โครงการวิจัย"],
       ["paReport", "ประเมินผลงาน"],
       ["competency", "สมรรถนะ"],
       ["ack", "รับทราบ"]
@@ -1292,7 +1313,11 @@ function hrisCards() {
   ];
   const pa = isSupport()
     ? [{ go: "paStaff", ico: "clip", title: "PA ประเมินภาระงาน", sub: "(สายสนับสนุน / ตารางทั่วไป)", cream: true }]
-    : [{ go: "period", ico: "grad", title: "PA ภาระงานอาจารย์", sub: "(สายวิชาการ / ตารางแบบ Matrix)", cream: true }];
+    : [
+      { go: "period", ico: "grad", title: "PA ภาระงานอาจารย์", sub: "(สายวิชาการ / ตารางแบบ Matrix)", cream: true },
+      { go: "kpi2570", ico: "clip", title: "คำอธิบายตัวชี้วัด PA 2570", sub: "ฉบับจัดทำ PA · ฝั่งอาจารย์" },
+      { go: "researchTrack", ico: "chart", title: "แบบติดตามข้อมูลโครงการวิจัย ปี 2570", sub: "ชีต iNT และแจ้งทำวิจัย" }
+    ];
   return personal.concat(pa, [
     { go: "competency", ico: "target", title: "Functional Competency", sub: "ประเมินสมรรถนะเฉพาะสายงาน", linkish: true },
     { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคล" }
@@ -1956,6 +1981,95 @@ function viewSupportPA() {
   `);
 }
 
+function viewKpi2570() {
+  if (track() === "support") {
+    return chrome(`<div class="warn-box">คำอธิบายตัวชี้วัด PA 2570 เป็นของสายวิชาการ</div>
+      <button class="btn-navy" type="button" data-go="home">กลับหน้าหลักระบบงาน</button>`);
+  }
+  const F = window.Faculty2570;
+  const rows = (F.UNIT_KPI_2570 || []).map((k) => `<tr>
+    <td>${esc(k.id)}</td>
+    <td>${esc(k.title)}</td>
+    <td>${k.inUnitPa ? "จัดทำ PA กับส่วนงาน" : "ไม่จัดทำ PA กับส่วนงาน"}</td>
+    <td>${esc(k.unit)}</td>
+    <td>${esc(k.year)}</td>
+    <td>${esc(k.note || "")}</td>
+  </tr>`).join("");
+  return chrome(`
+    <p class="crumb">สายวิชาการ</p>
+    <h1 class="page-title">คำอธิบายตัวชี้วัด PA 2570 (ฉบับจัดทำ PA)</h1>
+    <div class="card">
+      <p class="hint">ปกเล่มเขียนว่าข้อตกลงการปฏิบัติงานของส่วนงาน เจ้าของงานใช้ฝั่งอาจารย์ อ่านนิยามตอนกรอกงานวิจัย ห้ามนำตัวหารระดับมหาวิทยาลัยไปคูณฐานหน่วย 1,820</p>
+      <p><a href="${esc(F.SOURCE_PDF)}" target="_blank" rel="noopener">เปิดไฟล์ต้นฉบับ PDF</a></p>
+      <div class="pa-wrap"><table class="data">
+        <thead><tr><th>รหัส</th><th>ชื่อตามเล่ม</th><th>จัดทำ PA กับส่วนงาน</th><th>หน่วยนับ</th><th>ปีที่เก็บ</th><th>หมายเหตุตามเล่ม</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+    </div>`);
+}
+
+function viewResearchTrack() {
+  if (track() === "support") {
+    return chrome(`<div class="warn-box">แบบติดตามข้อมูลโครงการวิจัย ปี 2570 เป็นของสายวิชาการ ไม่ใช่แบบ 06</div>
+      <button class="btn-navy" type="button" data-go="home">กลับหน้าหลักระบบงาน</button>`);
+  }
+  const F = window.Faculty2570;
+  const lock = !canEditAgreement();
+  const dis = lock ? "disabled" : "";
+  function foundOpts(found, current) {
+    return [""].concat(found).map((v) =>
+      `<option value="${esc(v)}" ${v === (current || "") ? "selected" : ""}>${esc(v || "—")}</option>`
+    ).join("");
+  }
+  const intRows = (S.researchInt || []).map((r) => `<tr>
+    <td><select data-rint="${r.id}:status" ${dis}>${foundOpts(F.STATUS_FOUND, r.status)}</select></td>
+    <td><input data-rint="${r.id}:no" value="${esc(r.no)}" ${dis} /></td>
+    <td><textarea data-rint="${r.id}:name" ${dis}>${esc(r.name)}</textarea></td>
+    <td><textarea data-rint="${r.id}:lead" ${dis}>${esc(r.lead)}</textarea></td>
+    <td><input data-rint="${r.id}:dept" value="${esc(r.dept)}" ${dis} /></td>
+    <td><input data-rint="${r.id}:funder" value="${esc(r.funder)}" ${dis} /></td>
+    <td><input data-rint="${r.id}:start" value="${esc(r.start)}" ${dis} /></td>
+    <td><input data-rint="${r.id}:end" value="${esc(r.end)}" ${dis} /></td>
+    <td><input type="number" data-rint="${r.id}:amount" value="${esc(r.amount)}" ${dis} /></td>
+    <td><textarea data-rint="${r.id}:objective" ${dis}>${esc(r.objective)}</textarea></td>
+    <td><textarea data-rint="${r.id}:benefit" ${dis}>${esc(r.benefit)}</textarea></td>
+    <td><textarea data-rint="${r.id}:output" ${dis}>${esc(r.output)}</textarea></td>
+    <td><input data-rint="${r.id}:contract" value="${esc(r.contract)}" ${dis} /></td>
+    <td>${lock ? "" : `<button class="iconbtn" type="button" data-del-rint="${r.id}">−</button>`}</td>
+  </tr>`).join("");
+  const noteRows = (S.researchNotify || []).map((r) => `<tr>
+    <td><input data-rnote="${r.id}:no" value="${esc(r.no)}" ${dis} /></td>
+    <td><textarea data-rnote="${r.id}:name" ${dis}>${esc(r.name)}</textarea></td>
+    <td><textarea data-rnote="${r.id}:lead" ${dis}>${esc(r.lead)}</textarea></td>
+    <td><input data-rnote="${r.id}:dept" value="${esc(r.dept)}" ${dis} /></td>
+    <td><select data-rnote="${r.id}:remark" ${dis}>${foundOpts(F.REMARK_FOUND, r.remark)}</select></td>
+    <td>${lock ? "" : `<button class="iconbtn" type="button" data-del-rnote="${r.id}">−</button>`}</td>
+  </tr>`).join("");
+  return chrome(`
+    <p class="crumb">สายวิชาการ</p>
+    <h1 class="page-title">แบบติดตามข้อมูลโครงการวิจัย ปี 2570</h1>
+    <div class="card">
+      <p class="hint">คอลัมน์ตามไฟล์ Excel สองชีต ห้ามรวมตาราง สถานะและหมายเหตุมีเฉพาะค่าที่ปรากฏในไฟล์ แถวว่างสำหรับกรอกของคณะสังคมศาสตร์และมนุษยศาสตร์ ห้ามใส่ตัวอย่างศึกษาศาสตร์</p>
+      <p><a href="${esc(F.SOURCE_XLSX)}" download>เปิดไฟล์ต้นฉบับ Excel</a></p>
+      <h2>ชีต iNT</h2>
+      <div class="pa-wrap"><table class="data wide-track">
+        <thead><tr>${F.INT_COLS.map((c) => `<th>${esc(c[1])}</th>`).join("")}<th></th></tr></thead>
+        <tbody>${intRows}</tbody>
+      </table></div>
+      ${lock ? "" : `<button class="btn-ghost" type="button" id="btnAddInt">เพิ่มแถว iNT</button>`}
+      <h2>ชีต แจ้งทำวิจัย</h2>
+      <div class="pa-wrap"><table class="data">
+        <thead><tr>${F.NOTIFY_COLS.map((c) => `<th>${esc(c[1])}</th>`).join("")}<th></th></tr></thead>
+        <tbody>${noteRows}</tbody>
+      </table></div>
+      ${lock ? "" : `<button class="btn-ghost" type="button" id="btnAddNotify">เพิ่มแถวแจ้งทำวิจัย</button>`}
+      <div class="footbar">
+        ${lock ? "" : `<button class="btn-navy" type="button" id="btnSaveResearch">บันทึกแบบติดตามโครงการวิจัย</button>`}
+        <button class="btn-ghost" type="button" data-go="home">กลับหน้าหลักระบบงาน</button>
+      </div>
+    </div>`);
+}
+
 function viewFollow() {
   if (track() !== "support") {
     return chrome(`<div class="warn-box">แบบติดตามผลการปฏิบัติงาน (แบบ 06) เป็นของบุคลากรสายสนับสนุน</div>
@@ -2384,7 +2498,7 @@ function render() {
     evalHome: viewEvalHome, adminPeople: viewAdminPeople, adminRound: viewAdminRound,
     leave: viewLeave, time: viewTime, help: viewHelp,
     paStaff: viewPaStaff, follow: viewFollow, scoreSum: viewScoreSum, pledge: viewPledge,
-    users: viewUsers
+    users: viewUsers, kpi2570: viewKpi2570, researchTrack: viewResearchTrack
   };
   root.innerHTML = (map[v] || viewHome)();
   bind();
@@ -2510,6 +2624,41 @@ function bind() {
     readKeyedRows("data-leave", S.leaveRows);
     S.leaveRows.push({ id: uid(), kind: "ลาพักผ่อน", start: "", end: "", days: "", reason: "", status: "ร่าง" });
     persist(); render();
+  });
+  const sr = document.getElementById("btnSaveResearch");
+  if (sr) sr.addEventListener("click", () => {
+    readKeyedRows("data-rint", S.researchInt);
+    readKeyedRows("data-rnote", S.researchNotify);
+    persist();
+    toast("บันทึกแบบติดตามโครงการวิจัยแล้ว");
+  });
+  const ai = document.getElementById("btnAddInt");
+  if (ai) ai.addEventListener("click", () => {
+    readKeyedRows("data-rint", S.researchInt);
+    S.researchInt.push(emptyResearchInt());
+    persist(); render();
+  });
+  const an = document.getElementById("btnAddNotify");
+  if (an) an.addEventListener("click", () => {
+    readKeyedRows("data-rnote", S.researchNotify);
+    S.researchNotify.push(emptyResearchNotify());
+    persist(); render();
+  });
+  document.querySelectorAll("[data-del-rint]").forEach((b) => {
+    b.addEventListener("click", () => {
+      readKeyedRows("data-rint", S.researchInt);
+      S.researchInt = S.researchInt.filter((x) => x.id !== b.getAttribute("data-del-rint"));
+      if (!S.researchInt.length) S.researchInt = [emptyResearchInt()];
+      persist(); render();
+    });
+  });
+  document.querySelectorAll("[data-del-rnote]").forEach((b) => {
+    b.addEventListener("click", () => {
+      readKeyedRows("data-rnote", S.researchNotify);
+      S.researchNotify = S.researchNotify.filter((x) => x.id !== b.getAttribute("data-del-rnote"));
+      if (!S.researchNotify.length) S.researchNotify = [emptyResearchNotify()];
+      persist(); render();
+    });
   });
   const at = document.getElementById("btnAddTime");
   if (at) at.addEventListener("click", () => {
