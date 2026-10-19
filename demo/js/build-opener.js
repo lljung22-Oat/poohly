@@ -4,7 +4,7 @@ const path = require("path");
 const root = path.resolve(__dirname, "..");
 const repo = path.resolve(root, "..");
 const css = fs.readFileSync(path.join(root, "css", "app.css"), "utf8");
-const js = ["criteria.js", "db.js", "app.js"].map((f) =>
+const js = ["criteria.js", "faculty-2570.js", "db.js", "app.js"].map((f) =>
   fs.readFileSync(path.join(root, "js", f), "utf8")
 ).join("\n\n");
 
@@ -33,17 +33,34 @@ ${js}
 const targets = [
   path.join(repo, "เปิดตรงนี้.html"),
   path.join(root, "เปิดตรงนี้.html"),
-  path.join(repo, "PA", "demo", "เปิดตรงนี้.html")
+  path.join(repo, "PA", "demo", "เปิดตรงนี้.html"),
+  path.join(repo, "PA", "cursor", "demo", "เปิดตรงนี้.html")
 ];
-targets.forEach((p) => fs.writeFileSync(p, html));
+targets.forEach((p) => {
+  fs.mkdirSync(path.dirname(p), { recursive: true });
+  fs.writeFileSync(p, html);
+});
 
 function copyDirFile(src, dest) {
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.copyFileSync(src, dest);
 }
 
-["css/app.css", "js/app.js", "js/criteria.js", "js/db.js", "js/criteria.test.js", "js/labels.test.js", "index.html", "README.md"].forEach((rel) => {
+["css/app.css", "js/app.js", "js/criteria.js", "js/faculty-2570.js", "js/db.js", "js/criteria.test.js", "js/labels.test.js", "js/faculty-2570.test.js", "index.html", "README.md"].forEach((rel) => {
   copyDirFile(path.join(root, rel), path.join(repo, "PA", "demo", rel));
+  copyDirFile(path.join(root, rel), path.join(repo, "PA", "cursor", "demo", rel));
+});
+
+const sourceFiles = [
+  "sources/คำอธิบายตัวชี้วัด-PA-2570-ฉบับจัดทำ-PA.pdf",
+  "sources/แบบติดตามข้อมูลโครงการวิจัย-ปี-2570.xlsx"
+];
+sourceFiles.forEach((rel) => {
+  const src = path.join(root, rel);
+  if (!fs.existsSync(src)) return;
+  copyDirFile(src, path.join(repo, "PA", "demo", rel));
+  copyDirFile(src, path.join(repo, "PA", "cursor", "demo", rel));
+  copyDirFile(src, path.join(repo, rel));
 });
 
 console.log("opener rebuilt");
