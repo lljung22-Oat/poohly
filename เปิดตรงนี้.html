@@ -388,7 +388,14 @@ table.pa {
   width: 100%; border-collapse: collapse; min-width: 1280px; font-size: 16px;
 }
 table.pa.pa-faculty { min-width: 1680px; }
+table.pa.pa-faculty.pa-pre { min-width: 980px; }
+table.pa.pa-faculty.pa-eval td:nth-child(3) { min-width: 380px; }
 table.pa.pa-faculty td:nth-child(3) { min-width: 380px; }
+.bucket { margin: 8px 0 12px; padding-bottom: 8px; border-bottom: 1px dashed #c5d0dc; }
+.bucket:last-child { border-bottom: 0; }
+.bucket h4 { margin: 0 0 6px; color: #163a5f; font-size: 15px; font-weight: 800; }
+.search-box { margin-top: 10px; }
+.file-list { margin: 6px 0 0; padding-left: 18px; }
 table.pa .seq-cell { width: 64px; text-align: center; font-weight: 800; }
 table.pa .seq-cell .iconbtn { display: block; margin: 8px auto 0; }
 table.pa .title-cell { min-width: 220px; }
@@ -670,7 +677,8 @@ table.pa .auto {
       { id: "asg_prog_mem", label: "กรรมการบริหารหลักสูตร = 15 หน่วย", kind: "fixed", units: 15, score: null },
       { id: "asg_prog_resp", label: "อาจารย์ผู้รับผิดชอบหลักสูตร = 10 หน่วย", kind: "fixed", units: 10, score: null },
       { id: "asg_vice_dept", label: "รองหัวหน้าภาควิชา = 9 หน่วย/สัปดาห์ กรอกจำนวนสัปดาห์", kind: "count", per: 9 },
-      { id: "asg_assist_dept", label: "ผู้ช่วยหัวหน้าภาควิชา = 6 หน่วย/สัปดาห์ กรอกจำนวนสัปดาห์", kind: "count", per: 6 }
+      { id: "asg_assist_dept", label: "ผู้ช่วยหัวหน้าภาควิชา = 6 หน่วย/สัปดาห์ กรอกจำนวนสัปดาห์", kind: "count", per: 6 },
+      { id: "asg_other", label: "หัวข้องานอื่น (ระบุเอง พร้อมหน่วยและคะแนนที่เสนอ)", kind: "custom" }
     ],
     community: [
       { id: "", label: "-- เลือกเกณฑ์จากประกาศ --" },
@@ -682,9 +690,94 @@ table.pa .auto {
       { id: "sport_nat", label: "กีฬา ระดับชาติ = 20 หน่วย", kind: "fixed", units: 20, score: null },
       { id: "sport_intl", label: "กีฬา ระดับนานาชาติ = 30 หน่วย", kind: "fixed", units: 30, score: null },
       { id: "media_uni", label: "ให้ความรู้ผ่านสื่อระดับมหาวิทยาลัย ครั้งละ 10 หน่วย กรอกครั้ง", kind: "count", per: 10 },
-      { id: "media_nat", label: "ให้ความรู้ผ่านสื่อระดับชาติ/นานาชาติ ครั้งละ 15 หน่วย กรอกครั้ง", kind: "count", per: 15 }
+      { id: "media_nat", label: "ให้ความรู้ผ่านสื่อระดับชาติ/นานาชาติ ครั้งละ 15 หน่วย กรอกครั้ง", kind: "count", per: 15 },
+      { id: "com_other", label: "หัวข้องานอื่น (ระบุเอง พร้อมหน่วยและคะแนนที่เสนอ)", kind: "custom" }
     ]
   };
+
+  const STRAT_BUCKETS = [
+    { id: "pub", title: "ยุทธศาสตร์ตีพิมพ์", match: (c) => c.kind === "pub" },
+    { id: "grant", title: "ยุทธศาสตร์ทุนวิจัย", match: (c) => String(c.kind || "").startsWith("grant") },
+    { id: "other", title: "ยุทธศาสตร์อื่นๆ", match: (c) => c.kind === "fixed" }
+  ];
+
+  /* สามสูตรตามประกาศคณะฯ พ.ศ. 2568 ไม่คิดสูตรคณะอื่น */
+  const TEACH_FORMULAS = [
+    { id: "grad_main", criteriaId: "teach_grad_main", label: "สูตรป.โท/เอก ผู้สอนหลัก", per: 4, hint: "1 ชั่วโมง = 4 หน่วย" },
+    { id: "ug_lec", criteriaId: "teach_ug_lec", label: "สูตรป.ตรี บรรยาย ผู้สอนหลัก", per: 3, hint: "1 ชั่วโมง = 3 หน่วย" },
+    { id: "ug_lab", criteriaId: "teach_ug_lab", label: "สูตรป.ตรี ปฏิบัติ ผู้สอนหลัก", per: 1.5, hint: "1 ชั่วโมง = 1.5 หน่วย" }
+  ];
+
+  const MAX_EVIDENCE_FILES = 3;
+
+  /* ฐานกลางเดโมรหัส SH ของคณะสังคมฯ ไม่ใส่ตัวอย่างศึกษาศาสตร์ */
+  const PROJECT_REGISTRY = [
+    { code: "SH-RES-2569-01", name: "โครงการวิจัยด้านนโยบายสังคม", contractDate: "2026-01-15", amount: 450000, funder: "งบประมาณรายได้ส่วนงาน" },
+    { code: "SH-RES-2569-02", name: "โครงการทุนวิจัยความเหลื่อมล้ำทางสังคม", contractDate: "2026-02-20", amount: 1200000, funder: "หน่วยงานจัดสรรเงินทุนวิจัยภายในประเทศ" },
+    { code: "SH-RES-2570-01", name: "โครงการวิจัยคุณภาพชีวิตผู้สูงอายุ", contractDate: "2026-10-01", amount: 350000, funder: "งบประมาณรายได้ส่วนงาน" }
+  ];
+
+  const SYLLABUS_REGISTRY = [
+    { id: "SHSS501", code: "SHSS 501", title: "ทฤษฎีสังคมศาสตร์", hours: 45, formulaId: "grad_main" },
+    { id: "SHSS201", code: "SHSS 201", title: "สังคมวิทยาเบื้องต้น", hours: 30, formulaId: "ug_lec" },
+    { id: "SHSS215", code: "SHSS 215", title: "ปฏิบัติการวิจัยภาคสนาม", hours: 24, formulaId: "ug_lab" }
+  ];
+
+  function searchProjects(q) {
+    const s = String(q || "").trim().toLowerCase();
+    if (!s) return PROJECT_REGISTRY.slice();
+    return PROJECT_REGISTRY.filter((p) =>
+      p.code.toLowerCase().includes(s) || p.name.toLowerCase().includes(s)
+    );
+  }
+
+  function findProject(code) {
+    return PROJECT_REGISTRY.find((p) => p.code === code) || null;
+  }
+
+  function searchSyllabus(q) {
+    const s = String(q || "").trim().toLowerCase();
+    if (!s) return SYLLABUS_REGISTRY.slice();
+    return SYLLABUS_REGISTRY.filter((c) =>
+      c.code.toLowerCase().includes(s) || c.title.toLowerCase().includes(s) || c.id.toLowerCase().includes(s)
+    );
+  }
+
+  function findSyllabus(id) {
+    return SYLLABUS_REGISTRY.find((c) => c.id === id || c.code === id) || null;
+  }
+
+  function findTeachFormula(id) {
+    return TEACH_FORMULAS.find((f) => f.id === id) || null;
+  }
+
+  function doiStatus(raw) {
+    const v = String(raw || "").trim();
+    if (!v) return { ok: true, empty: true, label: "" };
+    const ok = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i.test(v);
+    return { ok, empty: false, label: ok ? "รูปแบบ DOI ถูกต้อง" : "รูปแบบ DOI ไม่ตรงมาตรฐาน (ขึ้นต้น 10.)" };
+  }
+
+  function evidenceFiles(t) {
+    if (t && Array.isArray(t.files)) return t.files.filter(Boolean);
+    if (t && t.file) return [t.file];
+    return [];
+  }
+
+  function attachEvidence(t, names) {
+    const cur = evidenceFiles(t);
+    const add = (names || []).map((x) => String(x || "").trim()).filter(Boolean);
+    const room = Math.max(0, MAX_EVIDENCE_FILES - cur.length);
+    const kept = add.slice(0, room);
+    const blocked = add.length > room;
+    return {
+      files: cur.concat(kept),
+      blocked,
+      message: blocked
+        ? `อัปโหลดได้ไม่เกิน ${MAX_EVIDENCE_FILES} ไฟล์ต่อเรื่อง`
+        : (cur.length + kept.length >= MAX_EVIDENCE_FILES ? `ครบ ${MAX_EVIDENCE_FILES} ไฟล์ต่อเรื่อง` : "")
+    };
+  }
 
   function findCrit(groupId, critId) {
     const list = CATALOG[groupId] || [];
@@ -752,10 +845,12 @@ table.pa .auto {
     }
 
     if (c.kind === "hours") {
+      const formula = findTeachFormula(t.teachFormula);
+      const per = formula ? formula.per : (c.per || 0);
       const h = Number(t.hours) || 0;
-      const units = +(h * (c.per || 0)).toFixed(2);
+      const units = +(h * per).toFixed(2);
       const autoScore = units > 0 ? 8 : 0;
-      return { units, score: autoScore, autoScore };
+      return { units, score: autoScore, autoScore, per };
     }
 
     if (c.kind === "count") {
@@ -771,7 +866,43 @@ table.pa .auto {
       return { units, score, autoScore: score };
     }
 
+    if (c.kind === "custom") {
+      const units = Number(t.proposedUnits) || 0;
+      const raw = t.proposedScore;
+      const score = raw === "" || raw == null ? 0 : Number(raw) || 0;
+      return { units, score, autoScore: score, proposed: true };
+    }
+
     return { units: 0, score: 0, autoScore: 0 };
+  }
+
+  /* หน่วยที่คาดว่าจะได้รับในหน้า PA ล่วงหน้า ไม่คูณบทบาท ไม่บล็อกฐานข้อมูล */
+  function expectedPreview(t, groupId) {
+    const c = findCrit(groupId, t && t.criteriaId);
+    if (!c || !c.id) return { units: 0, label: "—" };
+    if (c.kind === "pub") return { units: c.units, label: fmtUnit(c.units) };
+    if (c.kind === "grant_th" || c.kind === "grant_en" || c.kind === "grant_mu") {
+      const gres = grantUnits(c.kind, t.amount);
+      return { units: gres.units, label: gres.units ? fmtUnit(gres.units) : "—" };
+    }
+    if (c.kind === "hours") {
+      const formula = findTeachFormula(t.teachFormula) || TEACH_FORMULAS.find((f) => f.criteriaId === c.id);
+      const per = formula ? formula.per : (c.per || 0);
+      const h = Number(t.hours) || 0;
+      if (h) return { units: +(h * per).toFixed(2), label: fmtUnit(+(h * per).toFixed(2)) };
+      return { units: 0, label: `${per} หน่วย/ชม.` };
+    }
+    if (c.kind === "count") {
+      const n = Number(t.qty) || 0;
+      if (n) return { units: +(n * (c.per || 0)).toFixed(2), label: fmtUnit(+(n * (c.per || 0)).toFixed(2)) };
+      return { units: 0, label: `${c.per || 0} หน่วย/รายการ` };
+    }
+    if (c.kind === "fixed") return { units: c.units || 0, label: fmtUnit(c.units || 0) };
+    if (c.kind === "custom") {
+      const n = Number(t.proposedUnits) || 0;
+      return { units: n, label: n ? fmtUnit(n) : "เสนอหน่วยเองเมื่อประเมิน" };
+    }
+    return { units: 0, label: "—" };
   }
 
   function collectTargets(groups) {
@@ -943,7 +1074,10 @@ table.pa .auto {
     PA_WEIGHT, CC_WEIGHT, CC_SUM_MAX, IDP_MAX, TOTAL_UNITS,
     GROUPS, ROLES, KPI_TYPES, SCALE5, LEVELS, CC_ITEMS, FC_ITEMS, SUPPORT_FC_ITEMS,
     WORK_TYPES, IDP_METHODS,
-    PUB, GRANT_SOURCES, CATALOG,
+    PUB, GRANT_SOURCES, CATALOG, STRAT_BUCKETS, TEACH_FORMULAS, MAX_EVIDENCE_FILES,
+    PROJECT_REGISTRY, SYLLABUS_REGISTRY,
+    searchProjects, findProject, searchSyllabus, findSyllabus, findTeachFormula,
+    doiStatus, evidenceFiles, attachEvidence, expectedPreview,
     findCrit, grantUnits, rolePct, unitsToScore, calcTarget,
     collectTargets, sumWeight, groupUnits, effectiveScore,
     paPoints, chairPaScore, ccRaw, ccPoints, paWeighted80, totalScore,
@@ -1439,8 +1573,8 @@ function firstHeadLabel() { return "หัวหน้างานขั้น�
 function headLabel() { return "หัวหน้างาน"; }
 
 const MODULES = [
-  { id: "pa", title: "จัดทำข้อตกลงการปฏิบัติงาน (PA)", need: null },
-  { id: "paReport", title: "ประเมินผลงาน (PA)", need: "approved" },
+  { id: "pa", title: "PA ล่วงหน้า (ก่อนเริ่มปฏิบัติงาน)", need: null },
+  { id: "paReport", title: "ประเมินผลงานจริง", need: "approved" },
   { id: "competency", title: "ประเมินผลงาน และประเมินสมรรถนะ", need: "reported" },
   { id: "ack", title: "แจ้งผลและรับทราบผลการประเมินการปฏิบัติงาน", need: "chair" },
   { id: "idp", title: "จัดทำแผนพัฒนารายบุคคล (IDP)", need: null },
@@ -1471,7 +1605,11 @@ function emptyTarget(code, weight) {
   return {
     id: uid(), code, title: "", date: "", kpiType: "quantity", weight: weight || 0,
     criteriaId: "", role: "", inDb: false, withStudent: false,
-    amount: "", hours: "", qty: 1, report: "", file: "",
+    amount: "", hours: "", qty: 1, report: "", file: "", files: [],
+    doi: "", projectCode: "", contractDate: "",
+    teachFormula: "", syllabusId: "",
+    customTitle: "", proposedUnits: "", proposedScore: "",
+    fileError: "",
     selfScore: "", committeeComment: "", committeeScore: "",
     chairComment: "", chairScore: "", approved: "wait", approveReason: ""
   };
@@ -1490,7 +1628,8 @@ function defaultGroups() {
               ...emptyTarget("1.1.1.1", 10),
               title: "บทความตีพิมพ์ในวารสารที่อยู่ในฐานข้อมูล",
               date: "2026-03-15",
-              criteriaId: "pub_q1", role: "pi", inDb: true, kpiType: "quantity"
+              criteriaId: "pub_q1", role: "pi", inDb: true, kpiType: "quantity",
+              doi: "10.1234/shss.2570.01"
             }]
           }]
         },
@@ -1518,7 +1657,8 @@ function defaultGroups() {
             targets: [{
               ...emptyTarget("2.1.1.1", 30),
               title: "สอนภาคบรรยาย ปริญญาโท/เอก",
-              criteriaId: "teach_grad_main", hours: "45", kpiType: "quantity"
+              criteriaId: "teach_grad_main", teachFormula: "grad_main",
+              syllabusId: "SHSS501", hours: "45", kpiType: "quantity"
             }]
           }]
         },
@@ -1529,7 +1669,8 @@ function defaultGroups() {
             targets: [{
               ...emptyTarget("2.2.1.1", 15),
               title: "โครงการวิจัยที่อยู่ในระหว่างดำเนินการ",
-              criteriaId: "res_proc_3", kpiType: "quantity"
+              criteriaId: "res_proc_3", projectCode: "SH-RES-2569-01",
+              contractDate: "2026-01-15", kpiType: "quantity"
             }]
           }]
         },
@@ -1710,6 +1851,23 @@ function hydrate(raw) {
   if (!s.timeRows || !s.timeRows.length) s.timeRows = defaultTimeRows();
   if (!s.researchInt || !s.researchInt.length) s.researchInt = [emptyResearchInt()];
   if (!s.researchNotify || !s.researchNotify.length) s.researchNotify = [emptyResearchNotify()];
+  (s.groups || []).forEach((g) => {
+    (g.agreements || []).forEach((a) => {
+      (a.kpis || []).forEach((k) => {
+        (k.targets || []).forEach((t) => {
+          if (!Array.isArray(t.files)) t.files = t.file ? [t.file] : [];
+          if (t.doi == null) t.doi = "";
+          if (t.projectCode == null) t.projectCode = "";
+          if (t.contractDate == null) t.contractDate = "";
+          if (t.teachFormula == null) t.teachFormula = "";
+          if (t.syllabusId == null) t.syllabusId = "";
+          if (t.customTitle == null) t.customTitle = "";
+          if (t.proposedUnits == null) t.proposedUnits = "";
+          if (t.proposedScore == null) t.proposedScore = "";
+        });
+      });
+    });
+  });
   s.modal = null;
   return s;
 }
@@ -3001,7 +3159,7 @@ function viewModules() {
     { title: "กลุ่ม IDP", note: "ผู้ปฏิบัติและผู้อนุมัติ", ids: ["idp", "idpEval"] },
     { title: "กลุ่มรายงาน", note: "", ids: ["report"] }
   ] : [
-    { title: "กลุ่ม PA อาจารย์", note: "ข้อตกลงตามประกาศค่าน้ำหนักและแบบ SHPA", ids: ["pa", "paReport", "competency", "ack"] },
+    { title: "กลุ่ม PA อาจารย์", note: "หน้า PA ล่วงหน้า และหน้าประเมินผลงานจริง ตามประกาศค่าน้ำหนัก / SHPA", ids: ["pa", "paReport", "competency", "ack"] },
     { title: "กลุ่ม IDP", note: "แผนพัฒนารายบุคคล", ids: ["idp", "idpReport", "idpEval", "idpAck"] },
     { title: "กลุ่มรายงาน", note: "", ids: ["report"] }
   ];
@@ -3061,13 +3219,24 @@ function facultyCriteriaCell(t, g, lock) {
     const others = (C.CATALOG.strat || []).filter((c) => c.id && c.kind === "fixed").map((c) =>
       `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""}>${esc(c.label)}</option>`
     ).join("");
-    return `<div class="crit-list">${pubs}</div>
-      <div class="grant-stack">${grants}
+    return `<div class="bucket"><h4>ยุทธศาสตร์ตีพิมพ์</h4><div class="crit-list">${pubs}</div></div>
+      <div class="bucket"><h4>ยุทธศาสตร์ทุนวิจัย</h4><div class="grant-stack">${grants}</div></div>
+      <div class="bucket"><h4>ยุทธศาสตร์อื่นๆ</h4>
         <select data-crit-other="${t.id}" ${lock ? "disabled" : ""}>
           <option value="">เกณฑ์ยุทธศาสตร์อื่นตามประกาศ</option>
           ${others}
         </select>
       </div>`;
+  }
+  if (g.id === "main") {
+    const teach = (C.TEACH_FORMULAS || []).map((f) =>
+      critRadio(t, lock, f.criteriaId, `${f.label} (${f.hint})`)
+    ).join("");
+    const rest = (C.CATALOG.main || []).filter((c) => c.id && c.kind !== "hours").map((c) =>
+      critRadio(t, lock, c.id, c.label)
+    ).join("");
+    return `<div class="bucket"><h4>สูตรคำนวณภาระงานสอน 3 รูปแบบ</h4><div class="crit-list">${teach}</div></div>
+      <div class="bucket"><h4>ภาระงานหลักอื่นตามประกาศ</h4><div class="crit-list">${rest}</div></div>`;
   }
   const items = (C.CATALOG[g.id] || []).filter((c) => c.id);
   return `<div class="crit-list">${items.map((c) => critRadio(t, lock, c.id, c.label)).join("")}</div>`;
@@ -3092,35 +3261,11 @@ function facultyRoleCell(t, g, lock) {
 }
 
 function facultyItemRow(t, g, lock, seq) {
-  const cal = C.calcTarget(t, g.id);
-  const self = C.effectiveScore(t, g.id);
-  const warn = cal.blocked === "student"
-    ? `<div class="warn-box">ผลงานวิจัยร่วมกับนักศึกษาไม่นับในยุทธศาสตร์</div>`
-    : cal.blocked === "db"
-      ? `<div class="warn-box">ต้องเผยแพร่แล้วและปรากฏในฐานข้อมูลก่อนจึงคิดหน่วย</div>`
-      : "";
+  const prev = C.expectedPreview(t, g.id);
   return `<tr>
     <td class="seq-cell">${seq}${canEditAgreement() ? `<button class="iconbtn" type="button" data-del-row="${g.id}:${t.id}" aria-label="ลบรายการ">−</button>` : ""}</td>
-    <td class="title-cell">
-      <textarea data-pa="t:${t.id}:title" placeholder="ชื่อบทความ / ชื่อโครงการ" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
-      <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
-      <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
-    </td>
     <td>${facultyCriteriaCell(t, g, lock)}</td>
-    <td>${facultyRoleCell(t, g, lock)}${warn}</td>
-    <td class="auto">${C.fmtUnit(cal.units)}</td>
-    <td>
-      <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
-      <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
-    </td>
-    <td>
-      <textarea data-pa="t:${t.id}:report" placeholder="กรอกคะแนน 9–10 หรือ 0–2 พร้อมเหตุผล/หลักฐานประกอบ" ${lock ? "disabled" : ""}>${esc(t.report)}</textarea>
-      <div class="file-box">
-        <div class="date-lab">Upload ไฟล์หลักฐาน</div>
-        <input type="file" data-file="${t.id}" ${lock ? "disabled" : ""} />
-        <div class="hint">${t.file ? esc(t.file) : "ไม่มีไฟล์ที่เลือก"}</div>
-      </div>
-    </td>
+    <td class="auto">${esc(prev.label)}</td>
   </tr>`;
 }
 
@@ -3149,15 +3294,11 @@ function viewPA() {
         </div>
         ${canEditAgreement() ? `<button class="btn-teal" type="button" data-add-ag="${g.id}">เพิ่มรายการ</button>` : ""}
       </header>
-      <div class="pa-wrap"><table class="pa pa-faculty">
+      <div class="pa-wrap"><table class="pa pa-faculty pa-pre">
         <thead><tr>
           <th>ลำดับ</th>
-          <th>ชื่อบทความ / ชื่อโครงการ</th>
           <th>รายละเอียดเกณฑ์</th>
-          <th>บทบาทและเงื่อนไขใช้</th>
-          <th>หน่วยภาระงานที่ได้รับ</th>
-          <th>ผลการประเมินตนเอง</th>
-          <th>หลักฐาน / เหตุผล</th>
+          <th>หน่วยภาระงานที่คาดว่าจะได้รับ</th>
         </tr></thead>
         <tbody>${facultyGroupRows(g, lock)}</tbody>
       </table></div>
@@ -3184,8 +3325,8 @@ function viewPA() {
     </div>` : ""}
     <div class="pa-banner">
       <div>
-        <h2>Performance Agreement (PA)</h2>
-        <p class="sub">การประเมินผลการปฏิบัติงาน · ${statusPill(paStatus())} · ปี ${esc(S.year)}</p>
+        <h2>PA ล่วงหน้า (ก่อนเริ่มปฏิบัติงาน)</h2>
+        <p class="sub">แสดงเฉพาะลำดับ เกณฑ์ และหน่วยที่คาดว่าจะได้รับ · ยังไม่กรอกเชิงลึกหรือแนบหลักฐาน · ${statusPill(paStatus())} · ปี ${esc(S.year)}</p>
       </div>
       <div class="weight-box ${wcls}">น้ำหนักตามประกาศ : ${w}</div>
     </div>
@@ -3432,6 +3573,124 @@ function viewPledge() {
   return viewModules();
 }
 
+function doiHint(t) {
+  const st = C.doiStatus(t.doi);
+  if (st.empty) return `<div class="hint">กรอกลิงก์หรือรหัส DOI ของงานตีพิมพ์</div>`;
+  return `<div class="${st.ok ? "ok-box" : "warn-box"}">${esc(st.label)}</div>`;
+}
+
+function evidenceBox(t, lock) {
+  const files = C.evidenceFiles(t);
+  const full = files.length >= C.MAX_EVIDENCE_FILES;
+  const list = files.map((name, i) =>
+    `<li>${esc(name)}${lock ? "" : ` <button class="btn-ghost" type="button" data-del-ev="${t.id}:${i}">ลบ</button>`}</li>`
+  ).join("");
+  return `<div class="file-box">
+    <div class="date-lab">หลักฐาน (ไม่เกิน ${C.MAX_EVIDENCE_FILES} ไฟล์ต่อเรื่อง)</div>
+    <input type="file" data-files="${t.id}" ${lock || full ? "disabled" : ""} />
+    ${t.fileError ? `<div class="warn-box">${esc(t.fileError)}</div>` : ""}
+    ${full ? `<div class="warn-box">ครบ ${C.MAX_EVIDENCE_FILES} ไฟล์ต่อเรื่อง ระบบตรวจจับไม่ให้เพิ่มต่อ</div>` : ""}
+    <ul class="file-list">${list || "<li class=\"hint\">ยังไม่มีไฟล์</li>"}</ul>
+  </div>`;
+}
+
+function projectSearchBox(t, lock) {
+  const opts = C.searchProjects("").map((p) =>
+    `<option value="${esc(p.code)}">${esc(p.code)} · ${esc(p.name)}</option>`
+  ).join("");
+  return `<div class="search-box">
+    <label class="date-lab">ค้นหาชื่อหรือรหัสโครงการจากฐานข้อมูลกลาง</label>
+    <input list="proj-${t.id}" data-proj-q="${t.id}" value="${esc(t.projectCode || "")}" placeholder="พิมพ์รหัส SH-RES หรือชื่อโครงการ" ${lock ? "disabled" : ""} />
+    <datalist id="proj-${t.id}">${opts}</datalist>
+    <div class="hint">${t.contractDate ? `วันที่ลงนามในสัญญา ${esc(t.contractDate)}` : "เลือกแล้วระบบดึงชื่อโครงการและวันที่ลงนามในสัญญาให้อัตโนมัติ"}</div>
+  </div>`;
+}
+
+function syllabusBox(t, lock) {
+  const opts = C.searchSyllabus("").map((c) =>
+    `<option value="${esc(c.id)}">${esc(c.code)} · ${esc(c.title)}</option>`
+  ).join("");
+  const formula = (C.TEACH_FORMULAS || []).map((f) =>
+    `<option value="${esc(f.id)}" ${t.teachFormula === f.id ? "selected" : ""}>${esc(f.label)} · ${esc(f.hint)}</option>`
+  ).join("");
+  return `<div class="search-box">
+    <label class="date-lab">ดึงรายวิชาและตารางสอนจากประมวลรายวิชา</label>
+    <input list="syl-${t.id}" data-syl-q="${t.id}" value="${esc(t.syllabusId || "")}" placeholder="รหัสหรือชื่อรายวิชา" ${lock ? "disabled" : ""} />
+    <datalist id="syl-${t.id}">${opts}</datalist>
+    <label class="date-lab">เลือกสูตรคำนวณคะแนน 3 รูปแบบ</label>
+    <select data-pa="t:${t.id}:teachFormula" ${lock ? "disabled" : ""}>
+      <option value="">-- เลือกสูตรตามลักษณะภาระงาน --</option>
+      ${formula}
+    </select>
+    <div class="hint">ชั่วโมงสอน ${esc(t.hours || "—")} (ดึงจากประมวลรายวิชา ไม่ต้องพิมพ์เอง)</div>
+  </div>`;
+}
+
+function facultyEvalRow(t, g, lock, seq) {
+  const cal = C.calcTarget(t, g.id);
+  const self = C.effectiveScore(t, g.id);
+  const c = C.findCrit(g.id, t.criteriaId);
+  const warn = cal.blocked === "student"
+    ? `<div class="warn-box">ผลงานวิจัยร่วมกับนักศึกษาไม่นับในยุทธศาสตร์</div>`
+    : cal.blocked === "db"
+      ? `<div class="warn-box">ต้องเผยแพร่แล้วและปรากฏในฐานข้อมูลก่อนจึงคิดหน่วย</div>`
+      : "";
+  const isPub = c && c.kind === "pub";
+  const isGrant = c && String(c.kind || "").startsWith("grant");
+  const isTeach = c && c.kind === "hours";
+  const isCustom = c && c.kind === "custom";
+  const isResearchProc = c && String(c.id || "").startsWith("res_proc");
+  let extra = "";
+  if (isPub || isGrant || isResearchProc) extra += projectSearchBox(t, lock);
+  if (isPub) {
+    extra += `<label class="date-lab">DOI</label>
+      <input data-pa="t:${t.id}:doi" value="${esc(t.doi || "")}" placeholder="10.xxxx/xxxxx หรือ URL DOI" ${lock ? "disabled" : ""} />
+      ${doiHint(t)}`;
+  }
+  if (isTeach) extra += syllabusBox(t, lock);
+  if (g.id === "assign" || g.id === "community") {
+    extra += `<label class="date-lab">รายการหลัก</label>
+      <select data-pa="t:${t.id}:criteriaId" ${lock ? "disabled" : ""}>
+        ${(C.CATALOG[g.id] || []).map((x) =>
+          `<option value="${esc(x.id)}" ${t.criteriaId === x.id ? "selected" : ""}>${esc(x.label)}</option>`
+        ).join("")}
+      </select>`;
+    if (isCustom) {
+      extra += `<label class="date-lab">หัวข้องานอื่น</label>
+        <input data-pa="t:${t.id}:customTitle" value="${esc(t.customTitle || t.title || "")}" placeholder="พิมพ์หัวข้องานที่ไม่มีในรายการ" ${lock ? "disabled" : ""} />
+        <label class="date-lab">หน่วยภาระงานที่เสนอ</label>
+        <input type="number" data-pa="t:${t.id}:proposedUnits" value="${esc(t.proposedUnits)}" ${lock ? "disabled" : ""} />
+        <label class="date-lab">คะแนนที่เสนอขอรับการพิจารณา</label>
+        <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:proposedScore" value="${esc(t.proposedScore)}" ${lock ? "disabled" : ""} />`;
+    }
+  }
+  extra += evidenceBox(t, lock);
+  const criteriaHtml = (g.id === "assign" || g.id === "community" || isTeach)
+    ? ""
+    : g.id === "main"
+      ? `<div class="hint">${esc((c && c.label) || "เลือกเกณฑ์ในหน้า PA ล่วงหน้า")}</div>`
+      : facultyCriteriaCell(t, g, lock);
+  const roleHtml = g.id === "strat" ? facultyRoleCell(t, g, lock) : "";
+  return `<tr>
+    <td class="seq-cell">${seq}</td>
+    <td class="title-cell">
+      <textarea data-pa="t:${t.id}:title" placeholder="ชื่อบทความ / ชื่อโครงการ / รายวิชา" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
+      <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
+      <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
+      ${t.contractDate ? `<div class="hint">วันที่ลงนามในสัญญา ${esc(t.contractDate)}</div>` : ""}
+    </td>
+    <td>${criteriaHtml}${roleHtml}${warn}${extra}</td>
+    <td class="auto">${C.fmtUnit(cal.units)}</td>
+    <td>
+      <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
+      <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
+    </td>
+    <td>
+      <textarea data-pa="t:${t.id}:report" placeholder="ผลการดำเนินงานและเหตุผลประกอบ" ${lock ? "disabled" : ""}>${esc(t.report)}</textarea>
+    </td>
+  </tr>`;
+}
+
 function viewPaReport() {
   const lock = !canReportPa();
   if (track() === "support") {
@@ -3455,27 +3714,36 @@ function viewPaReport() {
         <button class="btn-ghost" data-go="competency">ไปประเมินสมรรถนะ</button>
       </div>`);
   }
-  const rows = [];
-  forEachTarget((t, g) => {
-    const cal = C.calcTarget(t, g.id);
-    const self = C.effectiveScore(t, g.id);
-    rows.push(`<tr>
-      <td>${esc(t.code)}</td>
-      <td>${esc(t.title)}</td>
-      <td class="auto">${C.fmtUnit(cal.units)}</td>
-      <td><input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? self : t.selfScore)}" ${lock ? "disabled" : ""} /></td>
-      <td>${esc(C.scaleLabel(self))}</td>
-    </tr>`);
-  });
+  const sections = S.groups.map((g) => {
+    const meta = C.GROUPS.find((x) => x.id === g.id);
+    const rows = groupTargets(g).map((t, i) => facultyEvalRow(t, g, lock, i + 1)).join("");
+    return `<section class="sec pa-sec sec-faculty" id="rep-g-${g.id}">
+      <header class="sec-head">
+        <div>
+          <h2>${esc(meta.title)} · ${esc(meta.name)}</h2>
+          <p>กรอกข้อมูลเชิงลึกและแนบหลักฐานเมื่อสิ้นรอบการประเมิน</p>
+        </div>
+      </header>
+      <div class="pa-wrap"><table class="pa pa-faculty pa-eval">
+        <thead><tr>
+          <th>ลำดับ</th>
+          <th>ภารกิจ</th>
+          <th>รายละเอียด / หลักฐาน</th>
+          <th>ผลการดำเนินงาน</th>
+          <th>ประเมินตนเอง (0–10)</th>
+          <th>เหตุผล</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+    </section>`;
+  }).join("");
   return chrome(`
-    <p class="crumb">แบบประเมินข้อตกลง PA / ประเมินผล</p>
-    <h1 class="page-title">ประเมินผลงาน</h1>
+    <p class="crumb">แบบประเมินข้อตกลง PA / ประเมินผลงานจริง</p>
+    <h1 class="page-title">ประเมินผลงานจริง</h1>
     ${stepperHtml()}
     ${paLocked() ? `<div class="lock-note">ส่งการประเมินตนเองแล้วแก้ไขไม่ได้</div>` : ""}
-    <div class="pa-wrap"><table class="pa">
-      <thead><tr><th>เป้าหมาย</th><th>ภารกิจ</th><th>ผลการดำเนินงาน</th><th>ประเมินตนเอง (0–10)</th><th>เกณฑ์</th></tr></thead>
-      <tbody>${rows.join("")}</tbody>
-    </table></div>
+    <p class="hint">ค้นหาโครงการจากฐานกลาง แนบ DOI จำกัดหลักฐานไม่เกิน 3 ไฟล์ต่อเรื่อง เลือกสูตรสอน 3 แบบจากประกาศ และดึงชั่วโมงจากประมวลรายวิชา</p>
+    ${sections}
     <div class="footbar">
       ${canReportPa() ? `<button class="btn-navy" type="button" id="btnSaveReport">บันทึก</button>
       <button class="btn-navy" type="button" id="btnSendReport">ส่งการประเมิน</button>` : ""}
@@ -4063,6 +4331,8 @@ function bind() {
       if (!t || !el.checked) return;
       t.criteriaId = el.value;
       if (String(el.value).startsWith("pub_")) t.amount = "";
+      const f = (C.TEACH_FORMULAS || []).find((x) => x.criteriaId === el.value);
+      if (f) t.teachFormula = f.id;
       persist();
       render();
     });
@@ -4107,6 +4377,66 @@ function bind() {
       render();
     });
   });
+  document.querySelectorAll("[data-files]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const t = findTarget(el.getAttribute("data-files"));
+      if (!t) return;
+      const names = Array.from(el.files || []).map((f) => f.name);
+      const res = C.attachEvidence(t, names);
+      t.files = res.files;
+      t.file = t.files[0] || "";
+      t.fileError = res.message;
+      persist();
+      render();
+    });
+  });
+  document.querySelectorAll("[data-del-ev]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const [id, idx] = b.getAttribute("data-del-ev").split(":");
+      const t = findTarget(id);
+      if (!t) return;
+      t.files = C.evidenceFiles(t).filter((_, i) => i !== Number(idx));
+      t.file = t.files[0] || "";
+      t.fileError = "";
+      persist();
+      render();
+    });
+  });
+  document.querySelectorAll("[data-proj-q]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const t = findTarget(el.getAttribute("data-proj-q"));
+      if (!t) return;
+      const q = el.value;
+      const hit = C.findProject(q) || C.searchProjects(q).find((p) => p.code === q || p.name === q)
+        || (C.searchProjects(q).length === 1 ? C.searchProjects(q)[0] : null);
+      if (!hit) { t.projectCode = q; persist(); return; }
+      t.projectCode = hit.code;
+      t.title = hit.name;
+      t.contractDate = hit.contractDate;
+      if (hit.amount) t.amount = hit.amount;
+      persist();
+      render();
+    });
+  });
+  document.querySelectorAll("[data-syl-q]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const t = findTarget(el.getAttribute("data-syl-q"));
+      if (!t) return;
+      const q = el.value;
+      const hit = C.findSyllabus(q) || (C.searchSyllabus(q).length === 1 ? C.searchSyllabus(q)[0] : null);
+      if (!hit) { t.syllabusId = q; persist(); return; }
+      t.syllabusId = hit.id;
+      t.title = `${hit.code} ${hit.title}`;
+      t.hours = hit.hours;
+      if (hit.formulaId) {
+        t.teachFormula = hit.formulaId;
+        const f = C.findTeachFormula(hit.formulaId);
+        if (f) t.criteriaId = f.criteriaId;
+      }
+      persist();
+      render();
+    });
+  });
   document.querySelectorAll("[data-del-sup]").forEach((b) => {
     b.addEventListener("click", () => {
       if (S.supportItems.length <= 1) { toast("ต้องมีอย่างน้อย 1 ข้อ"); return; }
@@ -4127,7 +4457,12 @@ function bind() {
       readPaForm();
       persist();
       const field = el.dataset.pa.split(":")[2];
-      if (["criteriaId", "role", "inDb", "withStudent", "amount", "hours", "qty", "weight", "selfScore"].includes(field)) render();
+      if (field === "teachFormula") {
+        const t = findTarget(el.dataset.pa.split(":")[1]);
+        const f = t ? C.findTeachFormula(t.teachFormula) : null;
+        if (t && f) t.criteriaId = f.criteriaId;
+      }
+      if (["criteriaId", "role", "inDb", "withStudent", "amount", "hours", "qty", "weight", "selfScore", "teachFormula", "doi", "proposedUnits", "proposedScore"].includes(field)) render();
     });
   });
   document.querySelectorAll("[data-sup]").forEach((el) => {
@@ -4149,8 +4484,8 @@ function bind() {
   const imp = document.getElementById("btnImport");
   if (imp) imp.addEventListener("click", () => toast("กรอกชุดชี้วัดในระบบตามกรณีที่ 2 ของคำแนะนำการใช้ระบบ PMS"));
 
-  const sr = document.getElementById("btnSaveReport");
-  if (sr) sr.addEventListener("click", () => {
+  const saveRep = document.getElementById("btnSaveReport");
+  if (saveRep) saveRep.addEventListener("click", () => {
     if (track() === "support") readSupportForm(); else readPaForm();
     persist(); toast("บันทึกการประเมินตนเองแล้ว");
   });

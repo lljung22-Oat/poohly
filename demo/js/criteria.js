@@ -176,7 +176,8 @@
       { id: "asg_prog_mem", label: "กรรมการบริหารหลักสูตร = 15 หน่วย", kind: "fixed", units: 15, score: null },
       { id: "asg_prog_resp", label: "อาจารย์ผู้รับผิดชอบหลักสูตร = 10 หน่วย", kind: "fixed", units: 10, score: null },
       { id: "asg_vice_dept", label: "รองหัวหน้าภาควิชา = 9 หน่วย/สัปดาห์ กรอกจำนวนสัปดาห์", kind: "count", per: 9 },
-      { id: "asg_assist_dept", label: "ผู้ช่วยหัวหน้าภาควิชา = 6 หน่วย/สัปดาห์ กรอกจำนวนสัปดาห์", kind: "count", per: 6 }
+      { id: "asg_assist_dept", label: "ผู้ช่วยหัวหน้าภาควิชา = 6 หน่วย/สัปดาห์ กรอกจำนวนสัปดาห์", kind: "count", per: 6 },
+      { id: "asg_other", label: "หัวข้องานอื่น (ระบุเอง พร้อมหน่วยและคะแนนที่เสนอ)", kind: "custom" }
     ],
     community: [
       { id: "", label: "-- เลือกเกณฑ์จากประกาศ --" },
@@ -188,9 +189,94 @@
       { id: "sport_nat", label: "กีฬา ระดับชาติ = 20 หน่วย", kind: "fixed", units: 20, score: null },
       { id: "sport_intl", label: "กีฬา ระดับนานาชาติ = 30 หน่วย", kind: "fixed", units: 30, score: null },
       { id: "media_uni", label: "ให้ความรู้ผ่านสื่อระดับมหาวิทยาลัย ครั้งละ 10 หน่วย กรอกครั้ง", kind: "count", per: 10 },
-      { id: "media_nat", label: "ให้ความรู้ผ่านสื่อระดับชาติ/นานาชาติ ครั้งละ 15 หน่วย กรอกครั้ง", kind: "count", per: 15 }
+      { id: "media_nat", label: "ให้ความรู้ผ่านสื่อระดับชาติ/นานาชาติ ครั้งละ 15 หน่วย กรอกครั้ง", kind: "count", per: 15 },
+      { id: "com_other", label: "หัวข้องานอื่น (ระบุเอง พร้อมหน่วยและคะแนนที่เสนอ)", kind: "custom" }
     ]
   };
+
+  const STRAT_BUCKETS = [
+    { id: "pub", title: "ยุทธศาสตร์ตีพิมพ์", match: (c) => c.kind === "pub" },
+    { id: "grant", title: "ยุทธศาสตร์ทุนวิจัย", match: (c) => String(c.kind || "").startsWith("grant") },
+    { id: "other", title: "ยุทธศาสตร์อื่นๆ", match: (c) => c.kind === "fixed" }
+  ];
+
+  /* สามสูตรตามประกาศคณะฯ พ.ศ. 2568 ไม่คิดสูตรคณะอื่น */
+  const TEACH_FORMULAS = [
+    { id: "grad_main", criteriaId: "teach_grad_main", label: "สูตรป.โท/เอก ผู้สอนหลัก", per: 4, hint: "1 ชั่วโมง = 4 หน่วย" },
+    { id: "ug_lec", criteriaId: "teach_ug_lec", label: "สูตรป.ตรี บรรยาย ผู้สอนหลัก", per: 3, hint: "1 ชั่วโมง = 3 หน่วย" },
+    { id: "ug_lab", criteriaId: "teach_ug_lab", label: "สูตรป.ตรี ปฏิบัติ ผู้สอนหลัก", per: 1.5, hint: "1 ชั่วโมง = 1.5 หน่วย" }
+  ];
+
+  const MAX_EVIDENCE_FILES = 3;
+
+  /* ฐานกลางเดโมรหัส SH ของคณะสังคมฯ ไม่ใส่ตัวอย่างศึกษาศาสตร์ */
+  const PROJECT_REGISTRY = [
+    { code: "SH-RES-2569-01", name: "โครงการวิจัยด้านนโยบายสังคม", contractDate: "2026-01-15", amount: 450000, funder: "งบประมาณรายได้ส่วนงาน" },
+    { code: "SH-RES-2569-02", name: "โครงการทุนวิจัยความเหลื่อมล้ำทางสังคม", contractDate: "2026-02-20", amount: 1200000, funder: "หน่วยงานจัดสรรเงินทุนวิจัยภายในประเทศ" },
+    { code: "SH-RES-2570-01", name: "โครงการวิจัยคุณภาพชีวิตผู้สูงอายุ", contractDate: "2026-10-01", amount: 350000, funder: "งบประมาณรายได้ส่วนงาน" }
+  ];
+
+  const SYLLABUS_REGISTRY = [
+    { id: "SHSS501", code: "SHSS 501", title: "ทฤษฎีสังคมศาสตร์", hours: 45, formulaId: "grad_main" },
+    { id: "SHSS201", code: "SHSS 201", title: "สังคมวิทยาเบื้องต้น", hours: 30, formulaId: "ug_lec" },
+    { id: "SHSS215", code: "SHSS 215", title: "ปฏิบัติการวิจัยภาคสนาม", hours: 24, formulaId: "ug_lab" }
+  ];
+
+  function searchProjects(q) {
+    const s = String(q || "").trim().toLowerCase();
+    if (!s) return PROJECT_REGISTRY.slice();
+    return PROJECT_REGISTRY.filter((p) =>
+      p.code.toLowerCase().includes(s) || p.name.toLowerCase().includes(s)
+    );
+  }
+
+  function findProject(code) {
+    return PROJECT_REGISTRY.find((p) => p.code === code) || null;
+  }
+
+  function searchSyllabus(q) {
+    const s = String(q || "").trim().toLowerCase();
+    if (!s) return SYLLABUS_REGISTRY.slice();
+    return SYLLABUS_REGISTRY.filter((c) =>
+      c.code.toLowerCase().includes(s) || c.title.toLowerCase().includes(s) || c.id.toLowerCase().includes(s)
+    );
+  }
+
+  function findSyllabus(id) {
+    return SYLLABUS_REGISTRY.find((c) => c.id === id || c.code === id) || null;
+  }
+
+  function findTeachFormula(id) {
+    return TEACH_FORMULAS.find((f) => f.id === id) || null;
+  }
+
+  function doiStatus(raw) {
+    const v = String(raw || "").trim();
+    if (!v) return { ok: true, empty: true, label: "" };
+    const ok = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i.test(v);
+    return { ok, empty: false, label: ok ? "รูปแบบ DOI ถูกต้อง" : "รูปแบบ DOI ไม่ตรงมาตรฐาน (ขึ้นต้น 10.)" };
+  }
+
+  function evidenceFiles(t) {
+    if (t && Array.isArray(t.files)) return t.files.filter(Boolean);
+    if (t && t.file) return [t.file];
+    return [];
+  }
+
+  function attachEvidence(t, names) {
+    const cur = evidenceFiles(t);
+    const add = (names || []).map((x) => String(x || "").trim()).filter(Boolean);
+    const room = Math.max(0, MAX_EVIDENCE_FILES - cur.length);
+    const kept = add.slice(0, room);
+    const blocked = add.length > room;
+    return {
+      files: cur.concat(kept),
+      blocked,
+      message: blocked
+        ? `อัปโหลดได้ไม่เกิน ${MAX_EVIDENCE_FILES} ไฟล์ต่อเรื่อง`
+        : (cur.length + kept.length >= MAX_EVIDENCE_FILES ? `ครบ ${MAX_EVIDENCE_FILES} ไฟล์ต่อเรื่อง` : "")
+    };
+  }
 
   function findCrit(groupId, critId) {
     const list = CATALOG[groupId] || [];
@@ -258,10 +344,12 @@
     }
 
     if (c.kind === "hours") {
+      const formula = findTeachFormula(t.teachFormula);
+      const per = formula ? formula.per : (c.per || 0);
       const h = Number(t.hours) || 0;
-      const units = +(h * (c.per || 0)).toFixed(2);
+      const units = +(h * per).toFixed(2);
       const autoScore = units > 0 ? 8 : 0;
-      return { units, score: autoScore, autoScore };
+      return { units, score: autoScore, autoScore, per };
     }
 
     if (c.kind === "count") {
@@ -277,7 +365,43 @@
       return { units, score, autoScore: score };
     }
 
+    if (c.kind === "custom") {
+      const units = Number(t.proposedUnits) || 0;
+      const raw = t.proposedScore;
+      const score = raw === "" || raw == null ? 0 : Number(raw) || 0;
+      return { units, score, autoScore: score, proposed: true };
+    }
+
     return { units: 0, score: 0, autoScore: 0 };
+  }
+
+  /* หน่วยที่คาดว่าจะได้รับในหน้า PA ล่วงหน้า ไม่คูณบทบาท ไม่บล็อกฐานข้อมูล */
+  function expectedPreview(t, groupId) {
+    const c = findCrit(groupId, t && t.criteriaId);
+    if (!c || !c.id) return { units: 0, label: "—" };
+    if (c.kind === "pub") return { units: c.units, label: fmtUnit(c.units) };
+    if (c.kind === "grant_th" || c.kind === "grant_en" || c.kind === "grant_mu") {
+      const gres = grantUnits(c.kind, t.amount);
+      return { units: gres.units, label: gres.units ? fmtUnit(gres.units) : "—" };
+    }
+    if (c.kind === "hours") {
+      const formula = findTeachFormula(t.teachFormula) || TEACH_FORMULAS.find((f) => f.criteriaId === c.id);
+      const per = formula ? formula.per : (c.per || 0);
+      const h = Number(t.hours) || 0;
+      if (h) return { units: +(h * per).toFixed(2), label: fmtUnit(+(h * per).toFixed(2)) };
+      return { units: 0, label: `${per} หน่วย/ชม.` };
+    }
+    if (c.kind === "count") {
+      const n = Number(t.qty) || 0;
+      if (n) return { units: +(n * (c.per || 0)).toFixed(2), label: fmtUnit(+(n * (c.per || 0)).toFixed(2)) };
+      return { units: 0, label: `${c.per || 0} หน่วย/รายการ` };
+    }
+    if (c.kind === "fixed") return { units: c.units || 0, label: fmtUnit(c.units || 0) };
+    if (c.kind === "custom") {
+      const n = Number(t.proposedUnits) || 0;
+      return { units: n, label: n ? fmtUnit(n) : "เสนอหน่วยเองเมื่อประเมิน" };
+    }
+    return { units: 0, label: "—" };
   }
 
   function collectTargets(groups) {
@@ -449,7 +573,10 @@
     PA_WEIGHT, CC_WEIGHT, CC_SUM_MAX, IDP_MAX, TOTAL_UNITS,
     GROUPS, ROLES, KPI_TYPES, SCALE5, LEVELS, CC_ITEMS, FC_ITEMS, SUPPORT_FC_ITEMS,
     WORK_TYPES, IDP_METHODS,
-    PUB, GRANT_SOURCES, CATALOG,
+    PUB, GRANT_SOURCES, CATALOG, STRAT_BUCKETS, TEACH_FORMULAS, MAX_EVIDENCE_FILES,
+    PROJECT_REGISTRY, SYLLABUS_REGISTRY,
+    searchProjects, findProject, searchSyllabus, findSyllabus, findTeachFormula,
+    doiStatus, evidenceFiles, attachEvidence, expectedPreview,
     findCrit, grantUnits, rolePct, unitsToScore, calcTarget,
     collectTargets, sumWeight, groupUnits, effectiveScore,
     paPoints, chairPaScore, ccRaw, ccPoints, paWeighted80, totalScore,
