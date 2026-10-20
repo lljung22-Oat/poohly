@@ -1828,6 +1828,7 @@ function viewModules() {
     </div>`;
   }).join("");
   const who = rateeAccount();
+  const facultyCycle = !staff ? `${facultyPeriodSwitch()}${facultyOrderPanel()}` : "";
   return chrome(`
     <div class="pms-home">
       <div class="left">
@@ -1836,7 +1837,7 @@ function viewModules() {
         <p class="hint" style="margin-top:18px">${esc(who.full)} · ${esc(who.position)}<br>${esc(FACULTY)}<br>ปีงบประมาณ ${esc(S.year)}</p>
         <p>PA ${statusPill(paStatus())} · IDP ${statusPill(idpStatus())}</p>
       </div>
-      <div>${blocks}</div>
+      <div>${facultyCycle}${blocks}</div>
     </div>`);
 }
 
@@ -1921,12 +1922,49 @@ function facultyRoleCell(t, g, lock) {
 
 function seqTools(g, t) {
   if (!canEditAgreement()) return "";
-  const move = S.paLayout === "plan" ? `
-    <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:up" aria-label="ย้ายแถวขึ้น">↑</button>
-    <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:down" aria-label="ย้ายแถวลง">↓</button>` : "";
-  return `<div class="row-tools">${move}
+  return `<div class="row-tools">
     <button class="iconbtn" type="button" data-del-row="${g.id}:${t.id}" aria-label="ลบรายการ">−</button>
   </div>`;
+}
+
+function facultyPeriodSwitch() {
+  return `<div class="pa-period">
+      <p class="period-lab">PA มี 2 ช่วง เลือกจากวงจรนี้แล้วเปิดตาราง</p>
+      <div class="period-switch">
+        <button type="button" class="${S.paLayout === "plan" ? "on" : ""}" data-pa-layout="plan">
+          <b>PA ล่วงหน้า (ก่อนทำงาน)</b>
+          <small>ตารางกระชับ 3 คอลัมน์ · วางแผนหน่วยที่คาดว่าจะได้รับ</small>
+        </button>
+        <button type="button" class="${S.paLayout === "eval" ? "on" : ""}" data-pa-layout="eval">
+          <b>หน้าประเมินจริง</b>
+          <small>ตารางครบ 7 ช่องตามแบบ SHPA · กรอกชั่วโมง บทบาท DOI คะแนนตนเอง และหลักฐาน</small>
+        </button>
+      </div>
+    </div>`;
+}
+
+function facultyOrderPanel() {
+  if (!canEditAgreement()) return "";
+  const blocks = C.GROUPS.map((meta) => {
+    const g = (S.groups || []).find((x) => x.id === meta.id);
+    if (!g) return "";
+    const rows = groupTargets(g).map((t, i) => `<div class="order-row">
+        <span>${i + 1}. ${esc(t.title || "รายการยังไม่มีชื่อ")}</span>
+        <span class="row-tools">
+          <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:up" aria-label="ย้ายแถวขึ้น">↑</button>
+          <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:down" aria-label="ย้ายแถวลง">↓</button>
+        </span>
+      </div>`).join("");
+    return `<div class="order-group">
+      <h4>${esc(meta.title)} · ${esc(meta.name)}</h4>
+      ${rows || `<p class="hint">ยังไม่มีรายการ</p>`}
+    </div>`;
+  }).join("");
+  return `<div class="card pa-order">
+      <h3>จัดลำดับรายการภาระงาน</h3>
+      <p>ลูกศร ↑↓ ย้ายแถวตอนวางแผน ไม่อยู่ในตารางกรอก</p>
+      ${blocks}
+    </div>`;
 }
 
 function facultyItemRow(t, g, lock, seq) {
@@ -2025,22 +2063,9 @@ function viewPA() {
     <div class="pa-banner">
       <div>
         <h2>แบบรายงานผลการปฏิบัติงาน</h2>
-        <p class="sub">ส่วนที่ 2 รายงานผลการปฏิบัติงานตามข้อตกลง · ${statusPill(paStatus())} · ปี ${esc(S.year)}</p>
+        <p class="sub">ส่วนที่ 2 รายงานผลการปฏิบัติงานตามข้อตกลง · ${statusPill(paStatus())} · ปี ${esc(S.year)} · ${S.paLayout === "plan" ? "ช่วง PA ล่วงหน้า (ก่อนทำงาน)" : "ช่วงหน้าประเมินจริง"}</p>
       </div>
       <div class="weight-box ${wcls}">น้ำหนักตามประกาศ : ${w}</div>
-    </div>
-    <div class="pa-period">
-      <p class="period-lab">PA มี 2 ช่วง ให้เลือกก่อนกรอกตาราง</p>
-      <div class="period-switch">
-        <button type="button" class="${S.paLayout === "plan" ? "on" : ""}" data-pa-layout="plan">
-          <b>PA ล่วงหน้า (ก่อนทำงาน)</b>
-          <small>ตารางกระชับ 3 คอลัมน์ · จัดแถวและวางแผนหน่วยที่คาดว่าจะได้รับ · ลูกศร ↑↓ ย้ายลำดับรายการ</small>
-        </button>
-        <button type="button" class="${S.paLayout === "eval" ? "on" : ""}" data-pa-layout="eval">
-          <b>หน้าประเมินจริง</b>
-          <small>ตารางครบ 7 ช่องตามแบบ SHPA · กรอกชั่วโมง บทบาท DOI คะแนนตนเอง และหลักฐาน</small>
-        </button>
-      </div>
     </div>
     ${paStatus() === "back" ? `<div class="warn-box">ส่งกลับแก้ไข: ${esc(reject)}</div>` : ""}
     ${chairBar}
@@ -3072,8 +3097,11 @@ function bind() {
   document.querySelectorAll("[data-pa-layout]").forEach((b) => {
     b.addEventListener("click", () => {
       S.paLayout = b.getAttribute("data-pa-layout") === "plan" ? "plan" : "eval";
+      S.view = "pa";
       persist();
+      if (!isFileMode()) location.hash = "pa";
       render();
+      window.scrollTo(0, 0);
     });
   });
   document.querySelectorAll("[data-crit]").forEach((el) => {

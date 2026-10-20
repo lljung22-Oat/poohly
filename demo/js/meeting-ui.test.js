@@ -8,6 +8,8 @@ const next = src.indexOf("\nfunction ", start + 1);
 const row = src.slice(start, next === -1 ? undefined : next);
 assert.match(row, /วิชา \/ ชื่อเรื่อง/);
 assert.match(row, /seqTools/);
+assert.doesNotMatch(row, /data-move-row/);
+assert.match(src, /function facultyOrderPanel\(/);
 assert.match(src, /data-move-row/);
 assert.match(row, /facultyCriteriaCell/);
 assert.match(row, /facultyRoleCell/);
