@@ -2023,10 +2023,20 @@ function defaultGroups() {
           kpis: [{
             id: uid(), code: "2.1.1", title: "ชั่วโมงสอน",
             targets: [{
-              ...emptyTarget("2.1.1.1", 30),
-              title: "สอนภาคบรรยาย ปริญญาโท/เอก",
+              ...emptyTarget("2.1.1.1", 15),
+              title: "SHSS 501 ทฤษฎีสังคมศาสตร์ (ป.โท/เอก)",
               criteriaId: "teach_grad_main", teachFormula: "grad_main",
-              syllabusId: "", hours: "45", kpiType: "quantity"
+              syllabusId: "SHSS501", hours: "45", kpiType: "quantity"
+            }, {
+              ...emptyTarget("2.1.1.2", 10),
+              title: "SHSS 201 สังคมวิทยาเบื้องต้น (ป.ตรี บรรยาย)",
+              criteriaId: "teach_ug_lec", teachFormula: "ug_lec",
+              syllabusId: "SHSS201", hours: "30", kpiType: "quantity"
+            }, {
+              ...emptyTarget("2.1.1.3", 5),
+              title: "SHSS 215 ปฏิบัติการวิจัยภาคสนาม (ป.ตรี ปฏิบัติ)",
+              criteriaId: "teach_ug_lab", teachFormula: "ug_lab",
+              syllabusId: "SHSS215", hours: "24", kpiType: "quantity"
             }]
           }]
         },
@@ -2255,9 +2265,32 @@ function hydrate(raw) {
   const main = (s.groups || []).find((g) => g.id === "main");
   if (main) {
     let hasBook = false;
+    let hasUg = false;
     (main.agreements || []).forEach((a) => (a.kpis || []).forEach((k) => (k.targets || []).forEach((t) => {
       if (t.criteriaId === "res_book") hasBook = true;
+      if (t.criteriaId === "teach_ug_lec" || t.criteriaId === "teach_ug_lab") hasUg = true;
     })));
+    if (!hasUg) {
+      const teachAg = (main.agreements || []).find((a) => (a.kpis || []).some((k) =>
+        (k.targets || []).some((t) => String(t.criteriaId || "").startsWith("teach_"))
+      ));
+      const kpi = teachAg && (teachAg.kpis || [])[0];
+      if (kpi) {
+        kpi.targets = kpi.targets || [];
+        kpi.targets.push({
+          ...emptyTarget("2.1.1.2", 10),
+          title: "SHSS 201 สังคมวิทยาเบื้องต้น (ป.ตรี บรรยาย)",
+          criteriaId: "teach_ug_lec", teachFormula: "ug_lec",
+          syllabusId: "SHSS201", hours: "30"
+        });
+        kpi.targets.push({
+          ...emptyTarget("2.1.1.3", 5),
+          title: "SHSS 215 ปฏิบัติการวิจัยภาคสนาม (ป.ตรี ปฏิบัติ)",
+          criteriaId: "teach_ug_lab", teachFormula: "ug_lab",
+          syllabusId: "SHSS215", hours: "24"
+        });
+      }
+    }
     if (!hasBook) {
       main.agreements.push({
         id: uid(), code: "2.4", title: "ผลงานทางวิชาการที่เทียบเท่างานวิจัย",
