@@ -132,9 +132,18 @@ assert.strictEqual(S.SUPPORT_FC_ITEMS.length, 2);
 assert.strictEqual(S.WORK_TYPES.length, 4);
 
 assert.strictEqual(S.PUB[0].formLabel.includes("Top1"), true);
+assert.ok(S.PUB[0].formLabel.includes("SciVal/Scopus"));
+assert.ok(S.PUB[2].formLabel.includes("Qurtile 1"));
 assert.strictEqual(S.GRANT_SOURCES.grant_th.label.includes("ภายในประเทศ"), true);
 assert.strictEqual(S.GRANT_SOURCES.grant_en.label.includes("ต่างประเทศ"), true);
 assert.strictEqual(S.GRANT_SOURCES.grant_mu.label.includes("มหาวิทยาลัย"), true);
 assert.strictEqual(S.GRANT_SOURCES.grant_th.tiers[0].amount, 3000000);
+assert.ok(S.GRANT_SOURCES.grant_th.note.includes("นับจำนวนเงินที่ระบุในสัญญา"));
+assert.ok(S.GRANT_SOURCES.grant_th.note.includes("ไม่นับ Fundamental Fund"));
+assert.ok(S.SCORE_COND.inDb.includes("SciVal หรือ Scopus"));
+assert.ok(S.SCORE_COND.evidence.includes("3 ไฟล์"));
+assert.ok(S.CATALOG.strat.find((x) => x.id === "mupsf3").label.includes("ข้ามศาสตร์"));
+assert.ok(S.CATALOG.strat.find((x) => x.id === "policy_intl").label.includes("ไม่นับสะสมปีก่อน"));
+assert.strictEqual(S.grantUnits("grant_th", 3000000).units, 455);
 
 console.log("criteria tests ok");

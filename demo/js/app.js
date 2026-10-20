@@ -1815,13 +1815,16 @@ function facultyCriteriaCell(t, g, lock) {
         ${src.tiers.map((x) =>
           `<option value="${kind}|${x.amount}" ${sel === `${kind}|${x.amount}` ? "selected" : ""}>${esc(x.label)}</option>`
         ).join("")}
-      </select>`;
+      </select>
+      ${src.note ? `<div class="hint">${esc(src.note)}</div>` : ""}`;
     }).join("");
     const others = (C.CATALOG.strat || []).filter((c) => c.id && c.kind === "fixed").map((c) =>
       `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""}>${esc(c.label)}</option>`
     ).join("");
     return `<div class="crit-list">${pubs}</div>
+      <div class="hint">${esc(C.SCORE_COND.corp)}</div>
       <div class="grant-stack">${grants}
+        <div class="hint">${esc(C.SCORE_COND.cta)}</div>
         <select data-crit-other="${t.id}" ${lock ? "disabled" : ""}>
           <option value="">เกณฑ์ยุทธศาสตร์อื่นตามประกาศ</option>
           ${others}
@@ -1837,14 +1840,19 @@ function facultyRoleCell(t, g, lock) {
   const dis = lock ? "disabled" : "";
   const role = `<select data-pa="t:${t.id}:role" ${dis}>${C.ROLES.map((r) =>
     `<option value="${r.id}" ${t.role === r.id ? "selected" : ""}>${esc(r.label)}</option>`).join("")}</select>`;
-  const cond = `<label class="opt"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="inDb" ${t.inDb && !t.withStudent ? "checked" : ""} ${dis} /><span>เผยแพร่แล้วและปรากฏในฐานข้อมูลเรียบร้อยแล้ว</span></label>
-    <label class="opt"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="student" ${t.withStudent ? "checked" : ""} ${dis} /><span>ผลงานวิจัยร่วมกับนักศึกษา</span></label>`;
+  const cond = `<label class="opt"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="inDb" ${t.inDb && !t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.inDb)}</span></label>
+    <label class="opt"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="student" ${t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.student)}</span></label>`;
   let extra = "";
   if (c && c.kind === "hours") {
-    extra += `<input type="number" data-pa="t:${t.id}:hours" value="${esc(t.hours)}" placeholder="จำนวนชั่วโมง" ${dis} />`;
+    extra += syllabusBox(t, lock);
   }
   if (c && c.kind === "count") {
     extra += `<input type="number" data-pa="t:${t.id}:qty" value="${esc(t.qty)}" placeholder="จำนวน" ${dis} />`;
+  }
+  if (c && c.kind === "custom") {
+    extra += `<input data-pa="t:${t.id}:customTitle" value="${esc(t.customTitle || "")}" placeholder="หัวข้องานอื่นตามที่ประชุม" ${dis} />
+      <input type="number" data-pa="t:${t.id}:proposedUnits" value="${esc(t.proposedUnits)}" placeholder="หน่วยที่เสนอ" ${dis} />
+      <input type="number" data-pa="t:${t.id}:proposedScore" value="${esc(t.proposedScore)}" placeholder="คะแนนที่เสนอ" ${dis} />`;
   }
   if (g.id === "strat") return `<div class="role-stack">${role}${cond}${extra}</div>`;
   return `<div class="role-stack">${role}${extra}</div>`;
@@ -1864,6 +1872,10 @@ function facultyItemRow(t, g, lock, seq) {
       <textarea data-pa="t:${t.id}:title" placeholder="ชื่อบทความ / ชื่อโครงการ" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
       <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
+      ${g.id === "strat" && !String(t.criteriaId || "").startsWith("grant_") ? `<label class="date-lab">${esc(C.SCORE_COND.doi)}</label>
+        <input data-pa="t:${t.id}:doi" value="${esc(t.doi || "")}" placeholder="10.xxxx/xxxx หรือลิงก์ doi.org" ${lock ? "disabled" : ""} />
+        ${doiHint(t)}` : ""}
+      ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint">${esc(C.SCORE_COND.contractAmount)}</div>` : ""}
     </td>
     <td>${facultyCriteriaCell(t, g, lock)}</td>
     <td>${facultyRoleCell(t, g, lock)}${warn}</td>
@@ -1874,11 +1886,7 @@ function facultyItemRow(t, g, lock, seq) {
     </td>
     <td>
       <textarea data-pa="t:${t.id}:report" placeholder="กรอกคะแนน 9–10 หรือ 0–2 พร้อมเหตุผล/หลักฐานประกอบ" ${lock ? "disabled" : ""}>${esc(t.report)}</textarea>
-      <div class="file-box">
-        <div class="date-lab">Upload ไฟล์หลักฐาน</div>
-        <input type="file" data-file="${t.id}" ${lock ? "disabled" : ""} />
-        <div class="hint">${t.file ? esc(t.file) : "ไม่มีไฟล์ที่เลือก"}</div>
-      </div>
+      ${evidenceBox(t, lock)}
     </td>
   </tr>`;
 }

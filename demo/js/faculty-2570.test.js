@@ -31,5 +31,8 @@ assert.match(app, /function viewKpi2570/);
 assert.match(app, /function viewResearchTrack/);
 assert.match(C.CATALOG.main[1].label, /สอนป\.โท/);
 assert.ok(!C.CATALOG.main[1].label.includes("ตารางที่"));
+assert.ok(C.SCORE_COND.inDb.includes("SciVal"));
+assert.ok(C.PUB[2].formLabel.includes("Q1"));
+assert.doesNotMatch(C.SCORE_COND.corp, /1820/);
 
 console.log("faculty-2570.test.js ok");

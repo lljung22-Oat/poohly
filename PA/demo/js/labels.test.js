@@ -30,7 +30,7 @@ assert.match(pa, /ผลการประเมินตนเอง/);
 assert.match(pa, /หลักฐาน \/ เหตุผล/);
 assert.doesNotMatch(pa, /PA ล่วงหน้า/);
 assert.match(src, /function facultyItemRow\(/);
-assert.match(src, /Upload ไฟล์หลักฐาน/);
+assert.match(src, /หลักฐาน \(ไม่เกิน \$\{C\.MAX_EVIDENCE_FILES\} ไฟล์ต่อเรื่อง\)/);
 
 const paReport = sliceFn("viewPaReport");
 assert.match(paReport, /ประเมินผลงาน/);

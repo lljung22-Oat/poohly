@@ -5,9 +5,9 @@
 (function (root) {
   const UNIT_KPI_2570 = [
     { id: "intl-pub", title: "Number of International Publications", inUnitPa: false, unit: "เรื่อง", year: "ปีงบ 2570" },
-    { id: "1.1", title: "Number of International Publications in Q1 Journal", inUnitPa: true, unit: "เรื่อง", year: "ปีงบ 2570" },
-    { id: "1.2", title: "Number of International Publications in Top 10 Journal", inUnitPa: true, unit: "เรื่อง", year: "ปีงบ 2570" },
-    { id: "1.3", title: "Number of Publications with Academic-Corporate Collaboration", inUnitPa: true, unit: "เรื่อง", year: "ปีงบ 2570" },
+    { id: "1.1", title: "Number of International Publications in Q1 Journal", inUnitPa: true, unit: "เรื่อง", year: "ปีงบ 2570", note: "Qurtile 1 ตาม SJR ใน SciVal/Scopus นับเฉพาะที่ปรากฏในฐาน ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน ไม่คิดหน่วยจากเล่มนี้" },
+    { id: "1.2", title: "Number of International Publications in Top 10 Journal", inUnitPa: true, unit: "เรื่อง", year: "ปีงบ 2570", note: "Top10 Percentile ตาม SJR ใน SciVal/Scopus นับเฉพาะที่ปรากฏในฐาน ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน ไม่คิดหน่วยจากเล่มนี้" },
+    { id: "1.3", title: "Number of Publications with Academic-Corporate Collaboration", inUnitPa: true, unit: "เรื่อง", year: "ปีงบ 2570", note: "ผลงานตีพิมพ์ร่วมภาคเอกชนที่ปรากฏใน SciVal หรือ Scopus ไม่คิดหน่วยจากเล่มนี้" },
     { id: "1.9.1", title: "จำนวนเงินทุนวิจัยจากแหล่งทุนภายนอก (ในประเทศ)", inUnitPa: true, unit: "บาท", year: "ปีงบ 2570", note: "นับเงินในสัญญา ไม่นับเบิกจ่ายจริงใน PA ส่วนงาน ไม่นับ Fundamental Fund เงินทุนรับทำวิจัย และคลินิก" },
     { id: "1.9.2", title: "จำนวนเงินทุนวิจัยจากแหล่งทุนภายนอก (ต่างประเทศ)", inUnitPa: true, unit: "บาท", year: "ปีงบ 2570", note: "นับเงินในสัญญา ไม่นับเบิกจ่ายจริงใน PA ส่วนงาน ไม่นับเงินทุนรับทำวิจัยและคลินิก" },
     { id: "1.9.3", title: "จำนวนเงินทุนวิจัยจากการวิจัยทางคลินิก (CTA) ทั้งในประเทศและต่างประเทศ", inUnitPa: true, unit: "บาท", year: "ปีงบ 2570", note: "นับเงินในสัญญา ไม่นับเบิกจ่ายจริงใน PA ส่วนงาน" },
