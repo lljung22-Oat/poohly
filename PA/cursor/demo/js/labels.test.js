@@ -51,9 +51,10 @@ assert.match(crit, /ชื่อบทความ/);
 assert.match(crit, /ชื่อกิจกรรม/);
 assert.match(crit, /GROUP_HEADERS/);
 assert.match(src, /function facultyItemRow\(/);
-assert.match(src, /function shpa122Form\(/);
-assert.match(src, /หน่วยภาระงานด้านกระบวนการดำเนินงาน/);
-assert.match(src, /การได้รับทุนสนับสนุนงบประมาณ/);
+assert.doesNotMatch(src, /function shpa122Form\(/);
+assert.match(crit, /ภาระความรับผิดชอบ/);
+assert.match(crit, /หน่วยภาระงานด้านกระบวนการวิจัย/);
+assert.match(crit, /หน่วยภาระงานด้านกระบวนการดำเนินงาน/);
 assert.match(src, /หลักฐาน \(ไม่เกิน \$\{C\.MAX_EVIDENCE_FILES\} ไฟล์ต่อเรื่อง\)/);
 
 const paReport = sliceFn("viewPaReport");

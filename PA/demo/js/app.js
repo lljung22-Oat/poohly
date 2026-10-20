@@ -174,8 +174,6 @@ function emptyTarget(code, weight) {
     doi: "", projectCode: "", contractDate: "", contractDateNote: "",
     teachFormula: "", syllabusId: "",
     customTitle: "", proposedUnits: "", proposedScore: "",
-    shpaDuty: "", shpaGrant: "", shpaDone: false, shpaProgress: false,
-    shpaLevel: "", shpaAuthor: "", shpaMedia: [], shpaUse: "",
     fileError: "",
     selfScore: "", committeeComment: "", committeeScore: "",
     chairComment: "", chairScore: "", approved: "wait", approveReason: ""
@@ -259,9 +257,6 @@ function defaultGroups() {
               ...emptyTarget("2.4.1.1", 10),
               title: "ผลงานที่ 1",
               criteriaId: "res_book",
-              shpaDuty: "solo", shpaGrant: "mid",
-              shpaDone: false, shpaProgress: true, shpaLevel: "3",
-              shpaAuthor: "first", shpaMedia: ["print"], shpaUse: "teach",
               kpiType: "quantity"
             }]
           }]
@@ -449,14 +444,6 @@ function hydrate(raw) {
           if (t.customTitle == null) t.customTitle = "";
           if (t.proposedUnits == null) t.proposedUnits = "";
           if (t.proposedScore == null) t.proposedScore = "";
-          if (t.shpaDuty == null) t.shpaDuty = "";
-          if (t.shpaGrant == null) t.shpaGrant = "";
-          if (t.shpaDone == null) t.shpaDone = false;
-          if (t.shpaProgress == null) t.shpaProgress = false;
-          if (t.shpaLevel == null) t.shpaLevel = "";
-          if (t.shpaAuthor == null) t.shpaAuthor = "";
-          if (!Array.isArray(t.shpaMedia)) t.shpaMedia = [];
-          if (t.shpaUse == null) t.shpaUse = "";
         });
       });
     });
@@ -475,10 +462,7 @@ function hydrate(raw) {
           targets: [{
             ...emptyTarget("2.4.1.1", 10),
             title: "ผลงานที่ 1",
-            criteriaId: "res_book",
-            shpaDuty: "solo", shpaGrant: "mid",
-            shpaDone: false, shpaProgress: true, shpaLevel: "3",
-            shpaAuthor: "first", shpaMedia: ["print"], shpaUse: "teach"
+            criteriaId: "res_book"
           }]
         }]
       });
@@ -1884,58 +1868,10 @@ function grantTierValue(kind, amount) {
   return hit ? `${kind}|${hit.amount}` : "";
 }
 
-function shpaOpt(t, lock, field, value, label, type) {
-  const checked = type === "check"
-    ? (field === "shpaMedia" ? (t.shpaMedia || []).includes(value) : !!t[field])
-    : t[field] === value;
-  const name = type === "check" ? "" : ` name="shpa-${field}-${t.id}"`;
-  const attr = type === "check"
-    ? `data-shpa-check="${t.id}:${field}:${esc(value)}"`
-    : `data-shpa="${t.id}:${field}"`;
-  return `<label class="opt"><input type="${type === "check" ? "checkbox" : "radio"}"${name} ${attr} value="${esc(value)}" ${checked ? "checked" : ""} ${lock ? "disabled" : ""} /><span>${esc(label)}</span></label>`;
-}
-
-function shpa122Form(t, lock) {
-  const F = C.SHPA_122;
-  const progOn = !!t.shpaProgress && !t.shpaDone;
-  const levels = F.levels.map((lv) =>
-    `<label class="opt"><input type="radio" name="shpa-shpaLevel-${t.id}" data-shpa="${t.id}:shpaLevel" value="${esc(lv.id)}" ${t.shpaLevel === lv.id ? "checked" : ""} ${lock || !progOn ? "disabled" : ""} /><span>${esc(lv.label)}</span></label>`
-  ).join("");
-  return `<table class="shpa-grid">
-    <thead>
-      <tr><th>ภาระความรับผิดชอบ</th><th>การได้รับทุนสนับสนุนงบประมาณ</th></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>${F.duty.map((x) => shpaOpt(t, lock, "shpaDuty", x.id, x.label)).join("")}</td>
-        <td>${F.grant.map((x) => shpaOpt(t, lock, "shpaGrant", x.id, x.label)).join("")}</td>
-      </tr>
-      <tr><th colspan="2">หน่วยภาระงานด้านกระบวนการดำเนินงาน</th></tr>
-      <tr>
-        <td>${shpaOpt(t, lock, "shpaDone", "1", "ดำเนินการเสร็จแล้ว", "check")}</td>
-        <td>
-          ${shpaOpt(t, lock, "shpaProgress", "1", "อยู่ในระหว่างดำเนินการ", "check")}
-          ${levels}
-        </td>
-      </tr>
-      <tr><th colspan="2">หน่วยภาระงานด้านวิธีการเผยแพร่ผลงาน</th></tr>
-      <tr>
-        <td>${F.author.map((x) => shpaOpt(t, lock, "shpaAuthor", x.id, x.label)).join("")}</td>
-        <td>
-          <div class="shpa-inline">${F.media.map((x) => shpaOpt(t, lock, "shpaMedia", x.id, x.label, "check")).join("")}</div>
-          <div class="shpa-inline">${F.use.map((x) => shpaOpt(t, lock, "shpaUse", x.id, x.label)).join("")}</div>
-        </td>
-      </tr>
-    </tbody>
-  </table>`;
-}
-
 function facultyCriteriaCell(t, g, lock) {
-  if (g.id === "main" && String(t.criteriaId) === "res_book") return shpa122Form(t, lock);
   if (g.id === "main") {
     const sec = C.mainSectionOf(t);
     const items = (C.CATALOG.main || []).filter((c) => c.id && C.mainSectionOf({ criteriaId: c.id }) === sec);
-    if (sec === "book") return shpa122Form(t, lock);
     return `<div class="crit-list">${items.map((c) => critRadio(t, lock, c.id, c.label, c.hint)).join("")}</div>`;
   }
   if (g.id === "strat") {
@@ -1979,7 +1915,6 @@ function facultyCriteriaCell(t, g, lock) {
 }
 
 function facultyRoleCell(t, g, lock) {
-  if (g.id === "main" && C.mainSectionOf(t) === "book") return "";
   const c = C.findCrit(g.id, t.criteriaId);
   const dis = lock ? "disabled" : "";
   const role = `<select data-pa="t:${t.id}:role" ${dis}>${C.ROLES.map((r) =>
@@ -2032,7 +1967,6 @@ function facultyItemRow(t, g, lock, seq, sec) {
       </td>
     </tr>`;
   }
-  const book = g.id === "main" && C.mainSectionOf(t) === "book";
   return `<tr>
     <td class="seq-cell">${seq}${seqTools(g, t)}</td>
     <td class="title-cell">
@@ -2042,8 +1976,8 @@ function facultyItemRow(t, g, lock, seq, sec) {
       ${showPubDoi(t, g) ? doiBox(t, lock) : ""}
       ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint has-hint" data-hint="${esc(C.SCORE_COND.contractAmount)}">${esc(C.SCORE_COND.contractAmountShort)}</div>` : ""}
     </td>
-    <td${book ? " colspan=\"2\" class=\"shpa-cell\"" : ""}>${facultyCriteriaCell(t, g, lock)}</td>
-    ${book ? "" : `<td>${facultyRoleCell(t, g, lock)}${warn}</td>`}
+    <td>${facultyCriteriaCell(t, g, lock)}</td>
+    <td>${facultyRoleCell(t, g, lock)}${warn}</td>
     <td class="auto">${C.fmtUnit(cal.units)}</td>
     <td>
       <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
@@ -3140,37 +3074,6 @@ function bind() {
   document.querySelectorAll("#btnReset").forEach((rst) => rst.addEventListener("click", resetDemo));
 
   document.querySelectorAll("[data-add-ag]").forEach((b) => b.addEventListener("click", () => addAgreement(b.dataset.addAg, b.getAttribute("data-add-crit") || "")));
-  document.querySelectorAll("[data-shpa]").forEach((el) => {
-    el.addEventListener("change", () => {
-      const [id, field] = el.getAttribute("data-shpa").split(":");
-      const t = findTarget(id);
-      if (!t) return;
-      t[field] = el.value;
-      persist();
-      render();
-    });
-  });
-  document.querySelectorAll("[data-shpa-check]").forEach((el) => {
-    el.addEventListener("change", () => {
-      const [id, field, value] = el.getAttribute("data-shpa-check").split(":");
-      const t = findTarget(id);
-      if (!t) return;
-      if (field === "shpaMedia") {
-        const cur = Array.isArray(t.shpaMedia) ? t.shpaMedia.slice() : [];
-        t.shpaMedia = el.checked ? Array.from(new Set(cur.concat(value))) : cur.filter((x) => x !== value);
-      } else if (field === "shpaDone") {
-        t.shpaDone = el.checked;
-        if (el.checked) { t.shpaProgress = false; t.shpaLevel = ""; }
-      } else if (field === "shpaProgress") {
-        t.shpaProgress = el.checked;
-        if (el.checked) t.shpaDone = false;
-      } else {
-        t[field] = el.checked;
-      }
-      persist();
-      render();
-    });
-  });
   document.querySelectorAll("[data-del-ag]").forEach((b) => {
     b.addEventListener("click", () => {
       const [g, a] = b.dataset.delAg.split(":");
