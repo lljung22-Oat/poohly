@@ -38,6 +38,7 @@ assert.match(paReport, /DOI/);
 assert.match(paReport, /ไม่เกิน 3 ไฟล์ต่อเรื่อง/);
 assert.match(src, /data-files/);
 assert.match(src, /data-proj-q/);
+assert.match(src, /ตัวอย่างไฟล์เก็บข้อมูลโครงการวิจัยที่ใช้ประกอบการพิจารณา/);
 assert.match(src, /data-syl-q/);
 assert.match(src, /textarea data-pa="t:\$\{t\.id\}:report"/);
 assert.doesNotMatch(paReport, /รายงานผล \/ หลักฐาน/);

@@ -53,7 +53,8 @@ function copyDirFile(src, dest) {
 
 const sourceFiles = [
   "sources/คำอธิบายตัวชี้วัด-PA-2570-ฉบับจัดทำ-PA.pdf",
-  "sources/แบบติดตามข้อมูลโครงการวิจัย-ปี-2570.xlsx"
+  "sources/แบบติดตามข้อมูลโครงการวิจัย-ปี-2570.xlsx",
+  "sources/โครงการวิจัย-ปี-2570.json"
 ];
 sourceFiles.forEach((rel) => {
   const src = path.join(root, rel);

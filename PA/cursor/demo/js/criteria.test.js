@@ -52,10 +52,14 @@ assert.strictEqual(custom.score, 7);
 
 assert.strictEqual(S.TEACH_FORMULAS.length, 3);
 assert.strictEqual(S.MAX_EVIDENCE_FILES, 3);
-assert.ok(S.searchProjects("เหลื่อมล้ำ")[0].code === "SH-RES-2569-02");
-assert.strictEqual(S.findProject("SH-RES-2569-01").contractDate, "2026-01-15");
+assert.ok(S.searchProjects("เหลื่อมล้ำ").some((p) => p.code === "INT-2570-01"));
+assert.strictEqual(S.findProject("INT-2570-01").contractDate, "2569-10-01");
+assert.strictEqual(S.findProject("INT-2570-02").contractDate, "");
+assert.strictEqual(S.PROJECT_REGISTRY.length, 9);
 assert.strictEqual(S.findSyllabus("SHSS501").hours, 45);
 assert.strictEqual(S.doiStatus("10.1234/abc").ok, true);
+assert.strictEqual(S.doiStatus("https://doi.org/10.1234/abc").ok, true);
+assert.strictEqual(S.normalizeDoi("https://doi.org/10.1234/abc"), "10.1234/abc");
 assert.strictEqual(S.doiStatus("not-a-doi").ok, false);
 const ev = S.attachEvidence({ files: ["a.pdf", "b.pdf"] }, ["c.pdf", "d.pdf"]);
 assert.strictEqual(ev.files.length, 3);

@@ -209,12 +209,41 @@
 
   const MAX_EVIDENCE_FILES = 3;
 
-  /* ฐานกลางเดโมรหัส SH ของคณะสังคมฯ ไม่ใส่ตัวอย่างศึกษาศาสตร์ */
-  const PROJECT_REGISTRY = [
-    { code: "SH-RES-2569-01", name: "โครงการวิจัยด้านนโยบายสังคม", contractDate: "2026-01-15", amount: 450000, funder: "งบประมาณรายได้ส่วนงาน" },
-    { code: "SH-RES-2569-02", name: "โครงการทุนวิจัยความเหลื่อมล้ำทางสังคม", contractDate: "2026-02-20", amount: 1200000, funder: "หน่วยงานจัดสรรเงินทุนวิจัยภายในประเทศ" },
-    { code: "SH-RES-2570-01", name: "โครงการวิจัยคุณภาพชีวิตผู้สูงอายุ", contractDate: "2026-10-01", amount: 350000, funder: "งบประมาณรายได้ส่วนงาน" }
-  ];
+  function researchSample() {
+    if (typeof Faculty2570 !== "undefined" && Faculty2570.RESEARCH_SAMPLE) return Faculty2570.RESEARCH_SAMPLE;
+    if (typeof require === "function") {
+      try { return require("./faculty-2570.js").RESEARCH_SAMPLE || []; } catch (e) { return []; }
+    }
+    return [];
+  }
+
+  function toRegistryProject(row) {
+    const startLooksDate = /^\d{4}-\d{2}-\d{2}$/.test(String(row.start || ""));
+    return {
+      code: row.code,
+      name: row.name,
+      lead: row.lead || "",
+      affiliation: row.dept || "",
+      funder: row.funder || "",
+      amount: row.amount || "",
+      start: row.start || "",
+      end: row.end || "",
+      contractNo: row.contract || "",
+      contractDate: startLooksDate ? row.start : "",
+      contractDateNote: row.contract
+        ? ""
+        : (startLooksDate
+          ? "ไฟล์ตัวอย่างไม่มีวันที่ลงนามในสัญญา แสดงระยะเวลาเริ่มโครงการแทน"
+          : "ไฟล์ตัวอย่างไม่มีวันที่ลงนามในสัญญา"),
+      sheet: row.sheet,
+      status: row.status || "",
+      remark: row.remark || "",
+      source: "แบบติดตามข้อมูลโครงการวิจัย ปี 2570"
+    };
+  }
+
+  /* ฐานกลางจากไฟล์ตัวอย่างประกอบการพิจารณา ไม่คิดหน่วยจากสังกัดในไฟล์ */
+  const PROJECT_REGISTRY = researchSample().map(toRegistryProject);
 
   const SYLLABUS_REGISTRY = [
     { id: "SHSS501", code: "SHSS 501", title: "ทฤษฎีสังคมศาสตร์", hours: 45, formulaId: "grad_main" },
@@ -226,7 +255,9 @@
     const s = String(q || "").trim().toLowerCase();
     if (!s) return PROJECT_REGISTRY.slice();
     return PROJECT_REGISTRY.filter((p) =>
-      p.code.toLowerCase().includes(s) || p.name.toLowerCase().includes(s)
+      [p.code, p.name, p.lead, p.affiliation, p.funder].some((x) =>
+        String(x || "").toLowerCase().includes(s)
+      )
     );
   }
 
@@ -250,11 +281,24 @@
     return TEACH_FORMULAS.find((f) => f.id === id) || null;
   }
 
+  function normalizeDoi(raw) {
+    const v = String(raw || "").trim();
+    if (!v) return "";
+    const m = v.match(/(?:https?:\/\/(?:dx\.)?doi\.org\/)?(10\.\d{4,9}\/[-._;()/:A-Z0-9]+)/i);
+    return m ? m[1] : v;
+  }
+
   function doiStatus(raw) {
     const v = String(raw || "").trim();
     if (!v) return { ok: true, empty: true, label: "" };
-    const ok = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i.test(v);
-    return { ok, empty: false, label: ok ? "รูปแบบ DOI ถูกต้อง" : "รูปแบบ DOI ไม่ตรงมาตรฐาน (ขึ้นต้น 10.)" };
+    const n = normalizeDoi(v);
+    const ok = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i.test(n);
+    return {
+      ok,
+      empty: false,
+      normalized: ok ? n : "",
+      label: ok ? "รูปแบบ DOI / ลิงก์ DOI ถูกต้อง" : "รูปแบบ DOI ไม่ตรงมาตรฐาน (ขึ้นต้น 10. หรือลิงก์ doi.org)"
+    };
   }
 
   function evidenceFiles(t) {
@@ -576,7 +620,7 @@
     PUB, GRANT_SOURCES, CATALOG, STRAT_BUCKETS, TEACH_FORMULAS, MAX_EVIDENCE_FILES,
     PROJECT_REGISTRY, SYLLABUS_REGISTRY,
     searchProjects, findProject, searchSyllabus, findSyllabus, findTeachFormula,
-    doiStatus, evidenceFiles, attachEvidence, expectedPreview,
+    doiStatus, normalizeDoi, evidenceFiles, attachEvidence, expectedPreview,
     findCrit, grantUnits, rolePct, unitsToScore, calcTarget,
     collectTargets, sumWeight, groupUnits, effectiveScore,
     paPoints, chairPaScore, ccRaw, ccPoints, paWeighted80, totalScore,

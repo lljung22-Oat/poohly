@@ -2,7 +2,7 @@
    เก็บผู้ใช้ รหัสผ่านแฮช สิทธิ์ รอบประเมิน และบันทึก PA ทั้งหมด */
 (function (root) {
   const DB_NAME = "mu-pms-db";
-  const DB_VER = 1;
+  const DB_VER = 2;
   let dbp = null;
 
   function open() {
@@ -24,6 +24,12 @@
         if (!db.objectStoreNames.contains("audit")) {
           const a = db.createObjectStore("audit", { keyPath: "id", autoIncrement: true });
           a.createIndex("at", "at");
+        }
+        if (!db.objectStoreNames.contains("projects")) {
+          db.createObjectStore("projects", { keyPath: "id" });
+        }
+        if (!db.objectStoreNames.contains("sources")) {
+          db.createObjectStore("sources", { keyPath: "id" });
         }
       };
       req.onsuccess = () => resolve(req.result);
@@ -87,16 +93,70 @@
 
   async function seed() {
     const existing = await listUsers();
-    if (existing.length) return;
-    const passRatee = await sha256("123456");
-    const passAdmin = await sha256("Admin#2570");
-    for (const u of seedUsers()) {
-      u.passHash = u.id === "admin" ? passAdmin : passRatee;
-      u.createdAt = now();
-      u.createdBy = "system";
-      await putUser(u);
+    if (!existing.length) {
+      const passRatee = await sha256("123456");
+      const passAdmin = await sha256("Admin#2570");
+      for (const u of seedUsers()) {
+        u.passHash = u.id === "admin" ? passAdmin : passRatee;
+        u.createdAt = now();
+        u.createdBy = "system";
+        await putUser(u);
+      }
+      await audit("system", "seed", "สร้างบัญชีตั้งต้น อาจารย์ / เจ้าหน้าที่ / ผู้ดูแล");
     }
-    await audit("system", "seed", "สร้างบัญชีตั้งต้น อาจารย์ / เจ้าหน้าที่ / ผู้ดูแล");
+    await seedCatalog();
+  }
+
+  async function seedCatalog() {
+    const C = typeof PAScore !== "undefined" ? PAScore : null;
+    const F = typeof Faculty2570 !== "undefined" ? Faculty2570 : null;
+    const projects = (C && C.PROJECT_REGISTRY) || [];
+    for (const p of projects) {
+      await tx("projects", "readwrite", (s) => s.put({ id: p.code, ...p, seededAt: now() }));
+    }
+    if (F) {
+      await tx("sources", "readwrite", (s) => s.put({
+        id: "kpi-pdf",
+        title: "คำอธิบายตัวชี้วัด PA 2570 ฉบับจัดทำ PA",
+        path: F.SOURCE_PDF,
+        kind: "pdf",
+        seededAt: now()
+      }));
+      await tx("sources", "readwrite", (s) => s.put({
+        id: "research-xlsx",
+        title: "แบบติดตามข้อมูลโครงการวิจัย ปี 2570",
+        path: F.SOURCE_XLSX,
+        kind: "xlsx",
+        rows: (F.RESEARCH_SAMPLE || []).length,
+        seededAt: now()
+      }));
+      await tx("sources", "readwrite", (s) => s.put({
+        id: "research-json",
+        title: "ตัวอย่างไฟล์เก็บข้อมูลโครงการวิจัยที่ใช้ประกอบการพิจารณา",
+        path: F.SOURCE_JSON,
+        kind: "json",
+        rows: (F.RESEARCH_SAMPLE || []).length,
+        seededAt: now()
+      }));
+    }
+  }
+
+  function listProjects() {
+    return open().then((db) => new Promise((resolve, reject) => {
+      const t = db.transaction("projects", "readonly");
+      const q = t.objectStore("projects").getAll();
+      q.onsuccess = () => resolve(q.result || []);
+      q.onerror = () => reject(q.error);
+    }));
+  }
+
+  function listSources() {
+    return open().then((db) => new Promise((resolve, reject) => {
+      const t = db.transaction("sources", "readonly");
+      const q = t.objectStore("sources").getAll();
+      q.onsuccess = () => resolve(q.result || []);
+      q.onerror = () => reject(q.error);
+    }));
   }
 
   function putUser(user) {
@@ -253,7 +313,7 @@
 
   async function wipeDemo() {
     const db = await open();
-    await Promise.all(["users", "records", "session", "audit"].map((name) => new Promise((resolve, reject) => {
+    await Promise.all(["users", "records", "session", "audit", "projects", "sources"].map((name) => new Promise((resolve, reject) => {
       const t = db.transaction(name, "readwrite");
       t.objectStore(name).clear();
       t.oncomplete = () => resolve();
@@ -263,9 +323,9 @@
   }
 
   root.PMSDB = {
-    open, seed, sha256,
+    open, seed, seedCatalog, sha256,
     listUsers, getUser, getUserByName, putUser, createUser, updateProfile, setPassword, setActive,
     verify, saveRecord, loadRecord, saveSession, loadSession, clearSession,
-    audit, listAudit, wipeDemo
+    audit, listAudit, wipeDemo, listProjects, listSources
   };
 })(typeof globalThis !== "undefined" ? globalThis : this);

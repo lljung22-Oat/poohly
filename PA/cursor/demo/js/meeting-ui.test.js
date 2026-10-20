@@ -6,8 +6,9 @@ const S = require("./criteria.js");
 assert.strictEqual(S.STRAT_BUCKETS.map((b) => b.title).join("|"), "ยุทธศาสตร์ตีพิมพ์|ยุทธศาสตร์ทุนวิจัย|ยุทธศาสตร์อื่นๆ");
 assert.strictEqual(S.CATALOG.assign.some((c) => c.id === "asg_other"), true);
 assert.strictEqual(S.CATALOG.community.some((c) => c.id === "com_other"), true);
-assert.ok(!JSON.stringify(S.PROJECT_REGISTRY).includes("ศึกษาศาสตร์"));
+assert.ok(JSON.stringify(S.PROJECT_REGISTRY).includes("ศึกษาศาสตร์"));
 assert.ok(!JSON.stringify(S.SYLLABUS_REGISTRY).includes("ศึกษาศาสตร์"));
+assert.ok(!JSON.stringify(S.SYLLABUS_REGISTRY).includes("INT-2570"));
 
 const src = fs.readFileSync(path.join(__dirname, "app.js"), "utf8");
 assert.match(src, /function facultyEvalRow\(/);

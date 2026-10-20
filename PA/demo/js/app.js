@@ -171,7 +171,7 @@ function emptyTarget(code, weight) {
     id: uid(), code, title: "", date: "", kpiType: "quantity", weight: weight || 0,
     criteriaId: "", role: "", inDb: false, withStudent: false,
     amount: "", hours: "", qty: 1, report: "", file: "", files: [],
-    doi: "", projectCode: "", contractDate: "",
+    doi: "", projectCode: "", contractDate: "", contractDateNote: "",
     teachFormula: "", syllabusId: "",
     customTitle: "", proposedUnits: "", proposedScore: "",
     fileError: "",
@@ -234,8 +234,8 @@ function defaultGroups() {
             targets: [{
               ...emptyTarget("2.2.1.1", 15),
               title: "โครงการวิจัยที่อยู่ในระหว่างดำเนินการ",
-              criteriaId: "res_proc_3", projectCode: "SH-RES-2569-01",
-              contractDate: "2026-01-15", kpiType: "quantity"
+              criteriaId: "res_proc_3", projectCode: "",
+              contractDate: "", kpiType: "quantity"
             }]
           }]
         },
@@ -424,6 +424,7 @@ function hydrate(raw) {
           if (t.doi == null) t.doi = "";
           if (t.projectCode == null) t.projectCode = "";
           if (t.contractDate == null) t.contractDate = "";
+          if (t.contractDateNote == null) t.contractDateNote = "";
           if (t.teachFormula == null) t.teachFormula = "";
           if (t.syllabusId == null) t.syllabusId = "";
           if (t.customTitle == null) t.customTitle = "";
@@ -2056,15 +2057,36 @@ function viewResearchTrack() {
     <p class="crumb">สายวิชาการ</p>
     <h1 class="page-title">แบบติดตามข้อมูลโครงการวิจัย ปี 2570</h1>
     <div class="card">
-      <p class="hint">คอลัมน์ตามไฟล์ Excel สองชีต ห้ามรวมตาราง สถานะและหมายเหตุมีเฉพาะค่าที่ปรากฏในไฟล์ แถวว่างสำหรับกรอกของคณะสังคมศาสตร์และมนุษยศาสตร์ ห้ามใส่ตัวอย่างศึกษาศาสตร์</p>
-      <p><a href="${esc(F.SOURCE_XLSX)}" download>เปิดไฟล์ต้นฉบับ Excel</a></p>
-      <h2>ชีต iNT</h2>
+      <p class="hint">คอลัมน์ตามไฟล์ Excel สองชีต ห้ามรวมตาราง สถานะและหมายเหตุมีเฉพาะค่าที่ปรากฏในไฟล์ แถวว่างด้านล่างสำหรับกรอกของคณะสังคมศาสตร์และมนุษยศาสตร์ ตัวอย่างด้านบนอยู่ในฐานข้อมูลกลางเพื่อค้นหาและประกอบการพิจารณา ไม่ใช่ข้อตกลง PA ของผู้รับการประเมิน</p>
+      <p><a href="${esc(F.SOURCE_XLSX)}" download>เปิดไฟล์ต้นฉบับ Excel</a>
+         · <a href="${esc(F.SOURCE_JSON)}" download>ข้อมูลตัวอย่างในฐาน (JSON)</a></p>
+      <h2>ตัวอย่างไฟล์เก็บข้อมูลโครงการวิจัยที่ใช้ประกอบการพิจารณา</h2>
+      <div class="pa-wrap"><table class="data wide-track">
+        <thead><tr><th>รหัสอ้างอิง</th><th>ชีต</th>${F.INT_COLS.map((c) => `<th>${esc(c[1])}</th>`).join("")}</tr></thead>
+        <tbody>${(F.RESEARCH_SAMPLE || []).filter((r) => r.sheet === "iNT").map((r) => `<tr>
+          <td>${esc(r.code)}</td><td>${esc(r.sheet)}</td>
+          <td>${esc(r.status)}</td><td>${esc(r.no)}</td><td>${esc(r.name)}</td>
+          <td>${esc(r.lead)}</td><td>${esc(r.dept)}</td><td>${esc(r.funder)}</td>
+          <td>${esc(r.start)}</td><td>${esc(r.end)}</td><td>${esc(r.amount)}</td>
+          <td>${esc(r.objective)}</td><td>${esc(r.benefit)}</td><td>${esc(r.output)}</td>
+          <td>${esc(r.contract)}</td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+      <div class="pa-wrap"><table class="data">
+        <thead><tr><th>รหัสอ้างอิง</th><th>ชีต</th>${F.NOTIFY_COLS.map((c) => `<th>${esc(c[1])}</th>`).join("")}</tr></thead>
+        <tbody>${(F.RESEARCH_SAMPLE || []).filter((r) => r.sheet === "แจ้งทำวิจัย").map((r) => `<tr>
+          <td>${esc(r.code)}</td><td>${esc(r.sheet)}</td>
+          <td>${esc(r.no)}</td><td>${esc(r.name)}</td><td>${esc(r.lead)}</td>
+          <td>${esc(r.dept)}</td><td>${esc(r.remark)}</td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+      <h2>ชีต iNT — กรอกของคณะสังคมศาสตร์และมนุษยศาสตร์</h2>
       <div class="pa-wrap"><table class="data wide-track">
         <thead><tr>${F.INT_COLS.map((c) => `<th>${esc(c[1])}</th>`).join("")}<th></th></tr></thead>
         <tbody>${intRows}</tbody>
       </table></div>
       ${lock ? "" : `<button class="btn-ghost" type="button" id="btnAddInt">เพิ่มแถว iNT</button>`}
-      <h2>ชีต แจ้งทำวิจัย</h2>
+      <h2>ชีต แจ้งทำวิจัย — กรอกของคณะสังคมศาสตร์และมนุษยศาสตร์</h2>
       <div class="pa-wrap"><table class="data">
         <thead><tr>${F.NOTIFY_COLS.map((c) => `<th>${esc(c[1])}</th>`).join("")}<th></th></tr></thead>
         <tbody>${noteRows}</tbody>
@@ -2165,9 +2187,11 @@ function projectSearchBox(t, lock) {
   ).join("");
   return `<div class="search-box">
     <label class="date-lab">ค้นหาชื่อหรือรหัสโครงการจากฐานข้อมูลกลาง</label>
-    <input list="proj-${t.id}" data-proj-q="${t.id}" value="${esc(t.projectCode || "")}" placeholder="พิมพ์รหัส SH-RES หรือชื่อโครงการ" ${lock ? "disabled" : ""} />
+    <input list="proj-${t.id}" data-proj-q="${t.id}" value="${esc(t.projectCode || "")}" placeholder="พิมพ์รหัส INT-2570 / PERS-2570 หรือชื่อโครงการ" ${lock ? "disabled" : ""} />
     <datalist id="proj-${t.id}">${opts}</datalist>
-    <div class="hint">${t.contractDate ? `วันที่ลงนามในสัญญา ${esc(t.contractDate)}` : "เลือกแล้วระบบดึงชื่อโครงการและวันที่ลงนามในสัญญาให้อัตโนมัติ"}</div>
+    <div class="hint">${t.contractDate
+      ? `วันที่จากฐานกลาง ${esc(t.contractDate)}${t.contractDateNote ? " · " + esc(t.contractDateNote) : ""}`
+      : (t.contractDateNote || "เลือกแล้วระบบดึงชื่อโครงการและวันที่จากฐานกลางให้อัตโนมัติ")}</div>
   </div>`;
 }
 
@@ -2242,7 +2266,7 @@ function facultyEvalRow(t, g, lock, seq) {
       <textarea data-pa="t:${t.id}:title" placeholder="ชื่อบทความ / ชื่อโครงการ / รายวิชา" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
       <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
-      ${t.contractDate ? `<div class="hint">วันที่ลงนามในสัญญา ${esc(t.contractDate)}</div>` : ""}
+      ${t.contractDate ? `<div class="hint">วันที่จากฐานกลาง ${esc(t.contractDate)}${t.contractDateNote ? " · " + esc(t.contractDateNote) : ""}</div>` : ""}
     </td>
     <td>${criteriaHtml}${roleHtml}${warn}${extra}</td>
     <td class="auto">${C.fmtUnit(cal.units)}</td>
@@ -2977,7 +3001,8 @@ function bind() {
       if (!hit) { t.projectCode = q; persist(); return; }
       t.projectCode = hit.code;
       t.title = hit.name;
-      t.contractDate = hit.contractDate;
+      t.contractDate = hit.contractDate || "";
+      t.contractDateNote = hit.contractDateNote || "";
       if (hit.amount) t.amount = hit.amount;
       persist();
       render();

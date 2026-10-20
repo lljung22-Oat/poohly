@@ -710,12 +710,41 @@ table.pa .auto {
 
   const MAX_EVIDENCE_FILES = 3;
 
-  /* ฐานกลางเดโมรหัส SH ของคณะสังคมฯ ไม่ใส่ตัวอย่างศึกษาศาสตร์ */
-  const PROJECT_REGISTRY = [
-    { code: "SH-RES-2569-01", name: "โครงการวิจัยด้านนโยบายสังคม", contractDate: "2026-01-15", amount: 450000, funder: "งบประมาณรายได้ส่วนงาน" },
-    { code: "SH-RES-2569-02", name: "โครงการทุนวิจัยความเหลื่อมล้ำทางสังคม", contractDate: "2026-02-20", amount: 1200000, funder: "หน่วยงานจัดสรรเงินทุนวิจัยภายในประเทศ" },
-    { code: "SH-RES-2570-01", name: "โครงการวิจัยคุณภาพชีวิตผู้สูงอายุ", contractDate: "2026-10-01", amount: 350000, funder: "งบประมาณรายได้ส่วนงาน" }
-  ];
+  function researchSample() {
+    if (typeof Faculty2570 !== "undefined" && Faculty2570.RESEARCH_SAMPLE) return Faculty2570.RESEARCH_SAMPLE;
+    if (typeof require === "function") {
+      try { return require("./faculty-2570.js").RESEARCH_SAMPLE || []; } catch (e) { return []; }
+    }
+    return [];
+  }
+
+  function toRegistryProject(row) {
+    const startLooksDate = /^\d{4}-\d{2}-\d{2}$/.test(String(row.start || ""));
+    return {
+      code: row.code,
+      name: row.name,
+      lead: row.lead || "",
+      affiliation: row.dept || "",
+      funder: row.funder || "",
+      amount: row.amount || "",
+      start: row.start || "",
+      end: row.end || "",
+      contractNo: row.contract || "",
+      contractDate: startLooksDate ? row.start : "",
+      contractDateNote: row.contract
+        ? ""
+        : (startLooksDate
+          ? "ไฟล์ตัวอย่างไม่มีวันที่ลงนามในสัญญา แสดงระยะเวลาเริ่มโครงการแทน"
+          : "ไฟล์ตัวอย่างไม่มีวันที่ลงนามในสัญญา"),
+      sheet: row.sheet,
+      status: row.status || "",
+      remark: row.remark || "",
+      source: "แบบติดตามข้อมูลโครงการวิจัย ปี 2570"
+    };
+  }
+
+  /* ฐานกลางจากไฟล์ตัวอย่างประกอบการพิจารณา ไม่คิดหน่วยจากสังกัดในไฟล์ */
+  const PROJECT_REGISTRY = researchSample().map(toRegistryProject);
 
   const SYLLABUS_REGISTRY = [
     { id: "SHSS501", code: "SHSS 501", title: "ทฤษฎีสังคมศาสตร์", hours: 45, formulaId: "grad_main" },
@@ -727,7 +756,9 @@ table.pa .auto {
     const s = String(q || "").trim().toLowerCase();
     if (!s) return PROJECT_REGISTRY.slice();
     return PROJECT_REGISTRY.filter((p) =>
-      p.code.toLowerCase().includes(s) || p.name.toLowerCase().includes(s)
+      [p.code, p.name, p.lead, p.affiliation, p.funder].some((x) =>
+        String(x || "").toLowerCase().includes(s)
+      )
     );
   }
 
@@ -751,11 +782,24 @@ table.pa .auto {
     return TEACH_FORMULAS.find((f) => f.id === id) || null;
   }
 
+  function normalizeDoi(raw) {
+    const v = String(raw || "").trim();
+    if (!v) return "";
+    const m = v.match(/(?:https?:\/\/(?:dx\.)?doi\.org\/)?(10\.\d{4,9}\/[-._;()/:A-Z0-9]+)/i);
+    return m ? m[1] : v;
+  }
+
   function doiStatus(raw) {
     const v = String(raw || "").trim();
     if (!v) return { ok: true, empty: true, label: "" };
-    const ok = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i.test(v);
-    return { ok, empty: false, label: ok ? "รูปแบบ DOI ถูกต้อง" : "รูปแบบ DOI ไม่ตรงมาตรฐาน (ขึ้นต้น 10.)" };
+    const n = normalizeDoi(v);
+    const ok = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i.test(n);
+    return {
+      ok,
+      empty: false,
+      normalized: ok ? n : "",
+      label: ok ? "รูปแบบ DOI / ลิงก์ DOI ถูกต้อง" : "รูปแบบ DOI ไม่ตรงมาตรฐาน (ขึ้นต้น 10. หรือลิงก์ doi.org)"
+    };
   }
 
   function evidenceFiles(t) {
@@ -1077,7 +1121,7 @@ table.pa .auto {
     PUB, GRANT_SOURCES, CATALOG, STRAT_BUCKETS, TEACH_FORMULAS, MAX_EVIDENCE_FILES,
     PROJECT_REGISTRY, SYLLABUS_REGISTRY,
     searchProjects, findProject, searchSyllabus, findSyllabus, findTeachFormula,
-    doiStatus, evidenceFiles, attachEvidence, expectedPreview,
+    doiStatus, normalizeDoi, evidenceFiles, attachEvidence, expectedPreview,
     findCrit, grantUnits, rolePct, unitsToScore, calcTarget,
     collectTargets, sumWeight, groupUnits, effectiveScore,
     paPoints, chairPaScore, ccRaw, ccPoints, paWeighted80, totalScore,
@@ -1091,7 +1135,9 @@ table.pa .auto {
 
 
 /* คำอธิบายตัวชี้วัด PA 2570 และหัวคอลัมน์แบบติดตามโครงการวิจัย ปี 2570
-   ใช้ฝั่งอาจารย์ตามคำสั่งเจ้าของงาน ห้ามคิดหน่วยจากเล่มนี้ และห้ามใส่แถวตัวอย่างศึกษาศาสตร์ */
+   ใช้ฝั่งอาจารย์ตามคำสั่งเจ้าของงาน ห้ามคิดหน่วยจากเล่มตัวชี้วัดส่วนงาน
+   แถว RESEARCH_SAMPLE คือตัวอย่างไฟล์ประกอบการพิจารณาในฐานกลาง
+   ไม่ใช่ข้อตกลง PA ของผู้รับการประเมินคณะสังคมศาสตร์และมนุษยศาสตร์ */
 (function (root) {
   const UNIT_KPI_2570 = [
     { id: "intl-pub", title: "Number of International Publications", inUnitPa: false, unit: "เรื่อง", year: "ปีงบ 2570" },
@@ -1150,10 +1196,74 @@ table.pa .auto {
   const STATUS_FOUND = ["รออนุมัติดำเนินโครงการ"];
   const REMARK_FOUND = ["ทุนส่วนตัว"];
 
+  /* 9 แถวตามไฟล์ Excel ตัวล่าสุด รหัสอ้างอิงจากชีต+ลำดับ เพราะไฟล์ไม่มีรหัสโครงการ */
+  const RESEARCH_SAMPLE = [
+    {
+      code: "INT-2570-01", sheet: "iNT", no: 1, status: "รออนุมัติดำเนินโครงการ",
+      name: "โครงการประเมินผลสัมฤทธิ์โครกงารมาตรการลดความเหลื่อมล้ำทางการศึกษา จังหวัดราชบุรี (Ratchaburi Zero Dropout)",
+      lead: "ผศ.ดร.พรธิดา วิเศษศิลปานนท์\nรศ.ดร.ประภาพรรณ อุ่นอบ\nผศ.ดร.ธีรเดช ฉายอรุณ\nรศ.ดร.อุทัยทิพย์ เจี่ยวิวรรธน์กุล\nผศ.ดร.ศิวะพร ภู่พันธ์\nอ.ดร.ลภัสรดา จิตรวารินทร์\nอ.ดร.รมิดา มหันตมรรค",
+      dept: "ศึกษาศาสตร์", funder: "กองทุนเพื่อความเสมอภาคทางการศึกษา",
+      start: "2569-10-01", end: "2570-05-31", amount: 2800000,
+      objective: "1. ดำเนินการประเมินผลสัมฤทธิ์ โครงการมาตรการลดความเหลื่อมล้ำทางการศึกษา จังหวัดราชบุรี (Ratchaburi Dropout: RZD)\n2. วิเคราะห์ปัจจัยเงื่อนไขที่มีผลต่อผลการดำเนินงานโครงการมาตรการลดความเหลื่อมล้ำทางการศึกษา จังหวัดราชบุรี (Ratchaburi Dropout: RZD)\n3. จัดทำข้อเสนอแนะต่อการดำเนินโครงการการพัฒนาต้นแบบการจัดการศึกษาเชิงพื้นที่ในระยะต่อไปและข้อเสนอแนะต่อการขยายผลการทำงานภายใต้มาตรการขัับเคลื่อนประเทศไทยเพื่อแก้ปัญหาเด็กและเยาวชนนอกระบบการศึกษาให้กลายเป็นศูนย์ (Thailand Ratchaburi Zero Dropout: TZD)",
+      benefit: "", output: "", contract: "", remark: ""
+    },
+    {
+      code: "INT-2570-02", sheet: "iNT", no: 2, status: "รออนุมัติดำเนินโครงการ",
+      name: "โครงการการยกระดับผู้จัดหัวใจสีเขียวของประเทศไทยสู่มาตรฐานการจัดงานกีฬาอย่างยั่งยืน",
+      lead: "รศ.ดร.วรรณชลี โนริยา", dept: "ศึกษาศาสตร์์",
+      funder: "สำนักงานปลัดกระทรวงการท่องเที่ยวและกีฬา",
+      start: "210 วัน", end: "", amount: 7190000,
+      objective: "", benefit: "", output: "", contract: "", remark: ""
+    },
+    {
+      code: "PERS-2570-01", sheet: "แจ้งทำวิจัย", no: 1, status: "",
+      name: "ความกลัวชาวต่างชาติทางภาษา (Linguistic Xenophobia) ในผู้เรียนภาษาที่สองและภาษาที่สาม: การทบทวนวรรณกรรมเชิงประสาทวิทยาศาสตร์การศึกษาว่าด้วยความวิตกกังวลต่อคู่สนทนาที่เป็นเจ้าของภาษา",
+      lead: "รศ.ดร.โสวริทธิ์ธร จันทร์แสงศรี", dept: "ศึกษาศาสตร์",
+      funder: "", start: "", end: "", amount: "", objective: "", benefit: "", output: "", contract: "", remark: "ทุนส่วนตัว"
+    },
+    {
+      code: "PERS-2570-02", sheet: "แจ้งทำวิจัย", no: 2, status: "",
+      name: "พัฒนาการของบริเวณของบริเวณรับรู้ใบหน้า (Fusiform Face Area) การเรียนรู้ทางสังคม และทฤษฎีจิต (Theory of Mind) ในเด็กออทิสติก",
+      lead: "รศ.ดร.โสวริทธิ์ธร จันทร์แสงศรี", dept: "ศึกษาศาสตร์",
+      funder: "", start: "", end: "", amount: "", objective: "", benefit: "", output: "", contract: "", remark: "ทุนส่วนตัว"
+    },
+    {
+      code: "PERS-2570-03", sheet: "แจ้งทำวิจัย", no: 3, status: "",
+      name: "กลไกทางประสาทวิทยาและการเรียนรู้ในการตรวจจับดีพเฟกของมนุษย์: การทบทวนวรรณกรรมอย่างเป็นระบบและการวิเคราะห์อภิมาน",
+      lead: "รศ.ดร.โสวริทธิ์ธร จันทร์แสงศรี", dept: "ศึกษาศาสตร์",
+      funder: "", start: "", end: "", amount: "", objective: "", benefit: "", output: "", contract: "", remark: "ทุนส่วนตัว"
+    },
+    {
+      code: "PERS-2570-04", sheet: "แจ้งทำวิจัย", no: 4, status: "",
+      name: "The Alpha Mind Game: บุคลิกภาพ อิทธิพลของผู้ปกครอง และการรบมือกับความเครียดขณะเล่นบอร์ดเกม",
+      lead: "รศ.ดร.โสวริทธิ์ธร จันทร์แสงศรี", dept: "ศึกษาศาสตร์",
+      funder: "", start: "", end: "", amount: "", objective: "", benefit: "", output: "", contract: "", remark: "ทุนส่วนตัว"
+    },
+    {
+      code: "PERS-2570-05", sheet: "แจ้งทำวิจัย", no: 5, status: "",
+      name: "การประเมินผลเชิงพัฒนาหน่วยบริการรับส่งต่อเฉพาะด้านสำหรับคนพิการตามมาตรา 3 ภายใต้สำนักงานหลักประกันสุขภาพแห่งชาติ (สปสช.)",
+      lead: "รศ.ดร.โสวริทธิ์ธร จันทร์แสงศรี", dept: "ศึกษาศาสตร์",
+      funder: "", start: "", end: "", amount: "", objective: "", benefit: "", output: "", contract: "", remark: "ทุนส่วนตัว"
+    },
+    {
+      code: "PERS-2570-06", sheet: "แจ้งทำวิจัย", no: 6, status: "",
+      name: "การพัฒนาความสามารถในการแยกแยะข่าวปลอมของผู้สูงอายุ: ผลของโปรแกรมการเรียรู้ต่อทักษะการแยกแยะข่าวและตัวบ่งชี้ทางประสาทวิทยาด้วยคลื่นไฟฟ้าสมอง (EEG)",
+      lead: "รศ.ดร.โสวริทธิ์ธร จันทร์แสงศรี", dept: "ศึกษาศาสตร์",
+      funder: "", start: "", end: "", amount: "", objective: "", benefit: "", output: "", contract: "", remark: "ทุนส่วนตัว"
+    },
+    {
+      code: "PERS-2570-07", sheet: "แจ้งทำวิจัย", no: 7, status: "",
+      name: "จากผู้ใช้สู่นวัตกร: ชาติพันธุ์วรรณนาของคนพิการทางการเคลื่อนไหวที่ออกแบบอุปกรณ์ช่วยเหลือของตนเองเพื่อการดำรงชีวิตอิสระ",
+      lead: "รศ.ดร.โสวริทธิ์ธร จันทร์แสงศรี", dept: "ศึกษาศาสตร์",
+      funder: "", start: "", end: "", amount: "", objective: "", benefit: "", output: "", contract: "", remark: "ทุนส่วนตัว"
+    }
+  ];
+
   const api = {
-    UNIT_KPI_2570, INT_COLS, NOTIFY_COLS, STATUS_FOUND, REMARK_FOUND,
+    UNIT_KPI_2570, INT_COLS, NOTIFY_COLS, STATUS_FOUND, REMARK_FOUND, RESEARCH_SAMPLE,
     SOURCE_PDF: "sources/คำอธิบายตัวชี้วัด-PA-2570-ฉบับจัดทำ-PA.pdf",
-    SOURCE_XLSX: "sources/แบบติดตามข้อมูลโครงการวิจัย-ปี-2570.xlsx"
+    SOURCE_XLSX: "sources/แบบติดตามข้อมูลโครงการวิจัย-ปี-2570.xlsx",
+    SOURCE_JSON: "sources/โครงการวิจัย-ปี-2570.json"
   };
   root.Faculty2570 = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
@@ -1164,7 +1274,7 @@ table.pa .auto {
    เก็บผู้ใช้ รหัสผ่านแฮช สิทธิ์ รอบประเมิน และบันทึก PA ทั้งหมด */
 (function (root) {
   const DB_NAME = "mu-pms-db";
-  const DB_VER = 1;
+  const DB_VER = 2;
   let dbp = null;
 
   function open() {
@@ -1186,6 +1296,12 @@ table.pa .auto {
         if (!db.objectStoreNames.contains("audit")) {
           const a = db.createObjectStore("audit", { keyPath: "id", autoIncrement: true });
           a.createIndex("at", "at");
+        }
+        if (!db.objectStoreNames.contains("projects")) {
+          db.createObjectStore("projects", { keyPath: "id" });
+        }
+        if (!db.objectStoreNames.contains("sources")) {
+          db.createObjectStore("sources", { keyPath: "id" });
         }
       };
       req.onsuccess = () => resolve(req.result);
@@ -1249,16 +1365,70 @@ table.pa .auto {
 
   async function seed() {
     const existing = await listUsers();
-    if (existing.length) return;
-    const passRatee = await sha256("123456");
-    const passAdmin = await sha256("Admin#2570");
-    for (const u of seedUsers()) {
-      u.passHash = u.id === "admin" ? passAdmin : passRatee;
-      u.createdAt = now();
-      u.createdBy = "system";
-      await putUser(u);
+    if (!existing.length) {
+      const passRatee = await sha256("123456");
+      const passAdmin = await sha256("Admin#2570");
+      for (const u of seedUsers()) {
+        u.passHash = u.id === "admin" ? passAdmin : passRatee;
+        u.createdAt = now();
+        u.createdBy = "system";
+        await putUser(u);
+      }
+      await audit("system", "seed", "สร้างบัญชีตั้งต้น อาจารย์ / เจ้าหน้าที่ / ผู้ดูแล");
     }
-    await audit("system", "seed", "สร้างบัญชีตั้งต้น อาจารย์ / เจ้าหน้าที่ / ผู้ดูแล");
+    await seedCatalog();
+  }
+
+  async function seedCatalog() {
+    const C = typeof PAScore !== "undefined" ? PAScore : null;
+    const F = typeof Faculty2570 !== "undefined" ? Faculty2570 : null;
+    const projects = (C && C.PROJECT_REGISTRY) || [];
+    for (const p of projects) {
+      await tx("projects", "readwrite", (s) => s.put({ id: p.code, ...p, seededAt: now() }));
+    }
+    if (F) {
+      await tx("sources", "readwrite", (s) => s.put({
+        id: "kpi-pdf",
+        title: "คำอธิบายตัวชี้วัด PA 2570 ฉบับจัดทำ PA",
+        path: F.SOURCE_PDF,
+        kind: "pdf",
+        seededAt: now()
+      }));
+      await tx("sources", "readwrite", (s) => s.put({
+        id: "research-xlsx",
+        title: "แบบติดตามข้อมูลโครงการวิจัย ปี 2570",
+        path: F.SOURCE_XLSX,
+        kind: "xlsx",
+        rows: (F.RESEARCH_SAMPLE || []).length,
+        seededAt: now()
+      }));
+      await tx("sources", "readwrite", (s) => s.put({
+        id: "research-json",
+        title: "ตัวอย่างไฟล์เก็บข้อมูลโครงการวิจัยที่ใช้ประกอบการพิจารณา",
+        path: F.SOURCE_JSON,
+        kind: "json",
+        rows: (F.RESEARCH_SAMPLE || []).length,
+        seededAt: now()
+      }));
+    }
+  }
+
+  function listProjects() {
+    return open().then((db) => new Promise((resolve, reject) => {
+      const t = db.transaction("projects", "readonly");
+      const q = t.objectStore("projects").getAll();
+      q.onsuccess = () => resolve(q.result || []);
+      q.onerror = () => reject(q.error);
+    }));
+  }
+
+  function listSources() {
+    return open().then((db) => new Promise((resolve, reject) => {
+      const t = db.transaction("sources", "readonly");
+      const q = t.objectStore("sources").getAll();
+      q.onsuccess = () => resolve(q.result || []);
+      q.onerror = () => reject(q.error);
+    }));
   }
 
   function putUser(user) {
@@ -1415,7 +1585,7 @@ table.pa .auto {
 
   async function wipeDemo() {
     const db = await open();
-    await Promise.all(["users", "records", "session", "audit"].map((name) => new Promise((resolve, reject) => {
+    await Promise.all(["users", "records", "session", "audit", "projects", "sources"].map((name) => new Promise((resolve, reject) => {
       const t = db.transaction(name, "readwrite");
       t.objectStore(name).clear();
       t.oncomplete = () => resolve();
@@ -1425,10 +1595,10 @@ table.pa .auto {
   }
 
   root.PMSDB = {
-    open, seed, sha256,
+    open, seed, seedCatalog, sha256,
     listUsers, getUser, getUserByName, putUser, createUser, updateProfile, setPassword, setActive,
     verify, saveRecord, loadRecord, saveSession, loadSession, clearSession,
-    audit, listAudit, wipeDemo
+    audit, listAudit, wipeDemo, listProjects, listSources
   };
 })(typeof globalThis !== "undefined" ? globalThis : this);
 
@@ -1606,7 +1776,7 @@ function emptyTarget(code, weight) {
     id: uid(), code, title: "", date: "", kpiType: "quantity", weight: weight || 0,
     criteriaId: "", role: "", inDb: false, withStudent: false,
     amount: "", hours: "", qty: 1, report: "", file: "", files: [],
-    doi: "", projectCode: "", contractDate: "",
+    doi: "", projectCode: "", contractDate: "", contractDateNote: "",
     teachFormula: "", syllabusId: "",
     customTitle: "", proposedUnits: "", proposedScore: "",
     fileError: "",
@@ -1669,8 +1839,8 @@ function defaultGroups() {
             targets: [{
               ...emptyTarget("2.2.1.1", 15),
               title: "โครงการวิจัยที่อยู่ในระหว่างดำเนินการ",
-              criteriaId: "res_proc_3", projectCode: "SH-RES-2569-01",
-              contractDate: "2026-01-15", kpiType: "quantity"
+              criteriaId: "res_proc_3", projectCode: "",
+              contractDate: "", kpiType: "quantity"
             }]
           }]
         },
@@ -1859,6 +2029,7 @@ function hydrate(raw) {
           if (t.doi == null) t.doi = "";
           if (t.projectCode == null) t.projectCode = "";
           if (t.contractDate == null) t.contractDate = "";
+          if (t.contractDateNote == null) t.contractDateNote = "";
           if (t.teachFormula == null) t.teachFormula = "";
           if (t.syllabusId == null) t.syllabusId = "";
           if (t.customTitle == null) t.customTitle = "";
@@ -3491,15 +3662,36 @@ function viewResearchTrack() {
     <p class="crumb">สายวิชาการ</p>
     <h1 class="page-title">แบบติดตามข้อมูลโครงการวิจัย ปี 2570</h1>
     <div class="card">
-      <p class="hint">คอลัมน์ตามไฟล์ Excel สองชีต ห้ามรวมตาราง สถานะและหมายเหตุมีเฉพาะค่าที่ปรากฏในไฟล์ แถวว่างสำหรับกรอกของคณะสังคมศาสตร์และมนุษยศาสตร์ ห้ามใส่ตัวอย่างศึกษาศาสตร์</p>
-      <p><a href="${esc(F.SOURCE_XLSX)}" download>เปิดไฟล์ต้นฉบับ Excel</a></p>
-      <h2>ชีต iNT</h2>
+      <p class="hint">คอลัมน์ตามไฟล์ Excel สองชีต ห้ามรวมตาราง สถานะและหมายเหตุมีเฉพาะค่าที่ปรากฏในไฟล์ แถวว่างด้านล่างสำหรับกรอกของคณะสังคมศาสตร์และมนุษยศาสตร์ ตัวอย่างด้านบนอยู่ในฐานข้อมูลกลางเพื่อค้นหาและประกอบการพิจารณา ไม่ใช่ข้อตกลง PA ของผู้รับการประเมิน</p>
+      <p><a href="${esc(F.SOURCE_XLSX)}" download>เปิดไฟล์ต้นฉบับ Excel</a>
+         · <a href="${esc(F.SOURCE_JSON)}" download>ข้อมูลตัวอย่างในฐาน (JSON)</a></p>
+      <h2>ตัวอย่างไฟล์เก็บข้อมูลโครงการวิจัยที่ใช้ประกอบการพิจารณา</h2>
+      <div class="pa-wrap"><table class="data wide-track">
+        <thead><tr><th>รหัสอ้างอิง</th><th>ชีต</th>${F.INT_COLS.map((c) => `<th>${esc(c[1])}</th>`).join("")}</tr></thead>
+        <tbody>${(F.RESEARCH_SAMPLE || []).filter((r) => r.sheet === "iNT").map((r) => `<tr>
+          <td>${esc(r.code)}</td><td>${esc(r.sheet)}</td>
+          <td>${esc(r.status)}</td><td>${esc(r.no)}</td><td>${esc(r.name)}</td>
+          <td>${esc(r.lead)}</td><td>${esc(r.dept)}</td><td>${esc(r.funder)}</td>
+          <td>${esc(r.start)}</td><td>${esc(r.end)}</td><td>${esc(r.amount)}</td>
+          <td>${esc(r.objective)}</td><td>${esc(r.benefit)}</td><td>${esc(r.output)}</td>
+          <td>${esc(r.contract)}</td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+      <div class="pa-wrap"><table class="data">
+        <thead><tr><th>รหัสอ้างอิง</th><th>ชีต</th>${F.NOTIFY_COLS.map((c) => `<th>${esc(c[1])}</th>`).join("")}</tr></thead>
+        <tbody>${(F.RESEARCH_SAMPLE || []).filter((r) => r.sheet === "แจ้งทำวิจัย").map((r) => `<tr>
+          <td>${esc(r.code)}</td><td>${esc(r.sheet)}</td>
+          <td>${esc(r.no)}</td><td>${esc(r.name)}</td><td>${esc(r.lead)}</td>
+          <td>${esc(r.dept)}</td><td>${esc(r.remark)}</td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+      <h2>ชีต iNT — กรอกของคณะสังคมศาสตร์และมนุษยศาสตร์</h2>
       <div class="pa-wrap"><table class="data wide-track">
         <thead><tr>${F.INT_COLS.map((c) => `<th>${esc(c[1])}</th>`).join("")}<th></th></tr></thead>
         <tbody>${intRows}</tbody>
       </table></div>
       ${lock ? "" : `<button class="btn-ghost" type="button" id="btnAddInt">เพิ่มแถว iNT</button>`}
-      <h2>ชีต แจ้งทำวิจัย</h2>
+      <h2>ชีต แจ้งทำวิจัย — กรอกของคณะสังคมศาสตร์และมนุษยศาสตร์</h2>
       <div class="pa-wrap"><table class="data">
         <thead><tr>${F.NOTIFY_COLS.map((c) => `<th>${esc(c[1])}</th>`).join("")}<th></th></tr></thead>
         <tbody>${noteRows}</tbody>
@@ -3600,9 +3792,11 @@ function projectSearchBox(t, lock) {
   ).join("");
   return `<div class="search-box">
     <label class="date-lab">ค้นหาชื่อหรือรหัสโครงการจากฐานข้อมูลกลาง</label>
-    <input list="proj-${t.id}" data-proj-q="${t.id}" value="${esc(t.projectCode || "")}" placeholder="พิมพ์รหัส SH-RES หรือชื่อโครงการ" ${lock ? "disabled" : ""} />
+    <input list="proj-${t.id}" data-proj-q="${t.id}" value="${esc(t.projectCode || "")}" placeholder="พิมพ์รหัส INT-2570 / PERS-2570 หรือชื่อโครงการ" ${lock ? "disabled" : ""} />
     <datalist id="proj-${t.id}">${opts}</datalist>
-    <div class="hint">${t.contractDate ? `วันที่ลงนามในสัญญา ${esc(t.contractDate)}` : "เลือกแล้วระบบดึงชื่อโครงการและวันที่ลงนามในสัญญาให้อัตโนมัติ"}</div>
+    <div class="hint">${t.contractDate
+      ? `วันที่จากฐานกลาง ${esc(t.contractDate)}${t.contractDateNote ? " · " + esc(t.contractDateNote) : ""}`
+      : (t.contractDateNote || "เลือกแล้วระบบดึงชื่อโครงการและวันที่จากฐานกลางให้อัตโนมัติ")}</div>
   </div>`;
 }
 
@@ -3677,7 +3871,7 @@ function facultyEvalRow(t, g, lock, seq) {
       <textarea data-pa="t:${t.id}:title" placeholder="ชื่อบทความ / ชื่อโครงการ / รายวิชา" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
       <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
-      ${t.contractDate ? `<div class="hint">วันที่ลงนามในสัญญา ${esc(t.contractDate)}</div>` : ""}
+      ${t.contractDate ? `<div class="hint">วันที่จากฐานกลาง ${esc(t.contractDate)}${t.contractDateNote ? " · " + esc(t.contractDateNote) : ""}</div>` : ""}
     </td>
     <td>${criteriaHtml}${roleHtml}${warn}${extra}</td>
     <td class="auto">${C.fmtUnit(cal.units)}</td>
@@ -4412,7 +4606,8 @@ function bind() {
       if (!hit) { t.projectCode = q; persist(); return; }
       t.projectCode = hit.code;
       t.title = hit.name;
-      t.contractDate = hit.contractDate;
+      t.contractDate = hit.contractDate || "";
+      t.contractDateNote = hit.contractDateNote || "";
       if (hit.amount) t.amount = hit.amount;
       persist();
       render();
