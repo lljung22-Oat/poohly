@@ -1,0 +1,15 @@
+โปรแกรมพรีเซ็นอยู่โฟลเดอร์นี้ ไม่ได้อยู่ใน .PA cursor
+
+  เปิดโปรแกรม-PA-พรีเซ็น\เปิดตรงนี้.html
+
+บนเครื่อง
+  C:\Users\poohl\appscript\PA\เปิดโปรแกรม-PA-พรีเซ็น\เปิดตรงนี้.html
+
+สำเนาเดิมที่มองเห็นได้
+  C:\Users\poohl\appscript\PA\PA\cursor\demo\เปิดตรงนี้.html
+
+ดาวน์โหลดถ้ายังไม่มีไฟล์บนเครื่อง
+  https://github.com/lljung22-Oat/poohly/archive/refs/heads/cursor/pa-meeting-ui-7c6d.zip
+  แตกซิป แล้วเปิดโฟลเดอร์ เปิดโปรแกรม-PA-พรีเซ็น
+
+เข้าสู่ระบบอาจารย์  porntipa.c / 123456
