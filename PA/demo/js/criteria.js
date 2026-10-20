@@ -217,7 +217,7 @@
     student: "ผลงานวิจัยร่วมกับนักศึกษา (ไม่นับในยุทธศาสตร์ตามประกาศคณะฯ)",
     corp: "ตัวชี้วัด 1.3 Academic-Corporate Collaboration นับผลงานตีพิมพ์ร่วมภาคเอกชนที่ปรากฏใน SciVal หรือ Scopus — ไม่คิดหน่วยจากเล่มส่วนงาน หน่วยรายคนยังใช้ขั้นวารสารตามประกาศคณะฯ",
     cta: "ตัวชี้วัด 1.9.3 ทุนวิจัยทางคลินิก (CTA) นับเงินในสัญญา ทั้งในประเทศและต่างประเทศ — ไม่เปิดขั้นคะแนนแยก เพราะประกาศคณะฯ ไม่มีขั้น CTA",
-    doi: "กรอก DOI ของงานตีพิมพ์",
+    doi: "ช่องกรอกและแนบลิงก์ DOI ของงานตีพิมพ์",
     evidence: "หลักฐานไม่เกิน 3 ไฟล์ต่อเรื่อง",
     contractAmount: "จำนวนเงินใช้ค่าในสัญญารับทุน ดึงจากฐานกลางถ้ามีในไฟล์ ห้ามสร้างวันที่ลงนามถ้าไฟล์ไม่มี"
   };
@@ -301,15 +301,21 @@
     return m ? m[1] : v;
   }
 
+  function doiUrl(raw) {
+    const st = doiStatus(raw);
+    return st.url || "";
+  }
+
   function doiStatus(raw) {
     const v = String(raw || "").trim();
-    if (!v) return { ok: true, empty: true, label: "" };
+    if (!v) return { ok: true, empty: true, label: "", url: "", normalized: "" };
     const n = normalizeDoi(v);
     const ok = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i.test(n);
     return {
       ok,
       empty: false,
       normalized: ok ? n : "",
+      url: ok ? "https://doi.org/" + n : "",
       label: ok ? "รูปแบบ DOI / ลิงก์ DOI ถูกต้อง" : "รูปแบบ DOI ไม่ตรงมาตรฐาน (ขึ้นต้น 10. หรือลิงก์ doi.org)"
     };
   }
@@ -633,7 +639,7 @@
     PUB, GRANT_SOURCES, CATALOG, STRAT_BUCKETS, TEACH_FORMULAS, MAX_EVIDENCE_FILES, SCORE_COND,
     PROJECT_REGISTRY, SYLLABUS_REGISTRY,
     searchProjects, findProject, searchSyllabus, findSyllabus, findTeachFormula,
-    doiStatus, normalizeDoi, evidenceFiles, attachEvidence, expectedPreview,
+    doiStatus, normalizeDoi, doiUrl, evidenceFiles, attachEvidence, expectedPreview,
     findCrit, grantUnits, rolePct, unitsToScore, calcTarget,
     collectTargets, sumWeight, groupUnits, effectiveScore,
     paPoints, chairPaScore, ccRaw, ccPoints, paWeighted80, totalScore,

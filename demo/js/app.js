@@ -193,8 +193,7 @@ function defaultGroups() {
               ...emptyTarget("1.1.1.1", 10),
               title: "บทความตีพิมพ์ในวารสารที่อยู่ในฐานข้อมูล",
               date: "2026-03-15",
-              criteriaId: "pub_q1", role: "pi", inDb: true, kpiType: "quantity",
-              doi: "10.1234/shss.2570.01"
+              criteriaId: "pub_q1", role: "pi", inDb: true, kpiType: "quantity"
             }]
           }]
         },
@@ -1872,9 +1871,7 @@ function facultyItemRow(t, g, lock, seq) {
       <textarea data-pa="t:${t.id}:title" placeholder="ชื่อบทความ / ชื่อโครงการ" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
       <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
-      ${g.id === "strat" && !String(t.criteriaId || "").startsWith("grant_") ? `<label class="date-lab">${esc(C.SCORE_COND.doi)}</label>
-        <input data-pa="t:${t.id}:doi" value="${esc(t.doi || "")}" placeholder="10.xxxx/xxxx หรือลิงก์ doi.org" ${lock ? "disabled" : ""} />
-        ${doiHint(t)}` : ""}
+      ${showPubDoi(t, g) ? doiBox(t, lock) : ""}
       ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint">${esc(C.SCORE_COND.contractAmount)}</div>` : ""}
     </td>
     <td>${facultyCriteriaCell(t, g, lock)}</td>
@@ -2220,10 +2217,27 @@ function viewPledge() {
   return viewModules();
 }
 
-function doiHint(t) {
+function showPubDoi(t, g) {
+  const id = String(t.criteriaId || "");
+  if (id.startsWith("grant_")) return false;
+  if (id.startsWith("pub_")) return true;
+  return g.id === "strat";
+}
+
+function doiBox(t, lock) {
   const st = C.doiStatus(t.doi);
-  if (st.empty) return `<div class="hint">กรอกลิงก์หรือรหัส DOI ของงานตีพิมพ์</div>`;
-  return `<div class="${st.ok ? "ok-box" : "warn-box"}">${esc(st.label)}</div>`;
+  const href = st.url || "";
+  return `<div class="doi-box">
+    <label class="date-lab">${esc(C.SCORE_COND.doi)}</label>
+    <input data-pa="t:${t.id}:doi" value="${esc(t.doi || "")}" placeholder="10.xxxx/xxxx หรือ https://doi.org/10.xxxx/xxxx" ${lock ? "disabled" : ""} />
+    ${st.empty ? `<div class="hint">กรอกรหัส DOI หรือวางลิงก์ doi.org แล้วระบบแนบเป็นลิงก์เปิดได้</div>` : ""}
+    ${!st.empty && !st.ok ? `<div class="warn-box">${esc(st.label)}</div>` : ""}
+    ${href ? `<div class="ok-box">${esc(st.label)} · <a href="${esc(href)}" target="_blank" rel="noopener">เปิดลิงก์ DOI ที่แนบ</a></div>` : ""}
+  </div>`;
+}
+
+function doiHint(t) {
+  return doiBox(t, true);
 }
 
 function evidenceBox(t, lock) {
@@ -2232,7 +2246,12 @@ function evidenceBox(t, lock) {
   const list = files.map((name, i) =>
     `<li>${esc(name)}${lock ? "" : ` <button class="btn-ghost" type="button" data-del-ev="${t.id}:${i}">ลบ</button>`}</li>`
   ).join("");
+  const doiHref = C.doiUrl(t.doi);
+  const doiLink = doiHref
+    ? `<div class="hint">ลิงก์ DOI ที่แนบ: <a href="${esc(doiHref)}" target="_blank" rel="noopener">${esc(doiHref)}</a></div>`
+    : "";
   return `<div class="file-box">
+    ${doiLink}
     <div class="date-lab">หลักฐาน (ไม่เกิน ${C.MAX_EVIDENCE_FILES} ไฟล์ต่อเรื่อง)</div>
     <input type="file" data-files="${t.id}" ${lock || full ? "disabled" : ""} />
     ${t.fileError ? `<div class="warn-box">${esc(t.fileError)}</div>` : ""}
