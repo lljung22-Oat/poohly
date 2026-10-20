@@ -451,11 +451,16 @@ table.pa .title-cell textarea { min-height: 72px; }
 .pa-sub { margin: 0 0 18px; }
 .pa-subhead { margin: 0 16px 8px; font-size: 17px; color: #163a5f; }
 .pa-sub .btn-teal { margin: 0 16px 8px; }
+table.pa.pa-faculty td.shpa-cell { min-width: 620px; }
 table.shpa-grid {
-  width: 100%; min-width: 520px; border-collapse: collapse; background: #fff; font-size: 14px;
+  width: 100%; min-width: 560px; border-collapse: collapse; background: #fff; font-size: 14px;
 }
 table.shpa-grid th, table.shpa-grid td {
   border: 1px solid #334155; padding: 8px 10px; vertical-align: top; text-align: left;
+  word-break: normal; white-space: normal;
+}
+table.shpa-grid .opt {
+  display: flex; align-items: flex-start; gap: 8px; margin: 4px 0; font-weight: 600; line-height: 1.35;
 }
 table.shpa-grid th {
   background: #e8eef2; text-align: center; font-weight: 800; color: #163a5f; position: static;
@@ -3895,6 +3900,7 @@ function facultyItemRow(t, g, lock, seq, sec) {
       <td class="auto">${esc(prev.label)}</td>
     </tr>`;
   }
+  const book = g.id === "main" && C.mainSectionOf(t) === "book";
   return `<tr>
     <td class="seq-cell">${seq}${seqTools(g, t)}</td>
     <td class="title-cell">
@@ -3904,8 +3910,8 @@ function facultyItemRow(t, g, lock, seq, sec) {
       ${showPubDoi(t, g) ? doiBox(t, lock) : ""}
       ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint has-hint" data-hint="${esc(C.SCORE_COND.contractAmount)}">${esc(C.SCORE_COND.contractAmountShort)}</div>` : ""}
     </td>
-    <td>${facultyCriteriaCell(t, g, lock)}</td>
-    <td>${facultyRoleCell(t, g, lock)}${warn}</td>
+    <td${book ? " colspan=\"2\" class=\"shpa-cell\"" : ""}>${facultyCriteriaCell(t, g, lock)}</td>
+    ${book ? "" : `<td>${facultyRoleCell(t, g, lock)}${warn}</td>`}
     <td class="auto">${C.fmtUnit(cal.units)}</td>
     <td>
       <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />

@@ -2028,6 +2028,7 @@ function facultyItemRow(t, g, lock, seq, sec) {
       <td class="auto">${esc(prev.label)}</td>
     </tr>`;
   }
+  const book = g.id === "main" && C.mainSectionOf(t) === "book";
   return `<tr>
     <td class="seq-cell">${seq}${seqTools(g, t)}</td>
     <td class="title-cell">
@@ -2037,8 +2038,8 @@ function facultyItemRow(t, g, lock, seq, sec) {
       ${showPubDoi(t, g) ? doiBox(t, lock) : ""}
       ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint has-hint" data-hint="${esc(C.SCORE_COND.contractAmount)}">${esc(C.SCORE_COND.contractAmountShort)}</div>` : ""}
     </td>
-    <td>${facultyCriteriaCell(t, g, lock)}</td>
-    <td>${facultyRoleCell(t, g, lock)}${warn}</td>
+    <td${book ? " colspan=\"2\" class=\"shpa-cell\"" : ""}>${facultyCriteriaCell(t, g, lock)}</td>
+    ${book ? "" : `<td>${facultyRoleCell(t, g, lock)}${warn}</td>`}
     <td class="auto">${C.fmtUnit(cal.units)}</td>
     <td>
       <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
