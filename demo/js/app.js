@@ -531,6 +531,8 @@ function go(view) {
     window.scrollTo(0, 0);
     return;
   }
+  if (track() !== "support" && view === "pa") S.paLayout = "plan";
+  if (track() !== "support" && view === "paReport") S.paLayout = "eval";
   S.view = view;
   S.modal = null;
   persist();
@@ -855,29 +857,6 @@ function removeAgreement(gid, aid) {
   g.agreements = g.agreements.filter((a) => a.id !== aid);
   syncFacultyWeights();
   persist(); render();
-}
-
-function moveFacultyRow(gid, tid, dir) {
-  if (!canEditAgreement()) return;
-  const g = S.groups.find((x) => x.id === gid);
-  if (!g) return;
-  const list = groupTargets(g);
-  const i = list.findIndex((t) => t.id === tid);
-  const j = i + (dir === "up" ? -1 : 1);
-  if (i < 0 || j < 0 || j >= list.length) return;
-  const tmp = list[i];
-  list[i] = list[j];
-  list[j] = tmp;
-  let n = 0;
-  (g.agreements || []).forEach((a) => {
-    (a.kpis || []).forEach((k) => {
-      (k.targets || []).forEach((_, idx) => {
-        k.targets[idx] = list[n++];
-      });
-    });
-  });
-  persist();
-  render();
 }
 
 function removeFacultyRow(gid, tid) {
@@ -1828,7 +1807,6 @@ function viewModules() {
     </div>`;
   }).join("");
   const who = rateeAccount();
-  const facultyCycle = !staff ? `${facultyPeriodSwitch()}${facultyOrderPanel()}` : "";
   return chrome(`
     <div class="pms-home">
       <div class="left">
@@ -1837,7 +1815,7 @@ function viewModules() {
         <p class="hint" style="margin-top:18px">${esc(who.full)} · ${esc(who.position)}<br>${esc(FACULTY)}<br>ปีงบประมาณ ${esc(S.year)}</p>
         <p>PA ${statusPill(paStatus())} · IDP ${statusPill(idpStatus())}</p>
       </div>
-      <div>${facultyCycle}${blocks}</div>
+      <div>${blocks}</div>
     </div>`);
 }
 
@@ -1925,46 +1903,6 @@ function seqTools(g, t) {
   return `<div class="row-tools">
     <button class="iconbtn" type="button" data-del-row="${g.id}:${t.id}" aria-label="ลบรายการ">−</button>
   </div>`;
-}
-
-function facultyPeriodSwitch() {
-  return `<div class="pa-period">
-      <p class="period-lab">PA มี 2 ช่วง เลือกจากวงจรนี้แล้วเปิดตาราง</p>
-      <div class="period-switch">
-        <button type="button" class="${S.paLayout === "plan" ? "on" : ""}" data-pa-layout="plan">
-          <b>PA ล่วงหน้า (ก่อนทำงาน)</b>
-          <small>ตารางกระชับ 3 คอลัมน์ · วางแผนหน่วยที่คาดว่าจะได้รับ</small>
-        </button>
-        <button type="button" class="${S.paLayout === "eval" ? "on" : ""}" data-pa-layout="eval">
-          <b>หน้าประเมินจริง</b>
-          <small>ตารางครบ 7 ช่องตามแบบ SHPA · กรอกชั่วโมง บทบาท DOI คะแนนตนเอง และหลักฐาน</small>
-        </button>
-      </div>
-    </div>`;
-}
-
-function facultyOrderPanel() {
-  if (!canEditAgreement()) return "";
-  const blocks = C.GROUPS.map((meta) => {
-    const g = (S.groups || []).find((x) => x.id === meta.id);
-    if (!g) return "";
-    const rows = groupTargets(g).map((t, i) => `<div class="order-row">
-        <span>${i + 1}. ${esc(t.title || "รายการยังไม่มีชื่อ")}</span>
-        <span class="row-tools">
-          <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:up" aria-label="ย้ายแถวขึ้น">↑</button>
-          <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:down" aria-label="ย้ายแถวลง">↓</button>
-        </span>
-      </div>`).join("");
-    return `<div class="order-group">
-      <h4>${esc(meta.title)} · ${esc(meta.name)}</h4>
-      ${rows || `<p class="hint">ยังไม่มีรายการ</p>`}
-    </div>`;
-  }).join("");
-  return `<div class="card pa-order">
-      <h3>จัดลำดับรายการภาระงาน</h3>
-      <p>ลูกศร ↑↓ ย้ายแถวตอนวางแผน ไม่อยู่ในตารางกรอก</p>
-      ${blocks}
-    </div>`;
 }
 
 function facultyItemRow(t, g, lock, seq) {
@@ -2773,7 +2711,8 @@ function render() {
   const v = S.loggedIn ? (S.view || "home") : "login";
   const map = {
     login: viewLogin, home: viewHome, period: viewPeriod, profile: viewProfile, rounds: viewRounds,
-    formset: viewFormset, modules: viewModules, pa: viewPA, paReport: viewPaReport,
+    formset: viewFormset, modules: viewModules, pa: viewPA,
+    paReport: () => (track() === "support" ? viewPaReport() : viewPA()),
     competency: viewCompetency, ack: viewAck, idp: viewIdp, idpReport: viewIdpReport,
     idpEval: viewIdpEval, idpAck: viewIdpAck, report: viewReport,
     evalHome: viewEvalHome, adminPeople: viewAdminPeople, adminRound: viewAdminRound,
@@ -3086,22 +3025,6 @@ function bind() {
     b.addEventListener("click", () => {
       const [g, tid] = b.dataset.delRow.split(":");
       removeFacultyRow(g, tid);
-    });
-  });
-  document.querySelectorAll("[data-move-row]").forEach((b) => {
-    b.addEventListener("click", () => {
-      const [g, tid, dir] = b.dataset.moveRow.split(":");
-      moveFacultyRow(g, tid, dir);
-    });
-  });
-  document.querySelectorAll("[data-pa-layout]").forEach((b) => {
-    b.addEventListener("click", () => {
-      S.paLayout = b.getAttribute("data-pa-layout") === "plan" ? "plan" : "eval";
-      S.view = "pa";
-      persist();
-      if (!isFileMode()) location.hash = "pa";
-      render();
-      window.scrollTo(0, 0);
     });
   });
   document.querySelectorAll("[data-crit]").forEach((el) => {
