@@ -102,6 +102,13 @@ assert.ok(S.PA_HEADERS[6].includes("9 – 10"));
 assert.strictEqual(S.PA_PLAN_HEADERS.length, 3);
 assert.strictEqual(S.PA_PLAN_HEADERS[1], "วิชา");
 assert.ok(!S.PA_PLAN_HEADERS.includes("รายละเอียดเกณฑ์"));
+assert.strictEqual(S.SHPA_122.duty[0].label, "หัวหน้าทีมในโครงการ");
+assert.ok(S.SHPA_122.grant[0].label.includes("500,001"));
+assert.strictEqual(S.SHPA_122.media[1].label, "สื่ออิเลคทรอนิกส์");
+assert.strictEqual(S.mainSectionOf({ criteriaId: "res_book" }), "book");
+assert.strictEqual(S.shpa122Units({ shpaProgress: true, shpaLevel: "3" }), 160);
+assert.strictEqual(S.shpa122Units({ shpaDone: true }), 240);
+assert.ok(S.MAIN_SECTIONS.some((x) => x.no === "1.2.2"));
 assert.strictEqual(S.CC_ITEMS.length, 7);
 assert.strictEqual(S.IDP_MAX, 2);
 

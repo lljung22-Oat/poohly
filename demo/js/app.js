@@ -174,6 +174,8 @@ function emptyTarget(code, weight) {
     doi: "", projectCode: "", contractDate: "", contractDateNote: "",
     teachFormula: "", syllabusId: "",
     customTitle: "", proposedUnits: "", proposedScore: "",
+    shpaDuty: "", shpaGrant: "", shpaDone: false, shpaProgress: false,
+    shpaLevel: "", shpaAuthor: "", shpaMedia: [], shpaUse: "",
     fileError: "",
     selfScore: "", committeeComment: "", committeeScore: "",
     chairComment: "", chairScore: "", approved: "wait", approveReason: ""
@@ -246,6 +248,21 @@ function defaultGroups() {
               ...emptyTarget("2.3.1.1", 10),
               title: "ปฏิบัติงานในโครงการของหลักสูตร",
               criteriaId: "course_proj", hours: "12", kpiType: "quantity"
+            }]
+          }]
+        },
+        {
+          id: uid(), code: "2.4", title: "ผลงานทางวิชาการที่เทียบเท่างานวิจัย",
+          kpis: [{
+            id: uid(), code: "2.4.1", title: "การผลิตหนังสือ / ผลงานเทียบเท่างานวิจัย",
+            targets: [{
+              ...emptyTarget("2.4.1.1", 10),
+              title: "ผลงานที่ 1",
+              criteriaId: "res_book",
+              shpaDuty: "solo", shpaGrant: "mid",
+              shpaDone: false, shpaProgress: true, shpaLevel: "3",
+              shpaAuthor: "first", shpaMedia: ["print"], shpaUse: "teach",
+              kpiType: "quantity"
             }]
           }]
         }
@@ -432,10 +449,41 @@ function hydrate(raw) {
           if (t.customTitle == null) t.customTitle = "";
           if (t.proposedUnits == null) t.proposedUnits = "";
           if (t.proposedScore == null) t.proposedScore = "";
+          if (t.shpaDuty == null) t.shpaDuty = "";
+          if (t.shpaGrant == null) t.shpaGrant = "";
+          if (t.shpaDone == null) t.shpaDone = false;
+          if (t.shpaProgress == null) t.shpaProgress = false;
+          if (t.shpaLevel == null) t.shpaLevel = "";
+          if (t.shpaAuthor == null) t.shpaAuthor = "";
+          if (!Array.isArray(t.shpaMedia)) t.shpaMedia = [];
+          if (t.shpaUse == null) t.shpaUse = "";
         });
       });
     });
   });
+  const main = (s.groups || []).find((g) => g.id === "main");
+  if (main) {
+    let hasBook = false;
+    (main.agreements || []).forEach((a) => (a.kpis || []).forEach((k) => (k.targets || []).forEach((t) => {
+      if (t.criteriaId === "res_book") hasBook = true;
+    })));
+    if (!hasBook) {
+      main.agreements.push({
+        id: uid(), code: "2.4", title: "ผลงานทางวิชาการที่เทียบเท่างานวิจัย",
+        kpis: [{
+          id: uid(), code: "2.4.1", title: "การผลิตหนังสือ / ผลงานเทียบเท่างานวิจัย",
+          targets: [{
+            ...emptyTarget("2.4.1.1", 10),
+            title: "ผลงานที่ 1",
+            criteriaId: "res_book",
+            shpaDuty: "solo", shpaGrant: "mid",
+            shpaDone: false, shpaProgress: true, shpaLevel: "3",
+            shpaAuthor: "first", shpaMedia: ["print"], shpaUse: "teach"
+          }]
+        }]
+      });
+    }
+  }
   s.modal = null;
   return s;
 }
@@ -835,15 +883,17 @@ function readSupportForm() {
   });
 }
 
-function addAgreement(gid) {
+function addAgreement(gid, crit) {
   if (!canEditAgreement()) return;
   const g = S.groups.find((x) => x.id === gid);
   const n = g.agreements.length + 1;
+  const t = emptyTarget(`${g.no}.${n}.1.1`, 0);
+  if (crit) t.criteriaId = crit;
   g.agreements.push({
     id: uid(), code: `${g.no}.${n}`, title: "",
     kpis: [{
       id: uid(), code: `${g.no}.${n}.1`, title: "",
-      targets: [emptyTarget(`${g.no}.${n}.1.1`, 0)]
+      targets: [t]
     }]
   });
   syncFacultyWeights();
@@ -1834,7 +1884,60 @@ function grantTierValue(kind, amount) {
   return hit ? `${kind}|${hit.amount}` : "";
 }
 
+function shpaOpt(t, lock, field, value, label, type) {
+  const checked = type === "check"
+    ? (field === "shpaMedia" ? (t.shpaMedia || []).includes(value) : !!t[field])
+    : t[field] === value;
+  const name = type === "check" ? "" : ` name="shpa-${field}-${t.id}"`;
+  const attr = type === "check"
+    ? `data-shpa-check="${t.id}:${field}:${esc(value)}"`
+    : `data-shpa="${t.id}:${field}"`;
+  return `<label class="opt"><input type="${type === "check" ? "checkbox" : "radio"}"${name} ${attr} value="${esc(value)}" ${checked ? "checked" : ""} ${lock ? "disabled" : ""} /><span>${esc(label)}</span></label>`;
+}
+
+function shpa122Form(t, lock) {
+  const F = C.SHPA_122;
+  const progOn = !!t.shpaProgress && !t.shpaDone;
+  const levels = F.levels.map((lv) =>
+    `<label class="opt"><input type="radio" name="shpa-shpaLevel-${t.id}" data-shpa="${t.id}:shpaLevel" value="${esc(lv.id)}" ${t.shpaLevel === lv.id ? "checked" : ""} ${lock || !progOn ? "disabled" : ""} /><span>${esc(lv.label)}</span></label>`
+  ).join("");
+  return `<table class="shpa-grid">
+    <thead>
+      <tr><th>ภาระความรับผิดชอบ</th><th>การได้รับทุนสนับสนุนงบประมาณ</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>${F.duty.map((x) => shpaOpt(t, lock, "shpaDuty", x.id, x.label)).join("")}</td>
+        <td>${F.grant.map((x) => shpaOpt(t, lock, "shpaGrant", x.id, x.label)).join("")}</td>
+      </tr>
+      <tr><th colspan="2">หน่วยภาระงานด้านกระบวนการดำเนินงาน</th></tr>
+      <tr>
+        <td>${shpaOpt(t, lock, "shpaDone", "1", "ดำเนินการเสร็จแล้ว", "check")}</td>
+        <td>
+          ${shpaOpt(t, lock, "shpaProgress", "1", "อยู่ในระหว่างดำเนินการ", "check")}
+          ${levels}
+        </td>
+      </tr>
+      <tr><th colspan="2">หน่วยภาระงานด้านวิธีการเผยแพร่ผลงาน</th></tr>
+      <tr>
+        <td>${F.author.map((x) => shpaOpt(t, lock, "shpaAuthor", x.id, x.label)).join("")}</td>
+        <td>
+          <div class="shpa-inline">${F.media.map((x) => shpaOpt(t, lock, "shpaMedia", x.id, x.label, "check")).join("")}</div>
+          <div class="shpa-inline">${F.use.map((x) => shpaOpt(t, lock, "shpaUse", x.id, x.label)).join("")}</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>`;
+}
+
 function facultyCriteriaCell(t, g, lock) {
+  if (g.id === "main" && String(t.criteriaId) === "res_book") return shpa122Form(t, lock);
+  if (g.id === "main") {
+    const sec = C.mainSectionOf(t);
+    const items = (C.CATALOG.main || []).filter((c) => c.id && C.mainSectionOf({ criteriaId: c.id }) === sec);
+    if (sec === "book") return shpa122Form(t, lock);
+    return `<div class="crit-list">${items.map((c) => critRadio(t, lock, c.id, c.label, c.hint)).join("")}</div>`;
+  }
   if (g.id === "strat") {
     const pubs = C.PUB.map((p) =>
       critRadio(t, lock, p.id, p.formLabel || `${p.label} (${p.units} หน่วย / ${p.score} คะแนน)`, p.hint)
@@ -1876,6 +1979,7 @@ function facultyCriteriaCell(t, g, lock) {
 }
 
 function facultyRoleCell(t, g, lock) {
+  if (g.id === "main" && C.mainSectionOf(t) === "book") return "";
   const c = C.findCrit(g.id, t.criteriaId);
   const dis = lock ? "disabled" : "";
   const role = `<select data-pa="t:${t.id}:role" ${dis}>${C.ROLES.map((r) =>
@@ -1905,7 +2009,7 @@ function seqTools(g, t) {
   </div>`;
 }
 
-function facultyItemRow(t, g, lock, seq) {
+function facultyItemRow(t, g, lock, seq, sec) {
   const cal = C.calcTarget(t, g.id);
   const self = C.effectiveScore(t, g.id);
   const warn = cal.blocked === "student"
@@ -1918,7 +2022,7 @@ function facultyItemRow(t, g, lock, seq) {
     return `<tr>
       <td class="seq-cell">${seq}${seqTools(g, t)}</td>
       <td>
-        <input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="${esc(C.paItemHeader(g.id))}" ${lock ? "disabled" : ""} />
+        <input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""} />
         ${facultyCriteriaCell(t, g, lock)}
       </td>
       <td class="auto">${esc(prev.label)}</td>
@@ -1927,7 +2031,7 @@ function facultyItemRow(t, g, lock, seq) {
   return `<tr>
     <td class="seq-cell">${seq}${seqTools(g, t)}</td>
     <td class="title-cell">
-      <textarea data-pa="t:${t.id}:title" placeholder="${esc(C.paItemHeader(g.id))}" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
+      <textarea data-pa="t:${t.id}:title" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
       <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
       ${showPubDoi(t, g) ? doiBox(t, lock) : ""}
@@ -1947,8 +2051,23 @@ function facultyItemRow(t, g, lock, seq) {
   </tr>`;
 }
 
-function facultyGroupRows(g, lock) {
-  return groupTargets(g).map((t, i) => facultyItemRow(t, g, lock, i + 1)).join("");
+function facultyGroupRows(g, lock, sec) {
+  const rows = groupTargets(g).filter((t) => !sec || C.mainSectionOf(t) === sec.id);
+  return rows.map((t, i) => facultyItemRow(t, g, lock, i + 1, sec)).join("");
+}
+
+function facultyTable(g, lock, sec) {
+  const heads = sec ? C.sectionHeaders(sec, S.paLayout) : C.paHeaders(g.id, S.paLayout);
+  const rows = facultyGroupRows(g, lock, sec);
+  const addCrit = sec && sec.addCrit ? ` data-add-crit="${esc(sec.addCrit)}"` : "";
+  return `<div class="pa-sub"${sec ? ` id="pa-g-${g.id}-${sec.id}"` : ""}>
+    ${sec ? `<h3 class="pa-subhead">${esc(sec.no)} ${esc(sec.name)}</h3>` : ""}
+    ${canEditAgreement() && sec ? `<button class="btn-teal" type="button" data-add-ag="${g.id}"${addCrit}>เพิ่มรายการ</button>` : ""}
+    <div class="pa-wrap"><table class="pa pa-faculty${S.paLayout === "plan" ? " pa-plan" : ""}">
+      <thead><tr>${(heads || []).map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>
+      <tbody>${rows || `<tr><td colspan="${(heads || []).length}">ยังไม่มีรายการ</td></tr>`}</tbody>
+    </table></div>
+  </div>`;
 }
 
 function viewPA() {
@@ -1960,6 +2079,8 @@ function viewPA() {
   const wcls = w === 100 ? "" : "warn";
   const jump = `<nav class="jump-bar">${C.GROUPS.map((meta) =>
     `<button type="button" data-jump="pa-g-${meta.id}">${esc(meta.title)}</button>`
+  ).join("")}${(C.MAIN_SECTIONS || []).map((sec) =>
+    `<button type="button" data-jump="pa-g-main-${sec.id}">${esc(sec.no)}</button>`
   ).join("")}</nav>`;
   const sections = C.GROUPS.map((meta) => {
     const g = (S.groups || []).find((x) => x.id === meta.id);
@@ -1971,12 +2092,11 @@ function viewPA() {
           <h2>${esc(meta.title)} · ${esc(meta.name)}</h2>
           <p>${S.paLayout === "plan" ? "ช่วง PA ล่วงหน้า (ก่อนทำงาน)" : "ช่วงหน้าประเมิน PA"} · น้ำหนักตามประกาศ ${meta.pct}% · เพดาน ${meta.cap} หน่วย · ได้ ${C.fmtUnit(units)} หน่วย</p>
         </div>
-        ${canEditAgreement() ? `<button class="btn-teal" type="button" data-add-ag="${g.id}">เพิ่มรายการ</button>` : ""}
+        ${canEditAgreement() && g.id !== "main" ? `<button class="btn-teal" type="button" data-add-ag="${g.id}">เพิ่มรายการ</button>` : ""}
       </header>
-      <div class="pa-wrap"><table class="pa pa-faculty${S.paLayout === "plan" ? " pa-plan" : ""}">
-        <thead><tr>${(C.paHeaders(g.id, S.paLayout) || []).map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>
-        <tbody>${facultyGroupRows(g, lock)}</tbody>
-      </table></div>
+      ${g.id === "main"
+        ? (C.MAIN_SECTIONS || []).map((sec) => facultyTable(g, lock, sec)).join("")
+        : facultyTable(g, lock)}
     </section>`;
   }).join("");
 
@@ -3014,7 +3134,38 @@ function bind() {
   document.querySelectorAll("#btnSwitch").forEach((sw) => sw.addEventListener("click", logout));
   document.querySelectorAll("#btnReset").forEach((rst) => rst.addEventListener("click", resetDemo));
 
-  document.querySelectorAll("[data-add-ag]").forEach((b) => b.addEventListener("click", () => addAgreement(b.dataset.addAg)));
+  document.querySelectorAll("[data-add-ag]").forEach((b) => b.addEventListener("click", () => addAgreement(b.dataset.addAg, b.getAttribute("data-add-crit") || "")));
+  document.querySelectorAll("[data-shpa]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const [id, field] = el.getAttribute("data-shpa").split(":");
+      const t = findTarget(id);
+      if (!t) return;
+      t[field] = el.value;
+      persist();
+      render();
+    });
+  });
+  document.querySelectorAll("[data-shpa-check]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const [id, field, value] = el.getAttribute("data-shpa-check").split(":");
+      const t = findTarget(id);
+      if (!t) return;
+      if (field === "shpaMedia") {
+        const cur = Array.isArray(t.shpaMedia) ? t.shpaMedia.slice() : [];
+        t.shpaMedia = el.checked ? Array.from(new Set(cur.concat(value))) : cur.filter((x) => x !== value);
+      } else if (field === "shpaDone") {
+        t.shpaDone = el.checked;
+        if (el.checked) { t.shpaProgress = false; t.shpaLevel = ""; }
+      } else if (field === "shpaProgress") {
+        t.shpaProgress = el.checked;
+        if (el.checked) t.shpaDone = false;
+      } else {
+        t[field] = el.checked;
+      }
+      persist();
+      render();
+    });
+  });
   document.querySelectorAll("[data-del-ag]").forEach((b) => {
     b.addEventListener("click", () => {
       const [g, a] = b.dataset.delAg.split(":");

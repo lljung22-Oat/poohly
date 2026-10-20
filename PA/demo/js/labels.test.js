@@ -24,7 +24,8 @@ assert.doesNotMatch(src, /roleLabel: "ประธานกรรมการป
 
 const pa = sliceFn("viewPA");
 assert.match(pa, /แบบรายงานผลการปฏิบัติงาน/);
-assert.match(pa, /paHeaders\(/);
+assert.match(src, /function facultyTable\(/);
+assert.match(src, /sectionHeaders/);
 assert.doesNotMatch(pa, /h2>PA ล่วงหน้า/);
 assert.doesNotMatch(pa, /data-pa-layout/);
 assert.doesNotMatch(pa, /data-move-row/);
@@ -50,6 +51,9 @@ assert.match(crit, /ชื่อบทความ/);
 assert.match(crit, /ชื่อกิจกรรม/);
 assert.match(crit, /GROUP_HEADERS/);
 assert.match(src, /function facultyItemRow\(/);
+assert.match(src, /function shpa122Form\(/);
+assert.match(src, /หน่วยภาระงานด้านกระบวนการดำเนินงาน/);
+assert.match(src, /การได้รับทุนสนับสนุนงบประมาณ/);
 assert.match(src, /หลักฐาน \(ไม่เกิน \$\{C\.MAX_EVIDENCE_FILES\} ไฟล์ต่อเรื่อง\)/);
 
 const paReport = sliceFn("viewPaReport");

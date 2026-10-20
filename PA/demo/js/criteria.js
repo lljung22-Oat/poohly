@@ -33,6 +33,65 @@
     return (GROUP_HEADERS[groupId] || GROUP_HEADERS.main).item;
   }
 
+  /* SHPA 1.2.2 การผลิตหนังสือ และผลงานทางวิชาการในลักษณะอื่นที่เปรียบเทียบเท่างานวิจัย */
+  const SHPA_122 = {
+    duty: [
+      { id: "team", label: "หัวหน้าทีมในโครงการ" },
+      { id: "solo", label: "หัวหน้าโครงการ (เดี่ยว)" },
+      { id: "staff", label: "คณะทำงาน" }
+    ],
+    grant: [
+      { id: "high", label: "ได้รับทุนสนับสนุนตั้งแต่ 500,001 บาทขึ้นไป" },
+      { id: "mid", label: "ได้รับการสนับสนุนในวงเงินไม่เกิน 500,000 บาท" },
+      { id: "none", label: "ไม่ได้รับการสนับสนุน" }
+    ],
+    levels: [
+      { id: "1", units: 80, label: "ระดับ 1 อยู่ในระหว่างเตรียมการจนถึงได้รับอนุมัติให้ดำเนินการ" },
+      { id: "2", units: 120, label: "ระดับ 2 เริ่มดำเนินการจนมีความก้าวหน้าร้อยละ 20" },
+      { id: "3", units: 160, label: "ระดับ 3 มีความก้าวหน้าร้อยละ 21 – 50" },
+      { id: "4", units: 200, label: "ระดับ 4 มีความก้าวหน้าร้อยละ 51 – 90" },
+      { id: "5", units: 240, label: "ระดับ 5 ดำเนินการจนได้ร่างผลงาน" }
+    ],
+    author: [
+      { id: "first", label: "ชื่อแรก / ชื่อเดียว" },
+      { id: "second", label: "ชื่อที่สอง" },
+      { id: "third", label: "ชื่อที่สามเป็นต้นไป" }
+    ],
+    media: [
+      { id: "print", label: "พิมพ์รูปเล่ม" },
+      { id: "electronic", label: "สื่ออิเลคทรอนิกส์" },
+      { id: "exhibit", label: "นิทรรศการ การจัดแสดง" }
+    ],
+    use: [
+      { id: "teach", label: "ใช้ในการเรียนการสอน" },
+      { id: "wide", label: "ใช้ในวงกว้าง" }
+    ],
+    doneUnits: 240
+  };
+  const MAIN_SECTIONS = [
+    { id: "teach", no: "1.1", name: "ภาระงานหลักด้านการเรียนการสอน", item: "วิชา", detail: "รายละเอียด", addCrit: "teach_grad_main" },
+    { id: "research", no: "1.2.1", name: "ภาระงานหลักด้านการวิจัย", item: "ชื่อเรื่องงานวิจัย", detail: "หน่วยภาระงานด้าน", addCrit: "res_proc_1" },
+    { id: "book", no: "1.2.2", name: "การผลิตหนังสือ และผลงานทางวิชาการในลักษณะอื่นที่เปรียบเทียบเท่างานวิจัย", item: "ชื่อผลงาน", detail: "หน่วยภาระงานด้าน", addCrit: "res_book" },
+    { id: "service", no: "1.3", name: "ภาระงานด้านการบริการวิชาการ", item: "การบริการวิชาการ", detail: "รายละเอียด", addCrit: "svc_consult" }
+  ];
+  function mainSectionOf(t) {
+    const id = String((t && t.criteriaId) || "");
+    if (id === "res_book") return "book";
+    if (id.startsWith("res_")) return "research";
+    if (id.startsWith("svc_")) return "service";
+    return "teach";
+  }
+  function sectionHeaders(sec, layout) {
+    if (!sec) return layout === "plan" ? PA_PLAN_HEADERS : PA_HEADERS;
+    return layout === "plan" ? planHeads(sec.item) : evalHeads(sec.item, sec.detail);
+  }
+  function shpa122Units(t) {
+    if (t && t.shpaDone) return SHPA_122.doneUnits;
+    const lv = SHPA_122.levels.find((x) => x.id === String(t && t.shpaLevel || ""));
+    if (t && t.shpaProgress && lv) return lv.units;
+    return 0;
+  }
+
   /* ลำดับหัวข้อตามแบบฟอร์ม SHPA ร่าง หน่วย/ร้อยละตามประกาศคณะฯ */
   const GROUPS = [
     { id: "main", no: 1, pct: 55, cap: 1000, title: "ภาระงานที่ 1", name: "ภาระงานหลัก" },
@@ -191,7 +250,9 @@
       { id: "res_proc_2", label: "กระบวนการวิจัย ระดับ 2 ก้าวหน้า 20% หรือมี IRB (120)", kind: "fixed", units: 120, score: null },
       { id: "res_proc_3", label: "กระบวนการวิจัย ระดับ 3 ก้าวหน้า 21–50% (160)", kind: "fixed", units: 160, score: null },
       { id: "res_proc_4", label: "กระบวนการวิจัย ระดับ 4 ก้าวหน้า 51–90% (200)", kind: "fixed", units: 200, score: null },
-      { id: "res_proc_5", label: "กระบวนการวิจัย ระดับ 5 ร่างรายงานขั้นสุดท้าย (240)", kind: "fixed", units: 240, score: null }
+      { id: "res_proc_5", label: "กระบวนการวิจัย ระดับ 5 ร่างรายงานขั้นสุดท้าย (240)", kind: "fixed", units: 240, score: null },
+      { id: "res_book", label: "การผลิตหนังสือ และผลงานทางวิชาการในลักษณะอื่นที่เปรียบเทียบเท่างานวิจัย", kind: "shpa122", form: "shpa122" },
+      { id: "svc_consult", label: "ผู้ทรงคุณวุฒิ / ที่ปรึกษาทางวิชาการให้หน่วยงาน", kind: "count", per: 10 }
     ],
     assign: [
       { id: "", label: "-- เลือกเกณฑ์จากประกาศ --" },
@@ -457,6 +518,12 @@
       return { units, score, autoScore: score };
     }
 
+    if (c.kind === "shpa122") {
+      const units = shpa122Units(t);
+      const autoScore = units > 0 ? 8 : 0;
+      return { units, score: autoScore, autoScore };
+    }
+
     if (c.kind === "custom") {
       const units = Number(t.proposedUnits) || 0;
       const raw = t.proposedScore;
@@ -489,6 +556,10 @@
       return { units: 0, label: `${c.per || 0} หน่วย/รายการ` };
     }
     if (c.kind === "fixed") return { units: c.units || 0, label: fmtUnit(c.units || 0) };
+    if (c.kind === "shpa122") {
+      const n = shpa122Units(t);
+      return { units: n, label: n ? fmtUnit(n) : "—" };
+    }
     if (c.kind === "custom") {
       const n = Number(t.proposedUnits) || 0;
       return { units: n, label: n ? fmtUnit(n) : "เสนอหน่วยเองเมื่อประเมิน" };
@@ -663,7 +734,8 @@
 
   const api = {
     PA_WEIGHT, CC_WEIGHT, CC_SUM_MAX, IDP_MAX, TOTAL_UNITS, PA_HEADERS, PA_PLAN_HEADERS,
-    GROUP_HEADERS, paHeaders, paItemHeader,
+    GROUP_HEADERS, paHeaders, paItemHeader, MAIN_SECTIONS, mainSectionOf, sectionHeaders,
+    SHPA_122, shpa122Units,
     GROUPS, ROLES, KPI_TYPES, SCALE5, LEVELS, CC_ITEMS, FC_ITEMS, SUPPORT_FC_ITEMS,
     WORK_TYPES, IDP_METHODS,
     PUB, GRANT_SOURCES, CATALOG, STRAT_BUCKETS, TEACH_FORMULAS, MAX_EVIDENCE_FILES, SCORE_COND,

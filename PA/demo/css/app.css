@@ -439,6 +439,20 @@ table.pa .title-cell textarea { min-height: 72px; }
 .grant-stack select { width: 100%; }
 .crit-more { margin-top: 12px; padding-top: 8px; border-top: 1px dashed #c5d0dc; }
 .role-stack { display: flex; flex-direction: column; gap: 8px; min-width: 220px; }
+.pa-sub { margin: 0 0 18px; }
+.pa-subhead { margin: 0 16px 8px; font-size: 17px; color: #163a5f; }
+.pa-sub .btn-teal { margin: 0 16px 8px; }
+table.shpa-grid {
+  width: 100%; min-width: 520px; border-collapse: collapse; background: #fff; font-size: 14px;
+}
+table.shpa-grid th, table.shpa-grid td {
+  border: 1px solid #334155; padding: 8px 10px; vertical-align: top; text-align: left;
+}
+table.shpa-grid th {
+  background: #e8eef2; text-align: center; font-weight: 800; color: #163a5f; position: static;
+}
+table.shpa-grid .opt { margin: 4px 0; font-weight: 600; }
+.shpa-inline { display: flex; flex-wrap: wrap; gap: 8px 14px; margin: 4px 0; }
 .file-box { margin-top: 8px; }
 .file-box input[type="file"] { width: 100%; font-size: 14px; }
 table.pa th {
