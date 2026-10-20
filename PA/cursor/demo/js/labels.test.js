@@ -34,6 +34,8 @@ assert.doesNotMatch(src, /function facultyPeriodSwitch\(/);
 assert.doesNotMatch(src, /function facultyOrderPanel\(/);
 assert.doesNotMatch(src, /data-move-row/);
 assert.match(sliceFn("viewModules"), /data-go="\$\{m\.id\}"/);
+assert.match(src, /title: "PA ล่วงหน้า \(ก่อนทำงาน\)"/);
+assert.match(src, /title: "หน้าประเมินจริง"/);
 assert.match(sliceFn("go"), /view === "pa"/);
 assert.match(sliceFn("go"), /view === "paReport"/);
 assert.match(src, /ยุทธศาสตร์ตีพิมพ์/);

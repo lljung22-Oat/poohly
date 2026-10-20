@@ -138,8 +138,8 @@ function firstHeadLabel() { return "หัวหน้างานขั้น�
 function headLabel() { return "หัวหน้างาน"; }
 
 const MODULES = [
-  { id: "pa", title: "จัดทำข้อตกลงการปฏิบัติงาน (PA)", need: null },
-  { id: "paReport", title: "ประเมินผลงาน", need: "approved" },
+  { id: "pa", title: "PA ล่วงหน้า (ก่อนทำงาน)", need: null },
+  { id: "paReport", title: "หน้าประเมินจริง", need: null },
   { id: "competency", title: "ประเมินผลงาน และประเมินสมรรถนะ", need: "reported" },
   { id: "ack", title: "แจ้งผลและรับทราบผลการประเมินการปฏิบัติงาน", need: "chair" },
   { id: "idp", title: "จัดทำแผนพัฒนารายบุคคล (IDP)", need: null },
@@ -1202,10 +1202,10 @@ function flowTabs() {
   } else {
     items = [
       ["modules", "วงจร PMS"],
-      ["pa", "ข้อตกลง PA"],
+      ["pa", "PA ล่วงหน้า"],
       ["kpi2570", "ตัวชี้วัด 2570"],
       ["researchTrack", "โครงการวิจัย"],
-      ["paReport", "ประเมินผลงาน"],
+      ["paReport", "ประเมินจริง"],
       ["competency", "สมรรถนะ"],
       ["ack", "รับทราบ"]
     ];
