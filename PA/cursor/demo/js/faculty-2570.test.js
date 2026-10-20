@@ -22,6 +22,8 @@ const sources = path.join(__dirname, "..", "sources");
 assert.ok(fs.existsSync(path.join(sources, "คำอธิบายตัวชี้วัด-PA-2570-ฉบับจัดทำ-PA.pdf")));
 assert.ok(fs.existsSync(path.join(sources, "แบบติดตามข้อมูลโครงการวิจัย-ปี-2570.xlsx")));
 assert.ok(fs.existsSync(path.join(sources, "โครงการวิจัย-ปี-2570.json")));
+assert.ok(fs.existsSync(path.join(sources, "001-แบบฟอร์ม-SHPA-ร่าง.doc")));
+assert.ok(fs.existsSync(path.join(sources, "001-แบบฟอร์ม-SHPA-ร่าง-หัวข้อ.txt")));
 
 const crit = fs.readFileSync(path.join(__dirname, "criteria.js"), "utf8");
 assert.doesNotMatch(crit, /ตารางที่/);

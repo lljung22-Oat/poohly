@@ -271,6 +271,8 @@ a { color: #1565a8; }
 }
 .card h3 { margin: 0 0 8px; color: var(--navy); font-size: 20px; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-bottom: 10px; }
+.toolbar .btn-ghost.on { background: #163a5f; color: #fff; border-color: #163a5f; }
+table.pa.pa-faculty.pa-plan { min-width: 980px; }
 .search {
   width: 100%; padding: 12px 14px 12px 40px; border: 1px solid #cfd8e3; border-radius: 10px;
   background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Ccircle cx='9' cy='9' r='6'/%3E%3Cpath d='M14 14l4 4'/%3E%3C/svg%3E") 12px 50% no-repeat;
@@ -382,6 +384,7 @@ table.pa.pa-faculty { min-width: 1680px; }
 table.pa.pa-faculty.pa-pre { min-width: 980px; }
 table.pa.pa-faculty.pa-eval td:nth-child(3) { min-width: 380px; }
 table.pa.pa-faculty td:nth-child(3) { min-width: 380px; }
+.crit-buckets { display: flex; flex-direction: column; gap: 4px; }
 .bucket { margin: 8px 0 12px; padding-bottom: 8px; border-bottom: 1px dashed #c5d0dc; }
 .bucket:last-child { border-bottom: 0; }
 .bucket h4 { margin: 0 0 6px; color: #163a5f; font-size: 15px; font-weight: 800; }
@@ -390,6 +393,8 @@ table.pa.pa-faculty td:nth-child(3) { min-width: 380px; }
 .file-list { margin: 6px 0 0; padding-left: 18px; }
 table.pa .seq-cell { width: 64px; text-align: center; font-weight: 800; }
 table.pa .seq-cell .iconbtn { display: block; margin: 8px auto 0; }
+table.pa .row-tools { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 8px; }
+table.pa .row-tools .iconbtn { margin: 0; }
 table.pa .title-cell { min-width: 220px; }
 table.pa .title-cell textarea { min-height: 72px; }
 .date-lab { display: block; margin: 8px 0 4px; font-weight: 800; font-size: 14px; color: #334155; }

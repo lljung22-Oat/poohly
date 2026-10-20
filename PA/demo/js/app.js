@@ -183,7 +183,7 @@ function emptyTarget(code, weight) {
 function defaultGroups() {
   return [
     {
-      id: "strat", no: 1,
+      id: "strat", no: 4,
       agreements: [
         {
           id: uid(), code: "1.1", title: "ยุทธศาสตร์การวิจัย",
@@ -212,7 +212,7 @@ function defaultGroups() {
       ]
     },
     {
-      id: "main", no: 2,
+      id: "main", no: 1,
       agreements: [
         {
           id: uid(), code: "2.1", title: "ภาระงานสอน",
@@ -252,7 +252,7 @@ function defaultGroups() {
       ]
     },
     {
-      id: "assign", no: 3,
+      id: "assign", no: 2,
       agreements: [
         {
           id: uid(), code: "3.1", title: "งานที่ได้รับมอบหมายตามแผนปฏิบัติการ",
@@ -268,7 +268,7 @@ function defaultGroups() {
       ]
     },
     {
-      id: "community", no: 4,
+      id: "community", no: 3,
       agreements: [
         {
           id: uid(), code: "4.1", title: "งานเพื่อส่วนรวม",
@@ -331,6 +331,7 @@ function defaultState() {
     year: "2570",
     round: "รอบประเมินปีงบประมาณ 2570",
     view: "login",
+    paLayout: "plan",
     paStatus: "draft",
     paReject: "",
     paDisagree: "",
@@ -407,6 +408,8 @@ function defaultTimeRows() {
 function hydrate(raw) {
   const s = { ...defaultState(), ...(raw || {}) };
   if (!s.groups || !s.groups.length) s.groups = defaultGroups();
+  s.groups = orderFacultyGroups(s.groups);
+  if (s.paLayout !== "plan" && s.paLayout !== "eval") s.paLayout = "plan";
   if (!s.supportItems || !s.supportItems.length) s.supportItems = defaultSupportItems();
   if (!s.year || !["2569", "2570"].includes(String(s.year))) s.year = "2570";
   if (!s.supportFollow) s.supportFollow = [];
@@ -763,6 +766,16 @@ function findTarget(id) {
   return hit;
 }
 
+function orderFacultyGroups(groups) {
+  const by = Object.fromEntries((groups || []).map((g) => [g.id, g]));
+  return C.GROUPS.map((meta) => {
+    const g = by[meta.id];
+    if (!g) return null;
+    g.no = meta.no;
+    return g;
+  }).filter(Boolean);
+}
+
 function groupTargets(g) {
   const out = [];
   (g.agreements || []).forEach((a) => {
@@ -842,6 +855,29 @@ function removeAgreement(gid, aid) {
   g.agreements = g.agreements.filter((a) => a.id !== aid);
   syncFacultyWeights();
   persist(); render();
+}
+
+function moveFacultyRow(gid, tid, dir) {
+  if (!canEditAgreement()) return;
+  const g = S.groups.find((x) => x.id === gid);
+  if (!g) return;
+  const list = groupTargets(g);
+  const i = list.findIndex((t) => t.id === tid);
+  const j = i + (dir === "up" ? -1 : 1);
+  if (i < 0 || j < 0 || j >= list.length) return;
+  const tmp = list[i];
+  list[i] = list[j];
+  list[j] = tmp;
+  let n = 0;
+  (g.agreements || []).forEach((a) => {
+    (a.kpis || []).forEach((k) => {
+      (k.targets || []).forEach((_, idx) => {
+        k.targets[idx] = list[n++];
+      });
+    });
+  });
+  persist();
+  render();
 }
 
 function removeFacultyRow(gid, tid) {
@@ -1835,18 +1871,26 @@ function facultyCriteriaCell(t, g, lock) {
         ).join("")}
       </select>`;
     }).join("");
-    const others = (C.CATALOG.strat || []).filter((c) => c.id && c.kind === "fixed").map((c) =>
+    const otherBucket = (C.STRAT_BUCKETS || []).find((b) => b.id === "other");
+    const others = (C.CATALOG.strat || []).filter((c) => c.id && otherBucket && otherBucket.match(c)).map((c) =>
       `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""} data-hint="${esc(c.hint || "")}">${esc(c.label)}</option>`
     ).join("");
-    return `<div class="crit-list">${pubs}</div>
-      <div class="hint has-hint" data-hint="${esc(C.SCORE_COND.corp)}">${esc(C.SCORE_COND.corpShort)}</div>
-      <div class="grant-stack">${grants}
+    return `<div class="crit-buckets">
+      <div class="bucket"><h4>${esc((C.STRAT_BUCKETS.find((b) => b.id === "pub") || {}).title || "ยุทธศาสตร์ตีพิมพ์")}</h4>
+        <div class="crit-list">${pubs}</div>
+        <div class="hint has-hint" data-hint="${esc(C.SCORE_COND.corp)}">${esc(C.SCORE_COND.corpShort)}</div>
+      </div>
+      <div class="bucket"><h4>${esc((C.STRAT_BUCKETS.find((b) => b.id === "grant") || {}).title || "ยุทธศาสตร์ทุนวิจัย")}</h4>
+        <div class="grant-stack">${grants}</div>
+      </div>
+      <div class="bucket"><h4>${esc((otherBucket || {}).title || "ยุทธศาสตร์อื่นๆ")}</h4>
         <div class="hint has-hint" data-hint="${esc(C.SCORE_COND.cta)}">${esc(C.SCORE_COND.ctaShort)}</div>
         <select data-crit-other="${t.id}" ${lock ? "disabled" : ""}>
           <option value="">เกณฑ์ยุทธศาสตร์อื่นตามประกาศ</option>
           ${others}
         </select>
-      </div>`;
+      </div>
+    </div>`;
   }
   const items = (C.CATALOG[g.id] || []).filter((c) => c.id);
   return `<div class="crit-list">${items.map((c) => critRadio(t, lock, c.id, c.label, c.hint)).join("")}</div>`;
@@ -1875,6 +1919,15 @@ function facultyRoleCell(t, g, lock) {
   return `<div class="role-stack">${role}${extra}</div>`;
 }
 
+function seqTools(g, t) {
+  if (!canEditAgreement()) return "";
+  return `<div class="row-tools">
+    <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:up" aria-label="เลื่อนแถวขึ้น">↑</button>
+    <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:down" aria-label="เลื่อนแถวลง">↓</button>
+    <button class="iconbtn" type="button" data-del-row="${g.id}:${t.id}" aria-label="ลบรายการ">−</button>
+  </div>`;
+}
+
 function facultyItemRow(t, g, lock, seq) {
   const cal = C.calcTarget(t, g.id);
   const self = C.effectiveScore(t, g.id);
@@ -1883,10 +1936,21 @@ function facultyItemRow(t, g, lock, seq) {
     : cal.blocked === "db"
       ? `<div class="warn-box">ต้องเผยแพร่แล้วและปรากฏในฐานข้อมูลก่อนจึงคิดหน่วย</div>`
       : "";
+  if (S.paLayout === "plan") {
+    const prev = C.expectedPreview(t, g.id);
+    return `<tr>
+      <td class="seq-cell">${seq}${seqTools(g, t)}</td>
+      <td class="title-cell">
+        <textarea data-pa="t:${t.id}:title" placeholder="วิชา / ชื่อเรื่อง" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
+      </td>
+      <td>${facultyCriteriaCell(t, g, lock)}</td>
+      <td class="auto">${esc(prev.label)}</td>
+    </tr>`;
+  }
   return `<tr>
-    <td class="seq-cell">${seq}${canEditAgreement() ? `<button class="iconbtn" type="button" data-del-row="${g.id}:${t.id}" aria-label="ลบรายการ">−</button>` : ""}</td>
+    <td class="seq-cell">${seq}${seqTools(g, t)}</td>
     <td class="title-cell">
-      <textarea data-pa="t:${t.id}:title" placeholder="ชื่อบทความ / ชื่อโครงการ" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
+      <textarea data-pa="t:${t.id}:title" placeholder="วิชา / ชื่อเรื่อง" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
       <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
       ${showPubDoi(t, g) ? doiBox(t, lock) : ""}
@@ -1900,7 +1964,7 @@ function facultyItemRow(t, g, lock, seq) {
       <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
     </td>
     <td>
-      <textarea data-pa="t:${t.id}:report" placeholder="กรอกคะแนน 9–10 หรือ 0–2 พร้อมเหตุผล/หลักฐานประกอบ" ${lock ? "disabled" : ""}>${esc(t.report)}</textarea>
+      <textarea data-pa="t:${t.id}:report" placeholder="กรณีให้คะแนนระดับ 9–10 และ 0–2 ระบุเหตุผลเชิงรูปธรรมหรือหลักฐานเชิงประจักษ์" ${lock ? "disabled" : ""}>${esc(t.report)}</textarea>
       ${evidenceBox(t, lock)}
     </td>
   </tr>`;
@@ -1920,8 +1984,9 @@ function viewPA() {
   const jump = `<nav class="jump-bar">${C.GROUPS.map((meta) =>
     `<button type="button" data-jump="pa-g-${meta.id}">${esc(meta.title)}</button>`
   ).join("")}</nav>`;
-  const sections = S.groups.map((g) => {
-    const meta = C.GROUPS.find((x) => x.id === g.id);
+  const sections = C.GROUPS.map((meta) => {
+    const g = (S.groups || []).find((x) => x.id === meta.id);
+    if (!g) return "";
     const units = C.groupUnits(S.groups, g.id);
     return `<section class="sec pa-sec sec-faculty" id="pa-g-${g.id}">
       <header class="sec-head">
@@ -1931,16 +1996,8 @@ function viewPA() {
         </div>
         ${canEditAgreement() ? `<button class="btn-teal" type="button" data-add-ag="${g.id}">เพิ่มรายการ</button>` : ""}
       </header>
-      <div class="pa-wrap"><table class="pa pa-faculty">
-        <thead><tr>
-          <th>ลำดับ</th>
-          <th>ชื่อบทความ / ชื่อโครงการ</th>
-          <th>รายละเอียดเกณฑ์</th>
-          <th>บทบาทและเงื่อนไขใช้</th>
-          <th>หน่วยภาระงานที่ได้รับ</th>
-          <th>ผลการประเมินตนเอง</th>
-          <th>หลักฐาน / เหตุผล</th>
-        </tr></thead>
+      <div class="pa-wrap"><table class="pa pa-faculty${S.paLayout === "plan" ? " pa-plan" : ""}">
+        <thead><tr>${((S.paLayout === "plan" ? C.PA_PLAN_HEADERS : C.PA_HEADERS) || []).map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>
         <tbody>${facultyGroupRows(g, lock)}</tbody>
       </table></div>
     </section>`;
@@ -1966,10 +2023,14 @@ function viewPA() {
     </div>` : ""}
     <div class="pa-banner">
       <div>
-        <h2>Performance Agreement (PA)</h2>
-        <p class="sub">การประเมินผลการปฏิบัติงาน · ${statusPill(paStatus())} · ปี ${esc(S.year)}</p>
+        <h2>แบบรายงานผลการปฏิบัติงาน</h2>
+        <p class="sub">ส่วนที่ 2 รายงานผลการปฏิบัติงานตามข้อตกลง · ${statusPill(paStatus())} · ปี ${esc(S.year)}</p>
       </div>
       <div class="weight-box ${wcls}">น้ำหนักตามประกาศ : ${w}</div>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="btn-ghost${S.paLayout === "plan" ? " on" : ""}" data-pa-layout="plan">จัดทำข้อตกลง (กระชับ)</button>
+      <button type="button" class="btn-ghost${S.paLayout === "eval" ? " on" : ""}" data-pa-layout="eval">รายงานผลงาน (กรอกเชิงลึก)</button>
     </div>
     ${paStatus() === "back" ? `<div class="warn-box">ส่งกลับแก้ไข: ${esc(reject)}</div>` : ""}
     ${chairBar}
@@ -1980,7 +2041,7 @@ function viewPA() {
       <button class="btn-navy" type="button" id="btnAsk">ขออนุมัติ</button>` : ""}
       <button class="btn-ghost" type="button" data-go="${isEval() ? "evalHome" : "modules"}">กลับ</button>
     </div>
-    <p class="hint">แบบของอาจารย์ตามเอกสาร DOC-PA.อ · หน่วยและคะแนนคำนวณจากประกาศคณะฯ พ.ศ. 2568 สายวิชาการ (ฐาน 1,820 หน่วย · PA 80 + CC 20) · ปีงบประมาณ ${esc(S.year)} · ไม่ใช้แบบข้อตกลงของบุคลากร</p>
+    <p class="hint">หัวข้อตามแบบฟอร์ม SHPA ร่าง · หน่วยและคะแนนตามประกาศคณะฯ พ.ศ. 2568 (ฐาน 1,820 หน่วย · PA 80 + CC 20) · ปีงบประมาณ ${esc(S.year)} · ไม่ใช้แบบข้อตกลงของบุคลากร</p>
   `);
 }
 
@@ -2990,6 +3051,19 @@ function bind() {
     b.addEventListener("click", () => {
       const [g, tid] = b.dataset.delRow.split(":");
       removeFacultyRow(g, tid);
+    });
+  });
+  document.querySelectorAll("[data-move-row]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const [g, tid, dir] = b.dataset.moveRow.split(":");
+      moveFacultyRow(g, tid, dir);
+    });
+  });
+  document.querySelectorAll("[data-pa-layout]").forEach((b) => {
+    b.addEventListener("click", () => {
+      S.paLayout = b.getAttribute("data-pa-layout") === "plan" ? "plan" : "eval";
+      persist();
+      render();
     });
   });
   document.querySelectorAll("[data-crit]").forEach((el) => {

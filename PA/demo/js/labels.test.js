@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 const src = fs.readFileSync(path.join(__dirname, "app.js"), "utf8");
+const crit = fs.readFileSync(path.join(__dirname, "criteria.js"), "utf8");
 
 function sliceFn(name) {
   const start = src.indexOf(`function ${name}(`);
@@ -22,13 +23,20 @@ assert.doesNotMatch(src, /roleLabel: "กรรมการประเมิน
 assert.doesNotMatch(src, /roleLabel: "ประธานกรรมการประเมิน"/);
 
 const pa = sliceFn("viewPA");
-assert.match(pa, /Performance Agreement \(PA\)/);
-assert.match(pa, /ชื่อบทความ \/ ชื่อโครงการ/);
-assert.match(pa, /บทบาทและเงื่อนไขใช้/);
-assert.match(pa, /หน่วยภาระงานที่ได้รับ/);
-assert.match(pa, /ผลการประเมินตนเอง/);
-assert.match(pa, /หลักฐาน \/ เหตุผล/);
-assert.doesNotMatch(pa, /PA ล่วงหน้า/);
+assert.match(pa, /แบบรายงานผลการปฏิบัติงาน/);
+assert.match(pa, /PA_HEADERS/);
+assert.match(pa, /PA_PLAN_HEADERS/);
+assert.match(pa, /จัดทำข้อตกลง \(กระชับ\)/);
+assert.match(pa, /รายงานผลงาน \(กรอกเชิงลึก\)/);
+assert.doesNotMatch(pa, /h2>PA ล่วงหน้า/);
+assert.match(src, /data-move-row/);
+assert.match(src, /function moveFacultyRow\(/);
+assert.match(src, /ยุทธศาสตร์ตีพิมพ์/);
+assert.match(src, /meta\.name/);
+assert.match(crit, /ภาระงานหลัก/);
+assert.match(crit, /ภาระงานที่ได้รับมอบหมาย/);
+assert.match(crit, /ภาระงานเพื่อส่วนรวม/);
+assert.match(crit, /ภาระงานที่สอดคล้องยุทธศาสตร์/);
 assert.match(src, /function facultyItemRow\(/);
 assert.match(src, /หลักฐาน \(ไม่เกิน \$\{C\.MAX_EVIDENCE_FILES\} ไฟล์ต่อเรื่อง\)/);
 

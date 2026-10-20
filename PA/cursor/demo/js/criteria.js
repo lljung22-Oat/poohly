@@ -9,12 +9,28 @@
   const CC_SUM_MAX = CC_MAX_EACH * CC_COUNT; // 70
   const IDP_MAX = 2;
   const TOTAL_UNITS = 1820;
+  const PA_HEADERS = [
+    "ลำดับ",
+    "วิชา / ชื่อเรื่อง",
+    "รายละเอียด",
+    "จำนวนชั่วโมง / บทบาท",
+    "รวมหน่วยภาระงาน",
+    "ผลการประเมินตนเอง",
+    "กรณีให้คะแนนระดับ 9–10 และ 0–2 โปรดระบุเหตุผลเชิงรูปธรรมที่ชัดเจนหรือหลักฐานเชิงประจักษ์"
+  ];
+  const PA_PLAN_HEADERS = [
+    "ลำดับ",
+    "วิชา / ชื่อเรื่อง",
+    "รายละเอียดเกณฑ์",
+    "หน่วยภาระงานที่คาดว่าจะได้รับ"
+  ];
 
+  /* ลำดับหัวข้อตามแบบฟอร์ม SHPA ร่าง หน่วย/ร้อยละตามประกาศคณะฯ */
   const GROUPS = [
-    { id: "strat", no: 1, pct: 25, cap: 455, title: "ภาระงานที่ 1", name: "งานตามภารกิจที่สอดคล้องกับประเด็นยุทธศาสตร์ของมหาวิทยาลัยและแผนกลยุทธ์ของส่วนงาน" },
-    { id: "main", no: 2, pct: 55, cap: 1000, title: "ภาระงานที่ 2", name: "งานตามภารกิจหลักของตำแหน่งงาน ตามหน้าที่ความรับผิดชอบ ตามคำบรรยายลักษณะงาน" },
-    { id: "assign", no: 3, pct: 15, cap: 273, title: "ภาระงานที่ 3", name: "งานที่ได้รับมอบหมาย" },
-    { id: "community", no: 4, pct: 5, cap: 92, title: "ภาระงานที่ 4", name: "งานเพื่อส่วนรวม" }
+    { id: "main", no: 1, pct: 55, cap: 1000, title: "ภาระงานที่ 1", name: "ภาระงานหลัก" },
+    { id: "assign", no: 2, pct: 15, cap: 273, title: "ภาระงานที่ 2", name: "ภาระงานที่ได้รับมอบหมาย" },
+    { id: "community", no: 3, pct: 5, cap: 92, title: "ภาระงานที่ 3", name: "ภาระงานเพื่อส่วนรวม" },
+    { id: "strat", no: 4, pct: 25, cap: 455, title: "ภาระงานที่ 4", name: "ภาระงานที่สอดคล้องยุทธศาสตร์" }
   ];
 
   const ROLES = [
@@ -638,7 +654,7 @@
   }
 
   const api = {
-    PA_WEIGHT, CC_WEIGHT, CC_SUM_MAX, IDP_MAX, TOTAL_UNITS,
+    PA_WEIGHT, CC_WEIGHT, CC_SUM_MAX, IDP_MAX, TOTAL_UNITS, PA_HEADERS, PA_PLAN_HEADERS,
     GROUPS, ROLES, KPI_TYPES, SCALE5, LEVELS, CC_ITEMS, FC_ITEMS, SUPPORT_FC_ITEMS,
     WORK_TYPES, IDP_METHODS,
     PUB, GRANT_SOURCES, CATALOG, STRAT_BUCKETS, TEACH_FORMULAS, MAX_EVIDENCE_FILES, SCORE_COND,
