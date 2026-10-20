@@ -5084,6 +5084,8 @@ function applyQuery() {
     if (seed === "idpwait") setIdpStatus("wait");
     if (seed === "wait") setPaStatus("wait");
     if (view) S.view = view;
+    if (track() !== "support" && view === "pa") S.paLayout = "plan";
+    if (track() !== "support" && view === "paReport") S.paLayout = "eval";
     if (q.get("modal") === "score") S.modal = "score";
     if (q.get("focus") && !isRatee()) S.focus = q.get("focus");
   }

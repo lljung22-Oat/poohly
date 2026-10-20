@@ -38,6 +38,8 @@ assert.match(src, /title: "หน้าประเมิน PA"/);
 assert.doesNotMatch(src, /title: "หน้าประเมินจริง"/);
 assert.match(sliceFn("go"), /view === "pa"/);
 assert.match(sliceFn("go"), /view === "paReport"/);
+assert.match(sliceFn("applyQuery"), /view === "pa".*paLayout = "plan"/s);
+assert.match(sliceFn("applyQuery"), /view === "paReport".*paLayout = "eval"/s);
 assert.match(src, /ยุทธศาสตร์ตีพิมพ์/);
 assert.match(src, /meta\.name/);
 assert.match(crit, /ภาระงานหลัก/);
