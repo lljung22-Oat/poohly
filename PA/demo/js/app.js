@@ -442,9 +442,11 @@ function persist() {
   const copy = { ...S, modal: null, users: undefined };
   try { localStorage.setItem(KEY, JSON.stringify(copy)); } catch { /* ignore */ }
   if (DB && S.user && S.loggedIn) {
-    DB.saveRecord(S.user.id, S.year, copy);
-    DB.saveSession({ userId: S.user.id, year: S.year, view: S.view });
-    DB.audit(S.user.username, "save", S.view || "state");
+    Promise.resolve()
+      .then(() => DB.saveRecord(S.user.id, S.year, copy))
+      .then(() => DB.saveSession({ userId: S.user.id, year: S.year, view: S.view }))
+      .then(() => DB.audit(S.user.username, "save", S.view || "state"))
+      .catch(() => {});
   }
 }
 
@@ -568,13 +570,41 @@ async function resetDemo() {
   toast("ล้างฐานข้อมูลแล้ว");
 }
 
+function demoPasswordOk(user, password) {
+  if (!user) return false;
+  if (user.id === "admin") return password === "Admin#2570";
+  if (user.family === "ratee") return password === "123456";
+  return false;
+}
+
+function loginLocal(username, password, gate) {
+  const name = String(username || "").trim().toLowerCase();
+  const u = Object.values(ACCOUNTS).find((a) => a.username === name || (a.aliases || []).includes(name));
+  if (!u || !demoPasswordOk(u, password)) return { ok: false, reason: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" };
+  if (gate === "ratee-faculty" && !(u.family === "ratee" && u.track === "faculty")) {
+    return { ok: false, reason: "บัญชีนี้ไม่ใช่อาจารย์" };
+  }
+  if (gate === "ratee-support" && !(u.family === "ratee" && u.track === "support")) {
+    return { ok: false, reason: "บัญชีนี้ไม่ใช่เจ้าหน้าที่สายสนับสนุน" };
+  }
+  if (gate === "eval" && u.family !== "eval") {
+    return { ok: false, reason: "บัญชีนี้ยังไม่ได้รับสิทธิ์ผู้ประเมิน" };
+  }
+  if (gate === "admin" && !u.canAdmin) {
+    return { ok: false, reason: "บัญชีนี้เข้าช่องทางผู้ดูแลไม่ได้" };
+  }
+  return { ok: true, user: u };
+}
+
 async function enterUser(user) {
   S.loggedIn = true;
   S.user = user;
   S.account = user.id;
   S.focus = user.track || S.focus || "faculty";
   let rec = null;
-  if (DB) rec = await DB.loadRecord(user.id, S.year);
+  if (DB) {
+    try { rec = await DB.loadRecord(user.id, S.year); } catch { rec = null; }
+  }
   if (rec) {
     const keep = { user: S.user, users: S.users, loggedIn: true, account: user.id, year: S.year, focus: user.track || S.focus || "faculty" };
     S = hydrate(rec);
@@ -2719,16 +2749,28 @@ function bind() {
     if (sel) setYear(sel.value);
     const username = (document.getElementById("loginUser") || {}).value || "";
     const password = (document.getElementById("loginPass") || {}).value || "";
-    if (!DB) { toast("ฐานข้อมูลยังไม่พร้อม"); return; }
     let gate = "eval";
     if (S.loginGate === "admin") gate = "admin";
     else if (S.loginGate === "public" && S.loginType === "faculty") gate = "ratee-faculty";
     else if (S.loginGate === "public" && S.loginType === "support") gate = "ratee-support";
-    const res = await DB.verify(username, password, gate);
-    if (!res.ok) { toast(res.reason); return; }
-    S.users = await DB.listUsers();
-    await enterUser(res.user);
-    toast("เข้าสู่ระบบแล้ว · บันทึกลงฐานข้อมูล");
+    try {
+      let res = loginLocal(username, password, gate);
+      const fileMode = location.protocol === "file:";
+      if (!fileMode && DB) {
+        try {
+          const dbRes = await DB.verify(username, password, gate);
+          if (dbRes && dbRes.ok) res = dbRes;
+        } catch { /* ใช้บัญชีเดโมถ้าฐานไม่พร้อม */ }
+      }
+      if (!res.ok) { toast(res.reason); return; }
+      if (!fileMode && DB) {
+        try { S.users = await DB.listUsers(); } catch { S.users = S.users || []; }
+      }
+      await enterUser(res.user);
+      toast("เข้าสู่ระบบแล้ว");
+    } catch (err) {
+      toast("เข้าสู่ระบบไม่ได้: " + (err && err.message ? err.message : "ลองเปิดไฟล์ เปิดตรงนี้.html"));
+    }
   });
   const pf = document.getElementById("profileForm");
   if (pf) pf.addEventListener("submit", async (ev) => {
