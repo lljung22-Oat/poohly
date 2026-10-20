@@ -1918,7 +1918,7 @@ function facultyItemRow(t, g, lock, seq) {
     return `<tr>
       <td class="seq-cell">${seq}${seqTools(g, t)}</td>
       <td>
-        <input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="ชื่อรายการ" ${lock ? "disabled" : ""} />
+        <input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="วิชา" ${lock ? "disabled" : ""} />
         ${facultyCriteriaCell(t, g, lock)}
       </td>
       <td class="auto">${esc(prev.label)}</td>
@@ -1927,7 +1927,7 @@ function facultyItemRow(t, g, lock, seq) {
   return `<tr>
     <td class="seq-cell">${seq}${seqTools(g, t)}</td>
     <td class="title-cell">
-      <textarea data-pa="t:${t.id}:title" placeholder="วิชา / ชื่อเรื่อง" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
+      <textarea data-pa="t:${t.id}:title" placeholder="วิชา" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
       <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
       ${showPubDoi(t, g) ? doiBox(t, lock) : ""}
@@ -1941,7 +1941,7 @@ function facultyItemRow(t, g, lock, seq) {
       <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
     </td>
     <td>
-      <textarea data-pa="t:${t.id}:report" placeholder="กรณีให้คะแนนระดับ 9–10 และ 0–2 ระบุเหตุผลเชิงรูปธรรมหรือหลักฐานเชิงประจักษ์" ${lock ? "disabled" : ""}>${esc(t.report)}</textarea>
+      <textarea data-pa="t:${t.id}:report" placeholder="กรณีให้คะแนนระดับ 9 – 10 และ 0 – 2 ระบุเหตุผลเชิงรูปธรรมหรือหลักฐานเชิงประจักษ์" ${lock ? "disabled" : ""}>${esc(t.report)}</textarea>
       ${evidenceBox(t, lock)}
     </td>
   </tr>`;
