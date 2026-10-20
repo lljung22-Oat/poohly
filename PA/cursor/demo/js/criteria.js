@@ -9,20 +9,29 @@
   const CC_SUM_MAX = CC_MAX_EACH * CC_COUNT; // 70
   const IDP_MAX = 2;
   const TOTAL_UNITS = 1820;
-  const PA_HEADERS = [
-    "ลำดับ",
-    "วิชา",
-    "หน่วยภาระงานด้าน",
-    "จำนวนชั่วโมง",
-    "รวมหน่วยภาระงาน",
-    "ผลการประเมินตนเอง",
-    "กรณีให้คะแนนระดับ 9 – 10 และ 0 – 2 โปรดระบุเหตุผลเชิงรูปธรรมที่ชัดเจนหรือหลักฐานเชิงประจักษ์"
-  ];
-  const PA_PLAN_HEADERS = [
-    "ลำดับ",
-    "หน่วยภาระงานด้าน",
-    "รวมหน่วยภาระงาน"
-  ];
+  const REASON_H = "กรณีให้คะแนนระดับ 9 – 10 และ 0 – 2 โปรดระบุเหตุผลเชิงรูปธรรมที่ชัดเจนหรือหลักฐานเชิงประจักษ์";
+  function evalHeads(item, detail) {
+    return ["ลำดับ", item, detail, "จำนวนชั่วโมง", "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง", REASON_H];
+  }
+  function planHeads(item) {
+    return ["ลำดับ", item, "รวมหน่วยภาระงาน"];
+  }
+  /* หัวคอลัมน์คนละชุดตามแบบ SHPA ไม่ใช้ชื่อเดียวกันทั้ง 4 ภาระงาน */
+  const GROUP_HEADERS = {
+    main: { item: "วิชา", plan: planHeads("วิชา"), eval: evalHeads("วิชา", "รายละเอียด") },
+    assign: { item: "กิจกรรม", plan: planHeads("กิจกรรม"), eval: evalHeads("กิจกรรม", "รายละเอียด") },
+    community: { item: "ชื่อกิจกรรม", plan: planHeads("ชื่อกิจกรรม"), eval: evalHeads("ชื่อกิจกรรม", "รายละเอียด") },
+    strat: { item: "ชื่อบทความ", plan: planHeads("ชื่อบทความ"), eval: evalHeads("ชื่อบทความ", "หน่วยภาระงานด้าน") }
+  };
+  const PA_HEADERS = GROUP_HEADERS.main.eval;
+  const PA_PLAN_HEADERS = GROUP_HEADERS.main.plan;
+  function paHeaders(groupId, layout) {
+    const h = GROUP_HEADERS[groupId] || GROUP_HEADERS.main;
+    return layout === "plan" ? h.plan : h.eval;
+  }
+  function paItemHeader(groupId) {
+    return (GROUP_HEADERS[groupId] || GROUP_HEADERS.main).item;
+  }
 
   /* ลำดับหัวข้อตามแบบฟอร์ม SHPA ร่าง หน่วย/ร้อยละตามประกาศคณะฯ */
   const GROUPS = [
@@ -654,6 +663,7 @@
 
   const api = {
     PA_WEIGHT, CC_WEIGHT, CC_SUM_MAX, IDP_MAX, TOTAL_UNITS, PA_HEADERS, PA_PLAN_HEADERS,
+    GROUP_HEADERS, paHeaders, paItemHeader,
     GROUPS, ROLES, KPI_TYPES, SCALE5, LEVELS, CC_ITEMS, FC_ITEMS, SUPPORT_FC_ITEMS,
     WORK_TYPES, IDP_METHODS,
     PUB, GRANT_SOURCES, CATALOG, STRAT_BUCKETS, TEACH_FORMULAS, MAX_EVIDENCE_FILES, SCORE_COND,

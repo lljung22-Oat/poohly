@@ -24,8 +24,7 @@ assert.doesNotMatch(src, /roleLabel: "ประธานกรรมการป
 
 const pa = sliceFn("viewPA");
 assert.match(pa, /แบบรายงานผลการปฏิบัติงาน/);
-assert.match(pa, /PA_HEADERS/);
-assert.match(pa, /PA_PLAN_HEADERS/);
+assert.match(pa, /paHeaders\(/);
 assert.doesNotMatch(pa, /h2>PA ล่วงหน้า/);
 assert.doesNotMatch(pa, /data-pa-layout/);
 assert.doesNotMatch(pa, /data-move-row/);
@@ -35,7 +34,8 @@ assert.doesNotMatch(src, /function facultyOrderPanel\(/);
 assert.doesNotMatch(src, /data-move-row/);
 assert.match(sliceFn("viewModules"), /data-go="\$\{m\.id\}"/);
 assert.match(src, /title: "PA ล่วงหน้า \(ก่อนทำงาน\)"/);
-assert.match(src, /title: "หน้าประเมินจริง"/);
+assert.match(src, /title: "หน้าประเมิน PA"/);
+assert.doesNotMatch(src, /title: "หน้าประเมินจริง"/);
 assert.match(sliceFn("go"), /view === "pa"/);
 assert.match(sliceFn("go"), /view === "paReport"/);
 assert.match(src, /ยุทธศาสตร์ตีพิมพ์/);
@@ -44,6 +44,9 @@ assert.match(crit, /ภาระงานหลัก/);
 assert.match(crit, /ภาระงานที่ได้รับมอบหมาย/);
 assert.match(crit, /ภาระงานเพื่อส่วนรวม/);
 assert.match(crit, /ภาระงานที่สอดคล้องยุทธศาสตร์/);
+assert.match(crit, /ชื่อบทความ/);
+assert.match(crit, /ชื่อกิจกรรม/);
+assert.match(crit, /GROUP_HEADERS/);
 assert.match(src, /function facultyItemRow\(/);
 assert.match(src, /หลักฐาน \(ไม่เกิน \$\{C\.MAX_EVIDENCE_FILES\} ไฟล์ต่อเรื่อง\)/);
 

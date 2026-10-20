@@ -6,7 +6,7 @@ const src = fs.readFileSync(path.join(__dirname, "app.js"), "utf8");
 const start = src.indexOf("function facultyItemRow(");
 const next = src.indexOf("\nfunction ", start + 1);
 const row = src.slice(start, next === -1 ? undefined : next);
-assert.match(row, /placeholder="วิชา"/);
+assert.match(row, /paItemHeader/);
 assert.match(row, /seqTools/);
 assert.doesNotMatch(row, /data-move-row/);
 assert.doesNotMatch(src, /function facultyOrderPanel\(/);

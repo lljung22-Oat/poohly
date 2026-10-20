@@ -139,7 +139,7 @@ function headLabel() { return "หัวหน้างาน"; }
 
 const MODULES = [
   { id: "pa", title: "PA ล่วงหน้า (ก่อนทำงาน)", need: null },
-  { id: "paReport", title: "หน้าประเมินจริง", need: null },
+  { id: "paReport", title: "หน้าประเมิน PA", need: null },
   { id: "competency", title: "ประเมินผลงาน และประเมินสมรรถนะ", need: "reported" },
   { id: "ack", title: "แจ้งผลและรับทราบผลการประเมินการปฏิบัติงาน", need: "chair" },
   { id: "idp", title: "จัดทำแผนพัฒนารายบุคคล (IDP)", need: null },
@@ -1205,7 +1205,7 @@ function flowTabs() {
       ["pa", "PA ล่วงหน้า"],
       ["kpi2570", "ตัวชี้วัด 2570"],
       ["researchTrack", "โครงการวิจัย"],
-      ["paReport", "ประเมินจริง"],
+      ["paReport", "หน้าประเมิน PA"],
       ["competency", "สมรรถนะ"],
       ["ack", "รับทราบ"]
     ];
@@ -1918,7 +1918,7 @@ function facultyItemRow(t, g, lock, seq) {
     return `<tr>
       <td class="seq-cell">${seq}${seqTools(g, t)}</td>
       <td>
-        <input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="วิชา" ${lock ? "disabled" : ""} />
+        <input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="${esc(C.paItemHeader(g.id))}" ${lock ? "disabled" : ""} />
         ${facultyCriteriaCell(t, g, lock)}
       </td>
       <td class="auto">${esc(prev.label)}</td>
@@ -1927,7 +1927,7 @@ function facultyItemRow(t, g, lock, seq) {
   return `<tr>
     <td class="seq-cell">${seq}${seqTools(g, t)}</td>
     <td class="title-cell">
-      <textarea data-pa="t:${t.id}:title" placeholder="วิชา" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
+      <textarea data-pa="t:${t.id}:title" placeholder="${esc(C.paItemHeader(g.id))}" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
       <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
       ${showPubDoi(t, g) ? doiBox(t, lock) : ""}
@@ -1969,12 +1969,12 @@ function viewPA() {
       <header class="sec-head">
         <div>
           <h2>${esc(meta.title)} · ${esc(meta.name)}</h2>
-          <p>${S.paLayout === "plan" ? "ช่วง PA ล่วงหน้า (ก่อนทำงาน)" : "ช่วงหน้าประเมินจริง"} · น้ำหนักตามประกาศ ${meta.pct}% · เพดาน ${meta.cap} หน่วย · ได้ ${C.fmtUnit(units)} หน่วย</p>
+          <p>${S.paLayout === "plan" ? "ช่วง PA ล่วงหน้า (ก่อนทำงาน)" : "ช่วงหน้าประเมิน PA"} · น้ำหนักตามประกาศ ${meta.pct}% · เพดาน ${meta.cap} หน่วย · ได้ ${C.fmtUnit(units)} หน่วย</p>
         </div>
         ${canEditAgreement() ? `<button class="btn-teal" type="button" data-add-ag="${g.id}">เพิ่มรายการ</button>` : ""}
       </header>
       <div class="pa-wrap"><table class="pa pa-faculty${S.paLayout === "plan" ? " pa-plan" : ""}">
-        <thead><tr>${((S.paLayout === "plan" ? C.PA_PLAN_HEADERS : C.PA_HEADERS) || []).map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>
+        <thead><tr>${(C.paHeaders(g.id, S.paLayout) || []).map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead>
         <tbody>${facultyGroupRows(g, lock)}</tbody>
       </table></div>
     </section>`;
@@ -2001,7 +2001,7 @@ function viewPA() {
     <div class="pa-banner">
       <div>
         <h2>แบบรายงานผลการปฏิบัติงาน</h2>
-        <p class="sub">ส่วนที่ 2 รายงานผลการปฏิบัติงานตามข้อตกลง · ${statusPill(paStatus())} · ปี ${esc(S.year)} · ${S.paLayout === "plan" ? "ช่วง PA ล่วงหน้า (ก่อนทำงาน)" : "ช่วงหน้าประเมินจริง"}</p>
+        <p class="sub">ส่วนที่ 2 รายงานผลการปฏิบัติงานตามข้อตกลง · ${statusPill(paStatus())} · ปี ${esc(S.year)} · ${S.paLayout === "plan" ? "ช่วง PA ล่วงหน้า (ก่อนทำงาน)" : "ช่วงหน้าประเมิน PA"}</p>
       </div>
       <div class="weight-box ${wcls}">น้ำหนักตามประกาศ : ${w}</div>
     </div>
