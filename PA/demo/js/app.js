@@ -2026,6 +2026,10 @@ function facultyItemRow(t, g, lock, seq, sec) {
         ${facultyCriteriaCell(t, g, lock)}
       </td>
       <td class="auto">${esc(prev.label)}</td>
+      <td>
+        <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
+        <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
+      </td>
     </tr>`;
   }
   const book = g.id === "main" && C.mainSectionOf(t) === "book";

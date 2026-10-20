@@ -571,7 +571,7 @@ table.pa .auto {
     return ["ลำดับ", item, detail, "จำนวนชั่วโมง", "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง", REASON_H];
   }
   function planHeads(item) {
-    return ["ลำดับ", item, "รวมหน่วยภาระงาน"];
+    return ["ลำดับ", item, "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง"];
   }
   /* หัวคอลัมน์คนละชุดตามแบบ SHPA ไม่ใช้ชื่อเดียวกันทั้ง 4 ภาระงาน */
   const GROUP_HEADERS = {
@@ -3898,6 +3898,10 @@ function facultyItemRow(t, g, lock, seq, sec) {
         ${facultyCriteriaCell(t, g, lock)}
       </td>
       <td class="auto">${esc(prev.label)}</td>
+      <td>
+        <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
+        <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
+      </td>
     </tr>`;
   }
   const book = g.id === "main" && C.mainSectionOf(t) === "book";
