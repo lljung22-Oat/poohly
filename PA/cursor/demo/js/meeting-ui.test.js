@@ -20,6 +20,9 @@ assert.match(src, /ช่องกรอกและแนบลิงก์ DOI
 assert.match(src, /เปิดลิงก์ DOI ที่แนบ/);
 assert.match(src, /หลักฐาน \(ไม่เกิน \$\{C\.MAX_EVIDENCE_FILES\} ไฟล์ต่อเรื่อง\)/);
 assert.match(src, /SCORE_COND\.inDb/);
+assert.match(src, /function bindHoverHints\(/);
+assert.match(src, /data-hint=/);
+assert.match(src, /inDbShort/);
 assert.doesNotMatch(src, /h2>PA ล่วงหน้า/);
 assert.match(src, /h2>Performance Agreement \(PA\)/);
 assert.match(src, /<th>รายละเอียดเกณฑ์<\/th>/);

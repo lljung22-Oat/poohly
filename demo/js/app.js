@@ -1789,8 +1789,11 @@ function viewModules() {
     </div>`);
 }
 
-function critRadio(t, lock, value, label) {
-  return `<label class="opt"><input type="radio" name="crit-${t.id}" data-crit="${t.id}" value="${esc(value)}" ${t.criteriaId === value ? "checked" : ""} ${lock ? "disabled" : ""} /><span>${esc(label)}</span></label>`;
+function critRadio(t, lock, value, label, hint) {
+  const extra = hint
+    ? ` class="opt has-hint" data-hint="${esc(hint)}" title="${esc(hint)}"`
+    : ` class="opt"`;
+  return `<label${extra}><input type="radio" name="crit-${t.id}" data-crit="${t.id}" value="${esc(value)}" ${t.criteriaId === value ? "checked" : ""} ${lock ? "disabled" : ""} /><span>${esc(label)}</span></label>`;
 }
 
 function grantTierValue(kind, amount) {
@@ -1804,26 +1807,26 @@ function grantTierValue(kind, amount) {
 function facultyCriteriaCell(t, g, lock) {
   if (g.id === "strat") {
     const pubs = C.PUB.map((p) =>
-      critRadio(t, lock, p.id, p.formLabel || `${p.label} (${p.units} หน่วย / ${p.score} คะแนน)`)
+      critRadio(t, lock, p.id, p.formLabel || `${p.label} (${p.units} หน่วย / ${p.score} คะแนน)`, p.hint)
     ).join("");
     const grants = ["grant_th", "grant_en", "grant_mu"].map((kind) => {
       const src = C.GRANT_SOURCES[kind];
       const sel = t.criteriaId === kind ? grantTierValue(kind, t.amount) : "";
-      return `<select data-grant="${t.id}" ${lock ? "disabled" : ""}>
+      const grantHint = src.note || "";
+      return `<select class="has-hint" data-grant="${t.id}" data-hint="${esc(grantHint)}" title="${esc(grantHint)}" ${lock ? "disabled" : ""}>
         <option value="">${esc(src.label)}</option>
         ${src.tiers.map((x) =>
           `<option value="${kind}|${x.amount}" ${sel === `${kind}|${x.amount}` ? "selected" : ""}>${esc(x.label)}</option>`
         ).join("")}
-      </select>
-      ${src.note ? `<div class="hint">${esc(src.note)}</div>` : ""}`;
+      </select>`;
     }).join("");
     const others = (C.CATALOG.strat || []).filter((c) => c.id && c.kind === "fixed").map((c) =>
-      `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""}>${esc(c.label)}</option>`
+      `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""} title="${esc(c.hint || "")}">${esc(c.label)}</option>`
     ).join("");
     return `<div class="crit-list">${pubs}</div>
-      <div class="hint">${esc(C.SCORE_COND.corp)}</div>
+      <div class="hint has-hint" data-hint="${esc(C.SCORE_COND.corp)}" title="${esc(C.SCORE_COND.corp)}">${esc(C.SCORE_COND.corpShort)}</div>
       <div class="grant-stack">${grants}
-        <div class="hint">${esc(C.SCORE_COND.cta)}</div>
+        <div class="hint has-hint" data-hint="${esc(C.SCORE_COND.cta)}" title="${esc(C.SCORE_COND.cta)}">${esc(C.SCORE_COND.ctaShort)}</div>
         <select data-crit-other="${t.id}" ${lock ? "disabled" : ""}>
           <option value="">เกณฑ์ยุทธศาสตร์อื่นตามประกาศ</option>
           ${others}
@@ -1831,7 +1834,7 @@ function facultyCriteriaCell(t, g, lock) {
       </div>`;
   }
   const items = (C.CATALOG[g.id] || []).filter((c) => c.id);
-  return `<div class="crit-list">${items.map((c) => critRadio(t, lock, c.id, c.label)).join("")}</div>`;
+  return `<div class="crit-list">${items.map((c) => critRadio(t, lock, c.id, c.label, c.hint)).join("")}</div>`;
 }
 
 function facultyRoleCell(t, g, lock) {
@@ -1839,8 +1842,8 @@ function facultyRoleCell(t, g, lock) {
   const dis = lock ? "disabled" : "";
   const role = `<select data-pa="t:${t.id}:role" ${dis}>${C.ROLES.map((r) =>
     `<option value="${r.id}" ${t.role === r.id ? "selected" : ""}>${esc(r.label)}</option>`).join("")}</select>`;
-  const cond = `<label class="opt"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="inDb" ${t.inDb && !t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.inDb)}</span></label>
-    <label class="opt"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="student" ${t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.student)}</span></label>`;
+  const cond = `<label class="opt has-hint" data-hint="${esc(C.SCORE_COND.inDb)}" title="${esc(C.SCORE_COND.inDb)}"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="inDb" ${t.inDb && !t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.inDbShort)}</span></label>
+    <label class="opt has-hint" data-hint="${esc(C.SCORE_COND.student)}" title="${esc(C.SCORE_COND.student)}"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="student" ${t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.studentShort)}</span></label>`;
   let extra = "";
   if (c && c.kind === "hours") {
     extra += syllabusBox(t, lock);
@@ -1872,7 +1875,7 @@ function facultyItemRow(t, g, lock, seq) {
       <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
       ${showPubDoi(t, g) ? doiBox(t, lock) : ""}
-      ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint">${esc(C.SCORE_COND.contractAmount)}</div>` : ""}
+      ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint has-hint" data-hint="${esc(C.SCORE_COND.contractAmount)}" title="${esc(C.SCORE_COND.contractAmount)}">${esc(C.SCORE_COND.contractAmountShort)}</div>` : ""}
     </td>
     <td>${facultyCriteriaCell(t, g, lock)}</td>
     <td>${facultyRoleCell(t, g, lock)}${warn}</td>
@@ -2687,7 +2690,41 @@ function readCcFc() {
   });
 }
 
+function bindHoverHints() {
+  let tip = document.getElementById("hint-float");
+  if (!tip) {
+    tip = document.createElement("div");
+    tip.id = "hint-float";
+    tip.className = "hint-float";
+    tip.hidden = true;
+    document.body.appendChild(tip);
+  }
+  const hide = () => { tip.hidden = true; };
+  const place = (ev, el) => {
+    const text = el.getAttribute("data-hint");
+    if (!text) return;
+    tip.textContent = text;
+    tip.hidden = false;
+    const pad = 16;
+    const w = 420;
+    let x = (ev && ev.clientX != null ? ev.clientX : el.getBoundingClientRect().left) + 14;
+    let y = (ev && ev.clientY != null ? ev.clientY : el.getBoundingClientRect().bottom) + 12;
+    if (x + w > window.innerWidth - pad) x = window.innerWidth - w - pad;
+    if (y > window.innerHeight - 140) y = Math.max(pad, y - 160);
+    tip.style.left = Math.max(pad, x) + "px";
+    tip.style.top = Math.max(pad, y) + "px";
+  };
+  document.querySelectorAll("[data-hint]").forEach((el) => {
+    el.addEventListener("mouseenter", (ev) => place(ev, el));
+    el.addEventListener("mousemove", (ev) => { if (!tip.hidden) place(ev, el); });
+    el.addEventListener("mouseleave", hide);
+    el.addEventListener("focus", () => place(null, el));
+    el.addEventListener("blur", hide);
+  });
+}
+
 function bind() {
+  bindHoverHints();
   document.querySelectorAll("[data-lock]").forEach((b) => {
     b.addEventListener("click", () => toast(b.getAttribute("data-lock")));
   });

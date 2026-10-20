@@ -407,6 +407,13 @@ table.pa .title-cell textarea { min-height: 72px; }
   display: flex; align-items: flex-start; gap: 8px;
   font-weight: 600; line-height: 1.4;
 }
+.has-hint { cursor: help; }
+.hint-float {
+  position: fixed; z-index: 90; max-width: min(420px, 88vw);
+  background: #163a5f; color: #fff; padding: 10px 12px; border-radius: 10px;
+  font-size: 15px; font-weight: 600; line-height: 1.45;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, .28); pointer-events: none;
+}
 .crit-list input[type="radio"], .role-stack input[type="radio"] { margin-top: 4px; flex: none; }
 .grant-stack { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .grant-stack select { width: 100%; }
@@ -587,12 +594,12 @@ table.pa .auto {
 
   /* ยุทธศาสตร์การวิจัย — หน่วย/คะแนนตามประกาศคณะฯ นิยามเงื่อนไขตามเล่มตัวชี้วัด PA 2570 */
   const PUB = [
-    { id: "pub_top1", label: "บทความตีพิมพ์วารสารนานาชาติ Top1", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Top1 ตาม SJR ใน SciVal/Scopus (455 หน่วย / 10 คะแนน) นับเฉพาะที่ปรากฏในฐาน ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน", units: 455, score: 10, pub: true },
-    { id: "pub_top10", label: "บทความตีพิมพ์วารสารนานาชาติ Top10", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Top10 Percentile ตาม SJR ใน SciVal/Scopus (410 หน่วย / 9 คะแนน) นับเฉพาะที่ปรากฏในฐาน ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน", units: 410, score: 9, pub: true },
-    { id: "pub_q1", label: "บทความตีพิมพ์วารสารนานาชาติ Q1", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Q1 (Qurtile 1 ตาม SJR ใน SciVal/Scopus) (364 หน่วย / 8 คะแนน) นับเฉพาะที่ปรากฏในฐาน ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน", units: 364, score: 8, pub: true },
-    { id: "pub_q2", label: "บทความตีพิมพ์วารสารนานาชาติ Q2", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Q2 (273 หน่วย / 6 คะแนน) นับเฉพาะที่ปรากฏใน SciVal หรือ Scopus ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน", units: 273, score: 6, pub: true },
-    { id: "pub_q3", label: "บทความตีพิมพ์วารสารนานาชาติ Q3", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Q3 (228 หน่วย / 5 คะแนน) นับเฉพาะที่ปรากฏใน SciVal หรือ Scopus ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน", units: 228, score: 5, pub: true },
-    { id: "pub_q4", label: "บทความตีพิมพ์วารสารนานาชาติ Q4", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Q4 (182 หน่วย / 4 คะแนน) นับเฉพาะที่ปรากฏใน SciVal หรือ Scopus ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน", units: 182, score: 4, pub: true }
+    { id: "pub_top1", label: "บทความตีพิมพ์วารสารนานาชาติ Top1", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Top1 (455 หน่วย / 10 คะแนน)", hint: "Top1 ตาม SJR ใน SciVal/Scopus นับเฉพาะที่ปรากฏในฐาน ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน", units: 455, score: 10, pub: true },
+    { id: "pub_top10", label: "บทความตีพิมพ์วารสารนานาชาติ Top10", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Top10 (410 หน่วย / 9 คะแนน)", hint: "Top10 Percentile ตาม SJR ใน SciVal/Scopus นับเฉพาะที่ปรากฏในฐาน ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน", units: 410, score: 9, pub: true },
+    { id: "pub_q1", label: "บทความตีพิมพ์วารสารนานาชาติ Q1", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Q1 (364 หน่วย / 8 คะแนน)", hint: "Qurtile 1 ตาม SJR ใน SciVal/Scopus นับเฉพาะที่ปรากฏในฐาน ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน", units: 364, score: 8, pub: true },
+    { id: "pub_q2", label: "บทความตีพิมพ์วารสารนานาชาติ Q2", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Q2 (273 หน่วย / 6 คะแนน)", hint: "นับเฉพาะที่ปรากฏใน SciVal หรือ Scopus ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน", units: 273, score: 6, pub: true },
+    { id: "pub_q3", label: "บทความตีพิมพ์วารสารนานาชาติ Q3", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Q3 (228 หน่วย / 5 คะแนน)", hint: "นับเฉพาะที่ปรากฏใน SciVal หรือ Scopus ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน", units: 228, score: 5, pub: true },
+    { id: "pub_q4", label: "บทความตีพิมพ์วารสารนานาชาติ Q4", formLabel: "บทความตีพิมพ์วารสารนานาชาติอยู่ใน Q4 (182 หน่วย / 4 คะแนน)", hint: "นับเฉพาะที่ปรากฏใน SciVal หรือ Scopus ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน", units: 182, score: 4, pub: true }
   ];
 
   const GRANT_SOURCES = {
@@ -646,17 +653,17 @@ table.pa .auto {
       { id: "grant_th", label: "1.7 ทุนสนับสนุนจากหน่วยงานในประเทศ (นับเงินในสัญญา)", kind: "grant_th" },
       { id: "grant_en", label: "1.8 ทุนสนับสนุนจากหน่วยงานต่างประเทศ (นับเงินในสัญญา)", kind: "grant_en" },
       { id: "grant_mu", label: "1.9 ทุนเงินรายได้มหาวิทยาลัย/ส่วนงาน (นับเงินในสัญญา)", kind: "grant_mu" },
-      { id: "mupsf4", label: "2.1 UKPSF Principal Fellow / MUPSF ระดับ 4 ผู้นำเชิงนโยบายการศึกษา (455 / 10)", kind: "fixed", units: 455, score: 10 },
-      { id: "mupsf3", label: "2.2 UKPSF Senior Fellow / MUPSF ระดับ 3 การจัดการเรียนการสอนข้ามศาสตร์ (410 / 9)", kind: "fixed", units: 410, score: 9 },
-      { id: "mupsf2", label: "2.3 UKPSF Fellow / MUPSF ระดับ 2 การจัดการเรียนการสอนเฉพาะกลุ่ม (319 / 7)", kind: "fixed", units: 319, score: 7 },
-      { id: "mupsf1", label: "2.4 MUPSF ระดับ 1 เบื้องต้น (182 / 4)", kind: "fixed", units: 182, score: 4 },
-      { id: "policy_intl", label: "3.1 นโยบายชี้นำสังคมระดับนานาชาติ นับเฉพาะปีงบที่รายงาน ไม่นับสะสมปีก่อน (455 / 10)", kind: "fixed", units: 455, score: 10 },
-      { id: "policy_nat", label: "3.1 นโยบายชี้นำสังคมระดับชาติ นับเฉพาะปีงบที่รายงาน ไม่นับสะสมปีก่อน (410 / 9)", kind: "fixed", units: 410, score: 9 },
-      { id: "policy_prov", label: "3.1 นโยบายชี้นำสังคมระดับจังหวัด นับเฉพาะปีงบที่รายงาน (364 / 8)", kind: "fixed", units: 364, score: 8 },
-      { id: "policy_amp", label: "3.1 นโยบายชี้นำสังคมระดับอำเภอ นับเฉพาะปีงบที่รายงาน (319 / 7)", kind: "fixed", units: 319, score: 7 },
-      { id: "policy_tam", label: "3.1 นโยบายชี้นำสังคมระดับตำบล นับเฉพาะปีงบที่รายงาน (273 / 6)", kind: "fixed", units: 273, score: 6 },
-      { id: "part_intl", label: "3.2 มีส่วนร่วมกำหนดนโยบายระดับนานาชาติ มติคณะกรรมการเป็นที่สุด ไม่นับการตีพิมพ์อย่างเดียว (137 / 3)", kind: "fixed", units: 137, score: 3 },
-      { id: "part_nat", label: "3.2 มีส่วนร่วมกำหนดนโยบายระดับชาติ มติคณะกรรมการเป็นที่สุด ไม่นับการตีพิมพ์อย่างเดียว (91 / 2)", kind: "fixed", units: 91, score: 2 }
+      { id: "mupsf4", label: "2.1 UKPSF Principal Fellow / MUPSF ระดับ 4 (455 / 10)", hint: "ผู้นำเชิงนโยบายการศึกษา", kind: "fixed", units: 455, score: 10 },
+      { id: "mupsf3", label: "2.2 UKPSF Senior Fellow / MUPSF ระดับ 3 (410 / 9)", hint: "การจัดการเรียนการสอนข้ามศาสตร์", kind: "fixed", units: 410, score: 9 },
+      { id: "mupsf2", label: "2.3 UKPSF Fellow / MUPSF ระดับ 2 (319 / 7)", hint: "การจัดการเรียนการสอนเฉพาะกลุ่ม", kind: "fixed", units: 319, score: 7 },
+      { id: "mupsf1", label: "2.4 MUPSF ระดับ 1 (182 / 4)", hint: "ระดับเบื้องต้น", kind: "fixed", units: 182, score: 4 },
+      { id: "policy_intl", label: "3.1 นโยบายชี้นำสังคมระดับนานาชาติ (455 / 10)", hint: "นับเฉพาะปีงบที่รายงาน ไม่นับสะสมปีก่อน", kind: "fixed", units: 455, score: 10 },
+      { id: "policy_nat", label: "3.1 นโยบายชี้นำสังคมระดับชาติ (410 / 9)", hint: "นับเฉพาะปีงบที่รายงาน ไม่นับสะสมปีก่อน", kind: "fixed", units: 410, score: 9 },
+      { id: "policy_prov", label: "3.1 นโยบายชี้นำสังคมระดับจังหวัด (364 / 8)", hint: "นับเฉพาะปีงบที่รายงาน", kind: "fixed", units: 364, score: 8 },
+      { id: "policy_amp", label: "3.1 นโยบายชี้นำสังคมระดับอำเภอ (319 / 7)", hint: "นับเฉพาะปีงบที่รายงาน", kind: "fixed", units: 319, score: 7 },
+      { id: "policy_tam", label: "3.1 นโยบายชี้นำสังคมระดับตำบล (273 / 6)", hint: "นับเฉพาะปีงบที่รายงาน", kind: "fixed", units: 273, score: 6 },
+      { id: "part_intl", label: "3.2 มีส่วนร่วมกำหนดนโยบายระดับนานาชาติ (137 / 3)", hint: "มติคณะกรรมการเป็นที่สุด ไม่นับการตีพิมพ์อย่างเดียว", kind: "fixed", units: 137, score: 3 },
+      { id: "part_nat", label: "3.2 มีส่วนร่วมกำหนดนโยบายระดับชาติ (91 / 2)", hint: "มติคณะกรรมการเป็นที่สุด ไม่นับการตีพิมพ์อย่างเดียว", kind: "fixed", units: 91, score: 2 }
     ],
     main: [
       { id: "", label: "-- เลือกเกณฑ์จากประกาศ --" },
@@ -716,12 +723,17 @@ table.pa .auto {
 
   const SCORE_COND = {
     inDb: "เผยแพร่แล้วและปรากฏในฐานข้อมูล SciVal หรือ Scopus เรียบร้อยแล้ว (วันที่ดึงอยู่ในปีงบที่รายงาน ไม่นับซ้ำบทความในตัวชี้วัดเดียวกัน)",
+    inDbShort: "ปรากฏใน SciVal/Scopus แล้ว",
     student: "ผลงานวิจัยร่วมกับนักศึกษา (ไม่นับในยุทธศาสตร์ตามประกาศคณะฯ)",
+    studentShort: "ร่วมกับนักศึกษา ไม่นับยุทธศาสตร์",
     corp: "ตัวชี้วัด 1.3 Academic-Corporate Collaboration นับผลงานตีพิมพ์ร่วมภาคเอกชนที่ปรากฏใน SciVal หรือ Scopus — ไม่คิดหน่วยจากเล่มส่วนงาน หน่วยรายคนยังใช้ขั้นวารสารตามประกาศคณะฯ",
+    corpShort: "1.3 ร่วมภาคเอกชน",
     cta: "ตัวชี้วัด 1.9.3 ทุนวิจัยทางคลินิก (CTA) นับเงินในสัญญา ทั้งในประเทศและต่างประเทศ — ไม่เปิดขั้นคะแนนแยก เพราะประกาศคณะฯ ไม่มีขั้น CTA",
+    ctaShort: "1.9.3 CTA นับเงินในสัญญา",
     doi: "ช่องกรอกและแนบลิงก์ DOI ของงานตีพิมพ์",
     evidence: "หลักฐานไม่เกิน 3 ไฟล์ต่อเรื่อง",
-    contractAmount: "จำนวนเงินใช้ค่าในสัญญารับทุน ดึงจากฐานกลางถ้ามีในไฟล์ ห้ามสร้างวันที่ลงนามถ้าไฟล์ไม่มี"
+    contractAmount: "จำนวนเงินใช้ค่าในสัญญารับทุน ดึงจากฐานกลางถ้ามีในไฟล์ ห้ามสร้างวันที่ลงนามถ้าไฟล์ไม่มี",
+    contractAmountShort: "ค้นหาโครงการจากฐานกลาง"
   };
 
   function researchSample() {
@@ -3504,8 +3516,11 @@ function viewModules() {
     </div>`);
 }
 
-function critRadio(t, lock, value, label) {
-  return `<label class="opt"><input type="radio" name="crit-${t.id}" data-crit="${t.id}" value="${esc(value)}" ${t.criteriaId === value ? "checked" : ""} ${lock ? "disabled" : ""} /><span>${esc(label)}</span></label>`;
+function critRadio(t, lock, value, label, hint) {
+  const extra = hint
+    ? ` class="opt has-hint" data-hint="${esc(hint)}" title="${esc(hint)}"`
+    : ` class="opt"`;
+  return `<label${extra}><input type="radio" name="crit-${t.id}" data-crit="${t.id}" value="${esc(value)}" ${t.criteriaId === value ? "checked" : ""} ${lock ? "disabled" : ""} /><span>${esc(label)}</span></label>`;
 }
 
 function grantTierValue(kind, amount) {
@@ -3519,26 +3534,26 @@ function grantTierValue(kind, amount) {
 function facultyCriteriaCell(t, g, lock) {
   if (g.id === "strat") {
     const pubs = C.PUB.map((p) =>
-      critRadio(t, lock, p.id, p.formLabel || `${p.label} (${p.units} หน่วย / ${p.score} คะแนน)`)
+      critRadio(t, lock, p.id, p.formLabel || `${p.label} (${p.units} หน่วย / ${p.score} คะแนน)`, p.hint)
     ).join("");
     const grants = ["grant_th", "grant_en", "grant_mu"].map((kind) => {
       const src = C.GRANT_SOURCES[kind];
       const sel = t.criteriaId === kind ? grantTierValue(kind, t.amount) : "";
-      return `<select data-grant="${t.id}" ${lock ? "disabled" : ""}>
+      const grantHint = src.note || "";
+      return `<select class="has-hint" data-grant="${t.id}" data-hint="${esc(grantHint)}" title="${esc(grantHint)}" ${lock ? "disabled" : ""}>
         <option value="">${esc(src.label)}</option>
         ${src.tiers.map((x) =>
           `<option value="${kind}|${x.amount}" ${sel === `${kind}|${x.amount}` ? "selected" : ""}>${esc(x.label)}</option>`
         ).join("")}
-      </select>
-      ${src.note ? `<div class="hint">${esc(src.note)}</div>` : ""}`;
+      </select>`;
     }).join("");
     const others = (C.CATALOG.strat || []).filter((c) => c.id && c.kind === "fixed").map((c) =>
-      `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""}>${esc(c.label)}</option>`
+      `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""} title="${esc(c.hint || "")}">${esc(c.label)}</option>`
     ).join("");
     return `<div class="crit-list">${pubs}</div>
-      <div class="hint">${esc(C.SCORE_COND.corp)}</div>
+      <div class="hint has-hint" data-hint="${esc(C.SCORE_COND.corp)}" title="${esc(C.SCORE_COND.corp)}">${esc(C.SCORE_COND.corpShort)}</div>
       <div class="grant-stack">${grants}
-        <div class="hint">${esc(C.SCORE_COND.cta)}</div>
+        <div class="hint has-hint" data-hint="${esc(C.SCORE_COND.cta)}" title="${esc(C.SCORE_COND.cta)}">${esc(C.SCORE_COND.ctaShort)}</div>
         <select data-crit-other="${t.id}" ${lock ? "disabled" : ""}>
           <option value="">เกณฑ์ยุทธศาสตร์อื่นตามประกาศ</option>
           ${others}
@@ -3546,7 +3561,7 @@ function facultyCriteriaCell(t, g, lock) {
       </div>`;
   }
   const items = (C.CATALOG[g.id] || []).filter((c) => c.id);
-  return `<div class="crit-list">${items.map((c) => critRadio(t, lock, c.id, c.label)).join("")}</div>`;
+  return `<div class="crit-list">${items.map((c) => critRadio(t, lock, c.id, c.label, c.hint)).join("")}</div>`;
 }
 
 function facultyRoleCell(t, g, lock) {
@@ -3554,8 +3569,8 @@ function facultyRoleCell(t, g, lock) {
   const dis = lock ? "disabled" : "";
   const role = `<select data-pa="t:${t.id}:role" ${dis}>${C.ROLES.map((r) =>
     `<option value="${r.id}" ${t.role === r.id ? "selected" : ""}>${esc(r.label)}</option>`).join("")}</select>`;
-  const cond = `<label class="opt"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="inDb" ${t.inDb && !t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.inDb)}</span></label>
-    <label class="opt"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="student" ${t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.student)}</span></label>`;
+  const cond = `<label class="opt has-hint" data-hint="${esc(C.SCORE_COND.inDb)}" title="${esc(C.SCORE_COND.inDb)}"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="inDb" ${t.inDb && !t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.inDbShort)}</span></label>
+    <label class="opt has-hint" data-hint="${esc(C.SCORE_COND.student)}" title="${esc(C.SCORE_COND.student)}"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="student" ${t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.studentShort)}</span></label>`;
   let extra = "";
   if (c && c.kind === "hours") {
     extra += syllabusBox(t, lock);
@@ -3587,7 +3602,7 @@ function facultyItemRow(t, g, lock, seq) {
       <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
       ${showPubDoi(t, g) ? doiBox(t, lock) : ""}
-      ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint">${esc(C.SCORE_COND.contractAmount)}</div>` : ""}
+      ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint has-hint" data-hint="${esc(C.SCORE_COND.contractAmount)}" title="${esc(C.SCORE_COND.contractAmount)}">${esc(C.SCORE_COND.contractAmountShort)}</div>` : ""}
     </td>
     <td>${facultyCriteriaCell(t, g, lock)}</td>
     <td>${facultyRoleCell(t, g, lock)}${warn}</td>
@@ -4402,7 +4417,41 @@ function readCcFc() {
   });
 }
 
+function bindHoverHints() {
+  let tip = document.getElementById("hint-float");
+  if (!tip) {
+    tip = document.createElement("div");
+    tip.id = "hint-float";
+    tip.className = "hint-float";
+    tip.hidden = true;
+    document.body.appendChild(tip);
+  }
+  const hide = () => { tip.hidden = true; };
+  const place = (ev, el) => {
+    const text = el.getAttribute("data-hint");
+    if (!text) return;
+    tip.textContent = text;
+    tip.hidden = false;
+    const pad = 16;
+    const w = 420;
+    let x = (ev && ev.clientX != null ? ev.clientX : el.getBoundingClientRect().left) + 14;
+    let y = (ev && ev.clientY != null ? ev.clientY : el.getBoundingClientRect().bottom) + 12;
+    if (x + w > window.innerWidth - pad) x = window.innerWidth - w - pad;
+    if (y > window.innerHeight - 140) y = Math.max(pad, y - 160);
+    tip.style.left = Math.max(pad, x) + "px";
+    tip.style.top = Math.max(pad, y) + "px";
+  };
+  document.querySelectorAll("[data-hint]").forEach((el) => {
+    el.addEventListener("mouseenter", (ev) => place(ev, el));
+    el.addEventListener("mousemove", (ev) => { if (!tip.hidden) place(ev, el); });
+    el.addEventListener("mouseleave", hide);
+    el.addEventListener("focus", () => place(null, el));
+    el.addEventListener("blur", hide);
+  });
+}
+
 function bind() {
+  bindHoverHints();
   document.querySelectorAll("[data-lock]").forEach((b) => {
     b.addEventListener("click", () => toast(b.getAttribute("data-lock")));
   });

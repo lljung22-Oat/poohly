@@ -398,6 +398,13 @@ table.pa .title-cell textarea { min-height: 72px; }
   display: flex; align-items: flex-start; gap: 8px;
   font-weight: 600; line-height: 1.4;
 }
+.has-hint { cursor: help; }
+.hint-float {
+  position: fixed; z-index: 90; max-width: min(420px, 88vw);
+  background: #163a5f; color: #fff; padding: 10px 12px; border-radius: 10px;
+  font-size: 15px; font-weight: 600; line-height: 1.45;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, .28); pointer-events: none;
+}
 .crit-list input[type="radio"], .role-stack input[type="radio"] { margin-top: 4px; flex: none; }
 .grant-stack { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .grant-stack select { width: 100%; }
