@@ -3672,12 +3672,24 @@ function grantTierValue(kind, amount) {
   return hit ? `${kind}|${hit.amount}` : "";
 }
 
-function facultyCriteriaCell(t, g, lock) {
+function catalogItems(g, t) {
   if (g.id === "main") {
     const sec = C.mainSectionOf(t);
-    const items = (C.CATALOG.main || []).filter((c) => c.id && C.mainSectionOf({ criteriaId: c.id }) === sec);
-    return `<div class="crit-list">${items.map((c) => critRadio(t, lock, c.id, c.label, c.hint)).join("")}</div>`;
+    return (C.CATALOG.main || []).filter((c) => c.id && C.mainSectionOf({ criteriaId: c.id }) === sec);
   }
+  return (C.CATALOG[g.id] || []).filter((c) => c.id);
+}
+
+function facultyCriteriaSelect(t, g, lock) {
+  const items = catalogItems(g, t);
+  return `<select data-crit-sel="${t.id}" ${lock ? "disabled" : ""}>
+    <option value="">เลือกเกณฑ์ตามประกาศ</option>
+    ${items.map((c) => `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""}>${esc(c.label)}</option>`).join("")}
+  </select>`;
+}
+
+function facultyCriteriaCell(t, g, lock) {
+  if (S.paLayout === "plan" || g.id !== "strat") return facultyCriteriaSelect(t, g, lock);
   if (g.id === "strat") {
     const pubs = C.PUB.map((p) =>
       critRadio(t, lock, p.id, p.formLabel || `${p.label} (${p.units} หน่วย / ${p.score} คะแนน)`, p.hint)
@@ -3714,8 +3726,7 @@ function facultyCriteriaCell(t, g, lock) {
       </div>
     </div>`;
   }
-  const items = (C.CATALOG[g.id] || []).filter((c) => c.id);
-  return `<div class="crit-list">${items.map((c) => critRadio(t, lock, c.id, c.label, c.hint)).join("")}</div>`;
+  return facultyCriteriaSelect(t, g, lock);
 }
 
 function facultyRoleCell(t, g, lock) {
@@ -3762,7 +3773,7 @@ function facultyItemRow(t, g, lock, seq, sec) {
       <td class="seq-cell">${seq}${seqTools(g, t)}</td>
       <td>
         <input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""} />
-        ${facultyCriteriaCell(t, g, lock)}
+        ${facultyCriteriaSelect(t, g, lock)}
       </td>
       <td class="auto">${esc(prev.label)}</td>
       <td>
@@ -3821,9 +3832,7 @@ function viewPA() {
   const w = checkWeight();
   const wcls = w === 100 ? "" : "warn";
   const jump = `<nav class="jump-bar">${C.GROUPS.map((meta) =>
-    `<button type="button" data-jump="pa-g-${meta.id}">${esc(meta.title)}</button>`
-  ).join("")}${(C.MAIN_SECTIONS || []).map((sec) =>
-    `<button type="button" data-jump="pa-g-main-${sec.id}">${esc(sec.no)}</button>`
+    `<button type="button" data-jump="pa-g-${meta.id}">${esc(meta.title)} ${esc(meta.name)}</button>`
   ).join("")}</nav>`;
   const sections = C.GROUPS.map((meta) => {
     const g = (S.groups || []).find((x) => x.id === meta.id);
@@ -3863,8 +3872,8 @@ function viewPA() {
     </div>` : ""}
     <div class="pa-banner">
       <div>
-        <h2>แบบรายงานผลการปฏิบัติงาน</h2>
-        <p class="sub">ส่วนที่ 2 รายงานผลการปฏิบัติงานตามข้อตกลง · ${statusPill(paStatus())} · ปี ${esc(S.year)} · ${S.paLayout === "plan" ? "ช่วง PA ล่วงหน้า (ก่อนทำงาน)" : "ช่วงหน้าประเมิน PA"}</p>
+        <h2>แบบรายงานผลการปฏิบัติงาน (SHPA)</h2>
+        <p class="sub">ส่วนที่ 2 แยก 4 ภาระงานตามแบบ SHPA ร่าง · ${statusPill(paStatus())} · ปี ${esc(S.year)} · ${S.paLayout === "plan" ? "ช่วง PA ล่วงหน้า (ก่อนทำงาน) ตารางกระชับ" : "ช่วงหน้าประเมิน PA ตารางเต็ม"}</p>
       </div>
       <div class="weight-box ${wcls}">น้ำหนักตามประกาศ : ${w}</div>
     </div>
@@ -3877,7 +3886,7 @@ function viewPA() {
       <button class="btn-navy" type="button" id="btnAsk">ขออนุมัติ</button>` : ""}
       <button class="btn-ghost" type="button" data-go="${isEval() ? "evalHome" : "modules"}">กลับ</button>
     </div>
-    <p class="hint">หัวข้อตามแบบฟอร์ม SHPA ร่าง · หน่วยและคะแนนตามประกาศคณะฯ พ.ศ. 2568 (ฐาน 1,820 หน่วย · PA 80 + CC 20) · ปีงบประมาณ ${esc(S.year)} · ไม่ใช้แบบข้อตกลงของบุคลากร</p>
+    <p class="hint">ออนไลน์จากแบบฟอร์ม SHPA ร่าง · แยกภาระงานที่ 1–4 · ล่วงหน้ากรอกชื่อรายการ เกณฑ์ หน่วยที่คาดว่าจะได้ และผลการประเมินตนเอง · หน้าประเมินเพิ่ม DOI หลักฐาน และยุทธศาสตร์ 3 ก้อน · ปี ${esc(S.year)}</p>
   `);
 }
 
@@ -4888,6 +4897,18 @@ function bind() {
     b.addEventListener("click", () => {
       const [g, tid] = b.dataset.delRow.split(":");
       removeFacultyRow(g, tid);
+    });
+  });
+  document.querySelectorAll("[data-crit-sel]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const t = findTarget(el.getAttribute("data-crit-sel"));
+      if (!t) return;
+      t.criteriaId = el.value;
+      if (String(el.value).startsWith("pub_")) t.amount = "";
+      const f = (C.TEACH_FORMULAS || []).find((x) => x.criteriaId === el.value);
+      if (f) t.teachFormula = f.id;
+      persist();
+      render();
     });
   });
   document.querySelectorAll("[data-crit]").forEach((el) => {

@@ -23,7 +23,8 @@ assert.doesNotMatch(src, /roleLabel: "กรรมการประเมิน
 assert.doesNotMatch(src, /roleLabel: "ประธานกรรมการประเมิน"/);
 
 const pa = sliceFn("viewPA");
-assert.match(pa, /แบบรายงานผลการปฏิบัติงาน/);
+assert.match(pa, /แบบรายงานผลการปฏิบัติงาน \(SHPA\)/);
+assert.match(src, /data-crit-sel/);
 assert.match(src, /function facultyTable\(/);
 assert.match(src, /sectionHeaders/);
 assert.doesNotMatch(pa, /h2>PA ล่วงหน้า/);
