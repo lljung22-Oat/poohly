@@ -23,6 +23,8 @@ assert.match(src, /SCORE_COND\.inDb/);
 assert.match(src, /function bindHoverHints\(/);
 assert.match(src, /data-hint=/);
 assert.match(src, /inDbShort/);
+assert.match(src, /removeAttribute\("title"\)/);
+assert.doesNotMatch(src, /data-hint="\$\{esc\(hint\)}" title="/);
 assert.doesNotMatch(src, /h2>PA ล่วงหน้า/);
 assert.match(src, /h2>Performance Agreement \(PA\)/);
 assert.match(src, /<th>รายละเอียดเกณฑ์<\/th>/);

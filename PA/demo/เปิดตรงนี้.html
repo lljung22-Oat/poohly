@@ -3518,7 +3518,7 @@ function viewModules() {
 
 function critRadio(t, lock, value, label, hint) {
   const extra = hint
-    ? ` class="opt has-hint" data-hint="${esc(hint)}" title="${esc(hint)}"`
+    ? ` class="opt has-hint" data-hint="${esc(hint)}"`
     : ` class="opt"`;
   return `<label${extra}><input type="radio" name="crit-${t.id}" data-crit="${t.id}" value="${esc(value)}" ${t.criteriaId === value ? "checked" : ""} ${lock ? "disabled" : ""} /><span>${esc(label)}</span></label>`;
 }
@@ -3540,7 +3540,7 @@ function facultyCriteriaCell(t, g, lock) {
       const src = C.GRANT_SOURCES[kind];
       const sel = t.criteriaId === kind ? grantTierValue(kind, t.amount) : "";
       const grantHint = src.note || "";
-      return `<select class="has-hint" data-grant="${t.id}" data-hint="${esc(grantHint)}" title="${esc(grantHint)}" ${lock ? "disabled" : ""}>
+      return `<select class="has-hint" data-grant="${t.id}" data-hint="${esc(grantHint)}" ${lock ? "disabled" : ""}>
         <option value="">${esc(src.label)}</option>
         ${src.tiers.map((x) =>
           `<option value="${kind}|${x.amount}" ${sel === `${kind}|${x.amount}` ? "selected" : ""}>${esc(x.label)}</option>`
@@ -3548,12 +3548,12 @@ function facultyCriteriaCell(t, g, lock) {
       </select>`;
     }).join("");
     const others = (C.CATALOG.strat || []).filter((c) => c.id && c.kind === "fixed").map((c) =>
-      `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""} title="${esc(c.hint || "")}">${esc(c.label)}</option>`
+      `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""} data-hint="${esc(c.hint || "")}">${esc(c.label)}</option>`
     ).join("");
     return `<div class="crit-list">${pubs}</div>
-      <div class="hint has-hint" data-hint="${esc(C.SCORE_COND.corp)}" title="${esc(C.SCORE_COND.corp)}">${esc(C.SCORE_COND.corpShort)}</div>
+      <div class="hint has-hint" data-hint="${esc(C.SCORE_COND.corp)}">${esc(C.SCORE_COND.corpShort)}</div>
       <div class="grant-stack">${grants}
-        <div class="hint has-hint" data-hint="${esc(C.SCORE_COND.cta)}" title="${esc(C.SCORE_COND.cta)}">${esc(C.SCORE_COND.ctaShort)}</div>
+        <div class="hint has-hint" data-hint="${esc(C.SCORE_COND.cta)}">${esc(C.SCORE_COND.ctaShort)}</div>
         <select data-crit-other="${t.id}" ${lock ? "disabled" : ""}>
           <option value="">เกณฑ์ยุทธศาสตร์อื่นตามประกาศ</option>
           ${others}
@@ -3569,8 +3569,8 @@ function facultyRoleCell(t, g, lock) {
   const dis = lock ? "disabled" : "";
   const role = `<select data-pa="t:${t.id}:role" ${dis}>${C.ROLES.map((r) =>
     `<option value="${r.id}" ${t.role === r.id ? "selected" : ""}>${esc(r.label)}</option>`).join("")}</select>`;
-  const cond = `<label class="opt has-hint" data-hint="${esc(C.SCORE_COND.inDb)}" title="${esc(C.SCORE_COND.inDb)}"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="inDb" ${t.inDb && !t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.inDbShort)}</span></label>
-    <label class="opt has-hint" data-hint="${esc(C.SCORE_COND.student)}" title="${esc(C.SCORE_COND.student)}"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="student" ${t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.studentShort)}</span></label>`;
+  const cond = `<label class="opt has-hint" data-hint="${esc(C.SCORE_COND.inDb)}"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="inDb" ${t.inDb && !t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.inDbShort)}</span></label>
+    <label class="opt has-hint" data-hint="${esc(C.SCORE_COND.student)}"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="student" ${t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.studentShort)}</span></label>`;
   let extra = "";
   if (c && c.kind === "hours") {
     extra += syllabusBox(t, lock);
@@ -3602,7 +3602,7 @@ function facultyItemRow(t, g, lock, seq) {
       <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
       ${showPubDoi(t, g) ? doiBox(t, lock) : ""}
-      ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint has-hint" data-hint="${esc(C.SCORE_COND.contractAmount)}" title="${esc(C.SCORE_COND.contractAmount)}">${esc(C.SCORE_COND.contractAmountShort)}</div>` : ""}
+      ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint has-hint" data-hint="${esc(C.SCORE_COND.contractAmount)}">${esc(C.SCORE_COND.contractAmountShort)}</div>` : ""}
     </td>
     <td>${facultyCriteriaCell(t, g, lock)}</td>
     <td>${facultyRoleCell(t, g, lock)}${warn}</td>
@@ -4442,6 +4442,7 @@ function bindHoverHints() {
     tip.style.top = Math.max(pad, y) + "px";
   };
   document.querySelectorAll("[data-hint]").forEach((el) => {
+    el.removeAttribute("title");
     el.addEventListener("mouseenter", (ev) => place(ev, el));
     el.addEventListener("mousemove", (ev) => { if (!tip.hidden) place(ev, el); });
     el.addEventListener("mouseleave", hide);
