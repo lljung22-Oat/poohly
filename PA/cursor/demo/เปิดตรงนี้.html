@@ -1949,7 +1949,7 @@ function defaultGroups() {
               ...emptyTarget("2.1.1.1", 30),
               title: "สอนภาคบรรยาย ปริญญาโท/เอก",
               criteriaId: "teach_grad_main", teachFormula: "grad_main",
-              syllabusId: "SHSS501", hours: "45", kpiType: "quantity"
+              syllabusId: "", hours: "45", kpiType: "quantity"
             }]
           }]
         },
@@ -2238,8 +2238,8 @@ function esc(s) {
 
 function go(view) {
   if (isRatee()) S.focus = account().track;
-  if (isFaculty() && ["paStaff", "follow", "scoreSum"].includes(view)) {
-    toast("แบบของเจ้าหน้าที่สายสนับสนุนไม่ใช้กับสายวิชาการ");
+  if (isFaculty() && ["paStaff", "follow", "scoreSum", "leave", "time"].includes(view)) {
+    toast("เมนูบุคลากรสายสนับสนุนไม่ใช้กับสายวิชาการ");
     return;
   }
   if (isSupport() && ["kpi2570", "researchTrack"].includes(view)) {
@@ -3081,38 +3081,45 @@ function sectionBlock(title, note, cards, tone) {
   </section>`;
 }
 
-function dashCards(cards) {
+function dashCards(cards, heading) {
   return `
     <div class="dash">
-      <h1>หน้าหลักระบบงาน (Dashboard)</h1>
+      <h1>${esc(heading || "หน้าหลักระบบงาน (Dashboard)")}</h1>
       <div class="dash-grid">
         ${cards.map(cardBtn).join("")}
       </div>
     </div>`;
 }
 
-function hrisCards() {
-  const personal = [
+function facultyDashCards() {
+  return [
+    { go: "profile", ico: "person", title: "ข้อมูลส่วนบุคคล", sub: "ประวัติอาจารย์ผู้รับการประเมิน" },
+    { go: "period", ico: "grad", title: "PA ภาระงานอาจารย์", sub: "ตารางแบบประเมินตามประกาศคณะฯ", cream: true },
+    { go: "kpi2570", ico: "clip", title: "คำอธิบายตัวชี้วัด PA 2570", sub: "ฉบับจัดทำ PA · ฝั่งอาจารย์" },
+    { go: "researchTrack", ico: "chart", title: "แบบติดตามโครงการวิจัย ปี 2570", sub: "กรอกตามคอลัมน์ในไฟล์ Excel" },
+    { go: "competency", ico: "target", title: "ประเมินสมรรถนะ", sub: "CC และ FC ของสายวิชาการ", linkish: true },
+    { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคลของอาจารย์" },
+    { go: "report", ico: "cal", title: "รายงาน", sub: "ติดตามผลการดำเนินการ" }
+  ];
+}
+
+function supportDashCards() {
+  return [
     { go: "profile", ico: "person", title: "ข้อมูลบุคลากร", sub: "ประวัติและข้อมูลส่วนบุคคล" },
     { go: "leave", ico: "leave", title: "ข้อมูลวันลา", sub: "สถิติและการขออนุมัติวันลา" },
-    { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" }
-  ];
-  const pa = isSupport()
-    ? [{ go: "paStaff", ico: "clip", title: "PA ประเมินภาระงาน", sub: "(สายสนับสนุน / ตารางทั่วไป)", cream: true }]
-    : [
-      { go: "period", ico: "grad", title: "PA ภาระงานอาจารย์", sub: "(สายวิชาการ / ตารางแบบ Matrix)", cream: true },
-      { go: "kpi2570", ico: "clip", title: "คำอธิบายตัวชี้วัด PA 2570", sub: "ฉบับจัดทำ PA · ฝั่งอาจารย์" },
-      { go: "researchTrack", ico: "chart", title: "แบบติดตามข้อมูลโครงการวิจัย ปี 2570", sub: "ชีต iNT และแจ้งทำวิจัย" }
-    ];
-  return personal.concat(pa, [
+    { go: "time", ico: "clock", title: "ข้อมูลเวลาเข้า-ออกงาน", sub: "ลงเวลาปฏิบัติงานประจำวัน" },
+    { go: "paStaff", ico: "clip", title: "PA ประเมินภาระงาน", sub: "สายสนับสนุน · แบบ 05–09", cream: true },
     { go: "competency", ico: "target", title: "Functional Competency", sub: "ประเมินสมรรถนะเฉพาะสายงาน", linkish: true },
     { go: "idp", ico: "chart", title: "IDP", sub: "แผนพัฒนารายบุคคล" }
-  ]);
+  ];
 }
 
 function viewHome() {
-  if (isFaculty() || isSupport()) {
-    return chrome(dashCards(hrisCards()));
+  if (isFaculty()) {
+    return chrome(dashCards(facultyDashCards(), "หน้าหลักระบบงาน · สายวิชาการ (อาจารย์)"));
+  }
+  if (isSupport()) {
+    return chrome(dashCards(supportDashCards(), "หน้าหลักระบบงาน · สายสนับสนุน (บุคลากร)"));
   }
   if (isCommittee()) {
     return chrome(dashCards([
@@ -3150,6 +3157,10 @@ function viewHome() {
 }
 
 function viewLeave() {
+  if (isFaculty()) {
+    return chrome(`<div class="warn-box">ข้อมูลวันลาเป็นของบุคลากรสายสนับสนุน ไม่ใช้กับสายวิชาการ</div>
+      <button class="btn-navy" type="button" data-go="home">กลับหน้าหลักระบบงาน</button>`);
+  }
   const lock = !isRatee() && !isHr() && !isAdmin();
   const rows = (S.leaveRows || []).map((it) => `<tr>
     <td><select data-leave="${it.id}:kind" ${lock ? "disabled" : ""}>
@@ -3184,6 +3195,10 @@ function viewLeave() {
 }
 
 function viewTime() {
+  if (isFaculty()) {
+    return chrome(`<div class="warn-box">ข้อมูลเวลาเข้า-ออกงานเป็นของบุคลากรสายสนับสนุน ไม่ใช้กับสายวิชาการ</div>
+      <button class="btn-navy" type="button" data-go="home">กลับหน้าหลักระบบงาน</button>`);
+  }
   const lock = !isRatee() && !isHr() && !isAdmin();
   const rows = (S.timeRows || []).map((it) => `<tr>
     <td><input type="date" data-time="${it.id}:date" value="${esc(it.date)}" ${lock ? "disabled" : ""} /></td>
@@ -4005,22 +4020,25 @@ function projectSearchBox(t, lock) {
 }
 
 function syllabusBox(t, lock) {
+  const dis = lock ? "disabled" : "";
   const opts = C.searchSyllabus("").map((c) =>
     `<option value="${esc(c.id)}">${esc(c.code)} · ${esc(c.title)}</option>`
   ).join("");
   const formula = (C.TEACH_FORMULAS || []).map((f) =>
     `<option value="${esc(f.id)}" ${t.teachFormula === f.id ? "selected" : ""}>${esc(f.label)} · ${esc(f.hint)}</option>`
   ).join("");
-  return `<div class="search-box">
-    <label class="date-lab">ดึงรายวิชาและตารางสอนจากประมวลรายวิชา</label>
-    <input list="syl-${t.id}" data-syl-q="${t.id}" value="${esc(t.syllabusId || "")}" placeholder="รหัสหรือชื่อรายวิชา" ${lock ? "disabled" : ""} />
+  return `<div class="search-box fill-box">
+    <label class="date-lab">รหัส / ชื่อรายวิชา (กรอกได้)</label>
+    <input list="syl-${t.id}" data-syl-q="${t.id}" value="${esc(t.syllabusId || "")}" placeholder="กรอกรหัสหรือชื่อรายวิชา" ${dis} />
     <datalist id="syl-${t.id}">${opts}</datalist>
-    <label class="date-lab">เลือกสูตรคำนวณคะแนน 3 รูปแบบ</label>
-    <select data-pa="t:${t.id}:teachFormula" ${lock ? "disabled" : ""}>
+    <label class="date-lab">จำนวนชั่วโมงสอน (กรอกได้)</label>
+    <input type="number" min="0" step="0.5" data-pa="t:${t.id}:hours" value="${esc(t.hours)}" placeholder="ชั่วโมง" ${dis} />
+    <label class="date-lab">สูตรคำนวณ 3 แบบตามประกาศคณะฯ</label>
+    <select data-pa="t:${t.id}:teachFormula" ${dis}>
       <option value="">-- เลือกสูตรตามลักษณะภาระงาน --</option>
       ${formula}
     </select>
-    <div class="hint">ชั่วโมงสอน ${esc(t.hours || "—")} (ดึงจากประมวลรายวิชา ไม่ต้องพิมพ์เอง)</div>
+    <div class="hint">กรอกชั่วโมงเองได้ ถ้ามีในฐานประมวลรายวิชาเลือกแล้วระบบเติมชั่วโมงให้ แล้วยังแก้ต่อได้</div>
   </div>`;
 }
 

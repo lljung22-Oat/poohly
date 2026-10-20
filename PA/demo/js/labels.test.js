@@ -52,4 +52,15 @@ assert.doesNotMatch(src, /โหมดประธาน/);
 assert.doesNotMatch(src, /โหมดกรรมการ/);
 assert.doesNotMatch(src, /พิมพ์คำอธิบายรายงานผล/);
 
+const facDash = sliceFn("facultyDashCards");
+assert.match(facDash, /PA ภาระงานอาจารย์/);
+assert.doesNotMatch(facDash, /สายสนับสนุน/);
+assert.doesNotMatch(facDash, /ข้อมูลวันลา/);
+assert.doesNotMatch(facDash, /paStaff/);
+const supDash = sliceFn("supportDashCards");
+assert.match(supDash, /paStaff/);
+assert.match(supDash, /สายสนับสนุน/);
+assert.doesNotMatch(supDash, /PA ภาระงานอาจารย์/);
+assert.doesNotMatch(supDash, /kpi2570/);
+
 console.log("labels.test.js ok");

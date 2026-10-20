@@ -29,5 +29,7 @@ assert.doesNotMatch(src, /h2>PA ล่วงหน้า/);
 assert.match(src, /h2>Performance Agreement \(PA\)/);
 assert.match(src, /<th>รายละเอียดเกณฑ์<\/th>/);
 assert.match(src, /<th>บทบาทและเงื่อนไขใช้<\/th>/);
+assert.match(src, /จำนวนชั่วโมงสอน \(กรอกได้\)/);
+assert.doesNotMatch(src, /ไม่ต้องพิมพ์เอง/);
 
 console.log("meeting-ui tests ok");
