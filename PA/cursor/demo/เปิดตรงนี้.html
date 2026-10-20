@@ -1833,8 +1833,8 @@ function firstHeadLabel() { return "หัวหน้างานขั้น�
 function headLabel() { return "หัวหน้างาน"; }
 
 const MODULES = [
-  { id: "pa", title: "PA ล่วงหน้า (ก่อนเริ่มปฏิบัติงาน)", need: null },
-  { id: "paReport", title: "ประเมินผลงานจริง", need: "approved" },
+  { id: "pa", title: "จัดทำข้อตกลงการปฏิบัติงาน (PA)", need: null },
+  { id: "paReport", title: "ประเมินผลงาน", need: "approved" },
   { id: "competency", title: "ประเมินผลงาน และประเมินสมรรถนะ", need: "reported" },
   { id: "ack", title: "แจ้งผลและรับทราบผลการประเมินการปฏิบัติงาน", need: "chair" },
   { id: "idp", title: "จัดทำแผนพัฒนารายบุคคล (IDP)", need: null },
@@ -3455,7 +3455,7 @@ function viewModules() {
     { title: "กลุ่ม IDP", note: "ผู้ปฏิบัติและผู้อนุมัติ", ids: ["idp", "idpEval"] },
     { title: "กลุ่มรายงาน", note: "", ids: ["report"] }
   ] : [
-    { title: "กลุ่ม PA อาจารย์", note: "หน้า PA ล่วงหน้า และหน้าประเมินผลงานจริง ตามประกาศค่าน้ำหนัก / SHPA", ids: ["pa", "paReport", "competency", "ack"] },
+    { title: "กลุ่ม PA อาจารย์", note: "ข้อตกลงตามประกาศค่าน้ำหนักและแบบ SHPA", ids: ["pa", "paReport", "competency", "ack"] },
     { title: "กลุ่ม IDP", note: "แผนพัฒนารายบุคคล", ids: ["idp", "idpReport", "idpEval", "idpAck"] },
     { title: "กลุ่มรายงาน", note: "", ids: ["report"] }
   ];
@@ -3515,24 +3515,13 @@ function facultyCriteriaCell(t, g, lock) {
     const others = (C.CATALOG.strat || []).filter((c) => c.id && c.kind === "fixed").map((c) =>
       `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""}>${esc(c.label)}</option>`
     ).join("");
-    return `<div class="bucket"><h4>ยุทธศาสตร์ตีพิมพ์</h4><div class="crit-list">${pubs}</div></div>
-      <div class="bucket"><h4>ยุทธศาสตร์ทุนวิจัย</h4><div class="grant-stack">${grants}</div></div>
-      <div class="bucket"><h4>ยุทธศาสตร์อื่นๆ</h4>
+    return `<div class="crit-list">${pubs}</div>
+      <div class="grant-stack">${grants}
         <select data-crit-other="${t.id}" ${lock ? "disabled" : ""}>
           <option value="">เกณฑ์ยุทธศาสตร์อื่นตามประกาศ</option>
           ${others}
         </select>
       </div>`;
-  }
-  if (g.id === "main") {
-    const teach = (C.TEACH_FORMULAS || []).map((f) =>
-      critRadio(t, lock, f.criteriaId, `${f.label} (${f.hint})`)
-    ).join("");
-    const rest = (C.CATALOG.main || []).filter((c) => c.id && c.kind !== "hours").map((c) =>
-      critRadio(t, lock, c.id, c.label)
-    ).join("");
-    return `<div class="bucket"><h4>สูตรคำนวณภาระงานสอน 3 รูปแบบ</h4><div class="crit-list">${teach}</div></div>
-      <div class="bucket"><h4>ภาระงานหลักอื่นตามประกาศ</h4><div class="crit-list">${rest}</div></div>`;
   }
   const items = (C.CATALOG[g.id] || []).filter((c) => c.id);
   return `<div class="crit-list">${items.map((c) => critRadio(t, lock, c.id, c.label)).join("")}</div>`;
@@ -3557,11 +3546,35 @@ function facultyRoleCell(t, g, lock) {
 }
 
 function facultyItemRow(t, g, lock, seq) {
-  const prev = C.expectedPreview(t, g.id);
+  const cal = C.calcTarget(t, g.id);
+  const self = C.effectiveScore(t, g.id);
+  const warn = cal.blocked === "student"
+    ? `<div class="warn-box">ผลงานวิจัยร่วมกับนักศึกษาไม่นับในยุทธศาสตร์</div>`
+    : cal.blocked === "db"
+      ? `<div class="warn-box">ต้องเผยแพร่แล้วและปรากฏในฐานข้อมูลก่อนจึงคิดหน่วย</div>`
+      : "";
   return `<tr>
     <td class="seq-cell">${seq}${canEditAgreement() ? `<button class="iconbtn" type="button" data-del-row="${g.id}:${t.id}" aria-label="ลบรายการ">−</button>` : ""}</td>
+    <td class="title-cell">
+      <textarea data-pa="t:${t.id}:title" placeholder="ชื่อบทความ / ชื่อโครงการ" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
+      <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
+      <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
+    </td>
     <td>${facultyCriteriaCell(t, g, lock)}</td>
-    <td class="auto">${esc(prev.label)}</td>
+    <td>${facultyRoleCell(t, g, lock)}${warn}</td>
+    <td class="auto">${C.fmtUnit(cal.units)}</td>
+    <td>
+      <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
+      <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
+    </td>
+    <td>
+      <textarea data-pa="t:${t.id}:report" placeholder="กรอกคะแนน 9–10 หรือ 0–2 พร้อมเหตุผล/หลักฐานประกอบ" ${lock ? "disabled" : ""}>${esc(t.report)}</textarea>
+      <div class="file-box">
+        <div class="date-lab">Upload ไฟล์หลักฐาน</div>
+        <input type="file" data-file="${t.id}" ${lock ? "disabled" : ""} />
+        <div class="hint">${t.file ? esc(t.file) : "ไม่มีไฟล์ที่เลือก"}</div>
+      </div>
+    </td>
   </tr>`;
 }
 
@@ -3590,11 +3603,15 @@ function viewPA() {
         </div>
         ${canEditAgreement() ? `<button class="btn-teal" type="button" data-add-ag="${g.id}">เพิ่มรายการ</button>` : ""}
       </header>
-      <div class="pa-wrap"><table class="pa pa-faculty pa-pre">
+      <div class="pa-wrap"><table class="pa pa-faculty">
         <thead><tr>
           <th>ลำดับ</th>
+          <th>ชื่อบทความ / ชื่อโครงการ</th>
           <th>รายละเอียดเกณฑ์</th>
-          <th>หน่วยภาระงานที่คาดว่าจะได้รับ</th>
+          <th>บทบาทและเงื่อนไขใช้</th>
+          <th>หน่วยภาระงานที่ได้รับ</th>
+          <th>ผลการประเมินตนเอง</th>
+          <th>หลักฐาน / เหตุผล</th>
         </tr></thead>
         <tbody>${facultyGroupRows(g, lock)}</tbody>
       </table></div>
@@ -3621,8 +3638,8 @@ function viewPA() {
     </div>` : ""}
     <div class="pa-banner">
       <div>
-        <h2>PA ล่วงหน้า (ก่อนเริ่มปฏิบัติงาน)</h2>
-        <p class="sub">แสดงเฉพาะลำดับ เกณฑ์ และหน่วยที่คาดว่าจะได้รับ · ยังไม่กรอกเชิงลึกหรือแนบหลักฐาน · ${statusPill(paStatus())} · ปี ${esc(S.year)}</p>
+        <h2>Performance Agreement (PA)</h2>
+        <p class="sub">การประเมินผลการปฏิบัติงาน · ${statusPill(paStatus())} · ปี ${esc(S.year)}</p>
       </div>
       <div class="weight-box ${wcls}">น้ำหนักตามประกาศ : ${w}</div>
     </div>
@@ -3945,71 +3962,6 @@ function syllabusBox(t, lock) {
   </div>`;
 }
 
-function facultyEvalRow(t, g, lock, seq) {
-  const cal = C.calcTarget(t, g.id);
-  const self = C.effectiveScore(t, g.id);
-  const c = C.findCrit(g.id, t.criteriaId);
-  const warn = cal.blocked === "student"
-    ? `<div class="warn-box">ผลงานวิจัยร่วมกับนักศึกษาไม่นับในยุทธศาสตร์</div>`
-    : cal.blocked === "db"
-      ? `<div class="warn-box">ต้องเผยแพร่แล้วและปรากฏในฐานข้อมูลก่อนจึงคิดหน่วย</div>`
-      : "";
-  const isPub = c && c.kind === "pub";
-  const isGrant = c && String(c.kind || "").startsWith("grant");
-  const isTeach = c && c.kind === "hours";
-  const isCustom = c && c.kind === "custom";
-  const isResearchProc = c && String(c.id || "").startsWith("res_proc");
-  let extra = "";
-  if (isPub || isGrant || isResearchProc) extra += projectSearchBox(t, lock);
-  if (isPub) {
-    extra += `<label class="date-lab">DOI</label>
-      <input data-pa="t:${t.id}:doi" value="${esc(t.doi || "")}" placeholder="10.xxxx/xxxxx หรือ URL DOI" ${lock ? "disabled" : ""} />
-      ${doiHint(t)}`;
-  }
-  if (isTeach) extra += syllabusBox(t, lock);
-  if (g.id === "assign" || g.id === "community") {
-    extra += `<label class="date-lab">รายการหลัก</label>
-      <select data-pa="t:${t.id}:criteriaId" ${lock ? "disabled" : ""}>
-        ${(C.CATALOG[g.id] || []).map((x) =>
-          `<option value="${esc(x.id)}" ${t.criteriaId === x.id ? "selected" : ""}>${esc(x.label)}</option>`
-        ).join("")}
-      </select>`;
-    if (isCustom) {
-      extra += `<label class="date-lab">หัวข้องานอื่น</label>
-        <input data-pa="t:${t.id}:customTitle" value="${esc(t.customTitle || t.title || "")}" placeholder="พิมพ์หัวข้องานที่ไม่มีในรายการ" ${lock ? "disabled" : ""} />
-        <label class="date-lab">หน่วยภาระงานที่เสนอ</label>
-        <input type="number" data-pa="t:${t.id}:proposedUnits" value="${esc(t.proposedUnits)}" ${lock ? "disabled" : ""} />
-        <label class="date-lab">คะแนนที่เสนอขอรับการพิจารณา</label>
-        <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:proposedScore" value="${esc(t.proposedScore)}" ${lock ? "disabled" : ""} />`;
-    }
-  }
-  extra += evidenceBox(t, lock);
-  const criteriaHtml = (g.id === "assign" || g.id === "community" || isTeach)
-    ? ""
-    : g.id === "main"
-      ? `<div class="hint">${esc((c && c.label) || "เลือกเกณฑ์ในหน้า PA ล่วงหน้า")}</div>`
-      : facultyCriteriaCell(t, g, lock);
-  const roleHtml = g.id === "strat" ? facultyRoleCell(t, g, lock) : "";
-  return `<tr>
-    <td class="seq-cell">${seq}</td>
-    <td class="title-cell">
-      <textarea data-pa="t:${t.id}:title" placeholder="ชื่อบทความ / ชื่อโครงการ / รายวิชา" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
-      <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
-      <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
-      ${t.contractDate ? `<div class="hint">วันที่จากฐานกลาง ${esc(t.contractDate)}${t.contractDateNote ? " · " + esc(t.contractDateNote) : ""}</div>` : ""}
-    </td>
-    <td>${criteriaHtml}${roleHtml}${warn}${extra}</td>
-    <td class="auto">${C.fmtUnit(cal.units)}</td>
-    <td>
-      <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
-      <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
-    </td>
-    <td>
-      <textarea data-pa="t:${t.id}:report" placeholder="ผลการดำเนินงานและเหตุผลประกอบ" ${lock ? "disabled" : ""}>${esc(t.report)}</textarea>
-    </td>
-  </tr>`;
-}
-
 function viewPaReport() {
   const lock = !canReportPa();
   if (track() === "support") {
@@ -4033,36 +3985,27 @@ function viewPaReport() {
         <button class="btn-ghost" data-go="competency">ไปประเมินสมรรถนะ</button>
       </div>`);
   }
-  const sections = S.groups.map((g) => {
-    const meta = C.GROUPS.find((x) => x.id === g.id);
-    const rows = groupTargets(g).map((t, i) => facultyEvalRow(t, g, lock, i + 1)).join("");
-    return `<section class="sec pa-sec sec-faculty" id="rep-g-${g.id}">
-      <header class="sec-head">
-        <div>
-          <h2>${esc(meta.title)} · ${esc(meta.name)}</h2>
-          <p>กรอกข้อมูลเชิงลึกและแนบหลักฐานเมื่อสิ้นรอบการประเมิน</p>
-        </div>
-      </header>
-      <div class="pa-wrap"><table class="pa pa-faculty pa-eval">
-        <thead><tr>
-          <th>ลำดับ</th>
-          <th>ภารกิจ</th>
-          <th>รายละเอียด / หลักฐาน</th>
-          <th>ผลการดำเนินงาน</th>
-          <th>ประเมินตนเอง (0–10)</th>
-          <th>เหตุผล</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table></div>
-    </section>`;
-  }).join("");
+  const rows = [];
+  forEachTarget((t, g) => {
+    const cal = C.calcTarget(t, g.id);
+    const self = C.effectiveScore(t, g.id);
+    rows.push(`<tr>
+      <td>${esc(t.code)}</td>
+      <td>${esc(t.title)}</td>
+      <td class="auto">${C.fmtUnit(cal.units)}</td>
+      <td><input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? self : t.selfScore)}" ${lock ? "disabled" : ""} /></td>
+      <td>${esc(C.scaleLabel(self))}</td>
+    </tr>`);
+  });
   return chrome(`
-    <p class="crumb">แบบประเมินข้อตกลง PA / ประเมินผลงานจริง</p>
-    <h1 class="page-title">ประเมินผลงานจริง</h1>
+    <p class="crumb">แบบประเมินข้อตกลง PA / ประเมินผล</p>
+    <h1 class="page-title">ประเมินผลงาน</h1>
     ${stepperHtml()}
     ${paLocked() ? `<div class="lock-note">ส่งการประเมินตนเองแล้วแก้ไขไม่ได้</div>` : ""}
-    <p class="hint">ค้นหาโครงการจากฐานกลาง แนบ DOI จำกัดหลักฐานไม่เกิน 3 ไฟล์ต่อเรื่อง เลือกสูตรสอน 3 แบบจากประกาศ และดึงชั่วโมงจากประมวลรายวิชา</p>
-    ${sections}
+    <div class="pa-wrap"><table class="pa">
+      <thead><tr><th>เป้าหมาย</th><th>ภารกิจ</th><th>ผลการดำเนินงาน</th><th>ประเมินตนเอง (0–10)</th><th>เกณฑ์</th></tr></thead>
+      <tbody>${rows.join("")}</tbody>
+    </table></div>
     <div class="footbar">
       ${canReportPa() ? `<button class="btn-navy" type="button" id="btnSaveReport">บันทึก</button>
       <button class="btn-navy" type="button" id="btnSendReport">ส่งการประเมิน</button>` : ""}
