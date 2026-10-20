@@ -281,7 +281,23 @@ a { color: #1565a8; }
 .card h3 { margin: 0 0 8px; color: var(--navy); font-size: 20px; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-bottom: 10px; }
 .toolbar .btn-ghost.on { background: #163a5f; color: #fff; border-color: #163a5f; }
-table.pa.pa-faculty.pa-plan { min-width: 980px; }
+.pa-period {
+  background: #fff; border: 2px solid #163a5f; border-radius: 12px;
+  padding: 14px 16px; margin: 0 0 16px;
+}
+.pa-period .period-lab { margin: 0 0 10px; font-weight: 800; color: var(--navy); }
+.period-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 900px) { .period-switch { grid-template-columns: 1fr; } }
+.period-switch button {
+  text-align: left; border: 2px solid #c5d0dc; background: #f8fbfd;
+  border-radius: 10px; padding: 12px 14px; min-height: 88px;
+}
+.period-switch button b { display: block; font-size: 18px; color: var(--navy); }
+.period-switch button small { display: block; margin-top: 4px; color: #475569; font-weight: 600; }
+.period-switch button.on { background: #163a5f; border-color: #163a5f; }
+.period-switch button.on b, .period-switch button.on small { color: #fff; }
+table.pa.pa-faculty.pa-plan { min-width: 760px; }
+input.plan-title { width: 100%; margin-bottom: 8px; padding: 8px 10px; border: 1px solid #c5d0dc; border-radius: 8px; }
 .search {
   width: 100%; padding: 12px 14px 12px 40px; border: 1px solid #cfd8e3; border-radius: 10px;
   background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Ccircle cx='9' cy='9' r='6'/%3E%3Cpath d='M14 14l4 4'/%3E%3C/svg%3E") 12px 50% no-repeat;
@@ -534,7 +550,6 @@ table.pa .auto {
   ];
   const PA_PLAN_HEADERS = [
     "ลำดับ",
-    "วิชา / ชื่อเรื่อง",
     "รายละเอียดเกณฑ์",
     "หน่วยภาระงานที่คาดว่าจะได้รับ"
   ];
@@ -2079,7 +2094,7 @@ function defaultState() {
     year: "2570",
     round: "รอบประเมินปีงบประมาณ 2570",
     view: "login",
-    paLayout: "plan",
+    paLayout: "eval",
     paStatus: "draft",
     paReject: "",
     paDisagree: "",
@@ -3669,9 +3684,10 @@ function facultyRoleCell(t, g, lock) {
 
 function seqTools(g, t) {
   if (!canEditAgreement()) return "";
-  return `<div class="row-tools">
-    <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:up" aria-label="เลื่อนแถวขึ้น">↑</button>
-    <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:down" aria-label="เลื่อนแถวลง">↓</button>
+  const move = S.paLayout === "plan" ? `
+    <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:up" aria-label="ย้ายแถวขึ้น">↑</button>
+    <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:down" aria-label="ย้ายแถวลง">↓</button>` : "";
+  return `<div class="row-tools">${move}
     <button class="iconbtn" type="button" data-del-row="${g.id}:${t.id}" aria-label="ลบรายการ">−</button>
   </div>`;
 }
@@ -3688,10 +3704,10 @@ function facultyItemRow(t, g, lock, seq) {
     const prev = C.expectedPreview(t, g.id);
     return `<tr>
       <td class="seq-cell">${seq}${seqTools(g, t)}</td>
-      <td class="title-cell">
-        <textarea data-pa="t:${t.id}:title" placeholder="วิชา / ชื่อเรื่อง" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
+      <td>
+        <input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="ชื่อรายการ" ${lock ? "disabled" : ""} />
+        ${facultyCriteriaCell(t, g, lock)}
       </td>
-      <td>${facultyCriteriaCell(t, g, lock)}</td>
       <td class="auto">${esc(prev.label)}</td>
     </tr>`;
   }
@@ -3740,7 +3756,7 @@ function viewPA() {
       <header class="sec-head">
         <div>
           <h2>${esc(meta.title)} · ${esc(meta.name)}</h2>
-          <p>น้ำหนักตามประกาศ ${meta.pct}% · เพดาน ${meta.cap} หน่วย · ได้ ${C.fmtUnit(units)} หน่วย</p>
+          <p>${S.paLayout === "plan" ? "ช่วง PA ล่วงหน้า (ก่อนทำงาน)" : "ช่วงหน้าประเมินจริง"} · น้ำหนักตามประกาศ ${meta.pct}% · เพดาน ${meta.cap} หน่วย · ได้ ${C.fmtUnit(units)} หน่วย</p>
         </div>
         ${canEditAgreement() ? `<button class="btn-teal" type="button" data-add-ag="${g.id}">เพิ่มรายการ</button>` : ""}
       </header>
@@ -3776,9 +3792,18 @@ function viewPA() {
       </div>
       <div class="weight-box ${wcls}">น้ำหนักตามประกาศ : ${w}</div>
     </div>
-    <div class="toolbar">
-      <button type="button" class="btn-ghost${S.paLayout === "plan" ? " on" : ""}" data-pa-layout="plan">จัดทำข้อตกลง (กระชับ)</button>
-      <button type="button" class="btn-ghost${S.paLayout === "eval" ? " on" : ""}" data-pa-layout="eval">รายงานผลงาน (กรอกเชิงลึก)</button>
+    <div class="pa-period">
+      <p class="period-lab">PA มี 2 ช่วง ให้เลือกก่อนกรอกตาราง</p>
+      <div class="period-switch">
+        <button type="button" class="${S.paLayout === "plan" ? "on" : ""}" data-pa-layout="plan">
+          <b>PA ล่วงหน้า (ก่อนทำงาน)</b>
+          <small>ตารางกระชับ 3 คอลัมน์ · จัดแถวและวางแผนหน่วยที่คาดว่าจะได้รับ · ลูกศร ↑↓ ย้ายลำดับรายการ</small>
+        </button>
+        <button type="button" class="${S.paLayout === "eval" ? "on" : ""}" data-pa-layout="eval">
+          <b>หน้าประเมินจริง</b>
+          <small>ตารางครบ 7 ช่องตามแบบ SHPA · กรอกชั่วโมง บทบาท DOI คะแนนตนเอง และหลักฐาน</small>
+        </button>
+      </div>
     </div>
     ${paStatus() === "back" ? `<div class="warn-box">ส่งกลับแก้ไข: ${esc(reject)}</div>` : ""}
     ${chairBar}

@@ -28,6 +28,8 @@ assert.match(src, /inDbShort/);
 assert.match(src, /removeAttribute\("title"\)/);
 assert.doesNotMatch(src, /data-hint="\$\{esc\(hint\)}" title="/);
 assert.doesNotMatch(src, /h2>PA ล่วงหน้า/);
+assert.match(src, /PA ล่วงหน้า \(ก่อนทำงาน\)/);
+assert.match(src, /หน้าประเมินจริง/);
 assert.match(src, /แบบรายงานผลการปฏิบัติงาน/);
 assert.match(src, /ยุทธศาสตร์ตีพิมพ์/);
 assert.match(src, /ยุทธศาสตร์ทุนวิจัย/);

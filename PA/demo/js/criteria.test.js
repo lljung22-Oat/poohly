@@ -91,9 +91,10 @@ assert.strictEqual(S.STRAT_BUCKETS[1].title, "ยุทธศาสตร์ท�
 assert.strictEqual(S.STRAT_BUCKETS[2].title, "ยุทธศาสตร์อื่นๆ");
 assert.strictEqual(S.PA_HEADERS.length, 7);
 assert.ok(S.PA_HEADERS[6].includes("9–10"));
-assert.strictEqual(S.PA_PLAN_HEADERS.length, 4);
-assert.strictEqual(S.PA_PLAN_HEADERS[2], "รายละเอียดเกณฑ์");
-assert.strictEqual(S.PA_PLAN_HEADERS[3], "หน่วยภาระงานที่คาดว่าจะได้รับ");
+assert.strictEqual(S.PA_PLAN_HEADERS.length, 3);
+assert.strictEqual(S.PA_PLAN_HEADERS[0], "ลำดับ");
+assert.strictEqual(S.PA_PLAN_HEADERS[1], "รายละเอียดเกณฑ์");
+assert.strictEqual(S.PA_PLAN_HEADERS[2], "หน่วยภาระงานที่คาดว่าจะได้รับ");
 assert.strictEqual(S.CC_ITEMS.length, 7);
 assert.strictEqual(S.IDP_MAX, 2);
 

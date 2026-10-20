@@ -272,7 +272,23 @@ a { color: #1565a8; }
 .card h3 { margin: 0 0 8px; color: var(--navy); font-size: 20px; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-bottom: 10px; }
 .toolbar .btn-ghost.on { background: #163a5f; color: #fff; border-color: #163a5f; }
-table.pa.pa-faculty.pa-plan { min-width: 980px; }
+.pa-period {
+  background: #fff; border: 2px solid #163a5f; border-radius: 12px;
+  padding: 14px 16px; margin: 0 0 16px;
+}
+.pa-period .period-lab { margin: 0 0 10px; font-weight: 800; color: var(--navy); }
+.period-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 900px) { .period-switch { grid-template-columns: 1fr; } }
+.period-switch button {
+  text-align: left; border: 2px solid #c5d0dc; background: #f8fbfd;
+  border-radius: 10px; padding: 12px 14px; min-height: 88px;
+}
+.period-switch button b { display: block; font-size: 18px; color: var(--navy); }
+.period-switch button small { display: block; margin-top: 4px; color: #475569; font-weight: 600; }
+.period-switch button.on { background: #163a5f; border-color: #163a5f; }
+.period-switch button.on b, .period-switch button.on small { color: #fff; }
+table.pa.pa-faculty.pa-plan { min-width: 760px; }
+input.plan-title { width: 100%; margin-bottom: 8px; padding: 8px 10px; border: 1px solid #c5d0dc; border-radius: 8px; }
 .search {
   width: 100%; padding: 12px 14px 12px 40px; border: 1px solid #cfd8e3; border-radius: 10px;
   background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Ccircle cx='9' cy='9' r='6'/%3E%3Cpath d='M14 14l4 4'/%3E%3C/svg%3E") 12px 50% no-repeat;

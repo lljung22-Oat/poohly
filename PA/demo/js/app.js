@@ -331,7 +331,7 @@ function defaultState() {
     year: "2570",
     round: "รอบประเมินปีงบประมาณ 2570",
     view: "login",
-    paLayout: "plan",
+    paLayout: "eval",
     paStatus: "draft",
     paReject: "",
     paDisagree: "",
@@ -1921,9 +1921,10 @@ function facultyRoleCell(t, g, lock) {
 
 function seqTools(g, t) {
   if (!canEditAgreement()) return "";
-  return `<div class="row-tools">
-    <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:up" aria-label="เลื่อนแถวขึ้น">↑</button>
-    <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:down" aria-label="เลื่อนแถวลง">↓</button>
+  const move = S.paLayout === "plan" ? `
+    <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:up" aria-label="ย้ายแถวขึ้น">↑</button>
+    <button class="iconbtn" type="button" data-move-row="${g.id}:${t.id}:down" aria-label="ย้ายแถวลง">↓</button>` : "";
+  return `<div class="row-tools">${move}
     <button class="iconbtn" type="button" data-del-row="${g.id}:${t.id}" aria-label="ลบรายการ">−</button>
   </div>`;
 }
@@ -1940,10 +1941,10 @@ function facultyItemRow(t, g, lock, seq) {
     const prev = C.expectedPreview(t, g.id);
     return `<tr>
       <td class="seq-cell">${seq}${seqTools(g, t)}</td>
-      <td class="title-cell">
-        <textarea data-pa="t:${t.id}:title" placeholder="วิชา / ชื่อเรื่อง" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
+      <td>
+        <input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="ชื่อรายการ" ${lock ? "disabled" : ""} />
+        ${facultyCriteriaCell(t, g, lock)}
       </td>
-      <td>${facultyCriteriaCell(t, g, lock)}</td>
       <td class="auto">${esc(prev.label)}</td>
     </tr>`;
   }
@@ -1992,7 +1993,7 @@ function viewPA() {
       <header class="sec-head">
         <div>
           <h2>${esc(meta.title)} · ${esc(meta.name)}</h2>
-          <p>น้ำหนักตามประกาศ ${meta.pct}% · เพดาน ${meta.cap} หน่วย · ได้ ${C.fmtUnit(units)} หน่วย</p>
+          <p>${S.paLayout === "plan" ? "ช่วง PA ล่วงหน้า (ก่อนทำงาน)" : "ช่วงหน้าประเมินจริง"} · น้ำหนักตามประกาศ ${meta.pct}% · เพดาน ${meta.cap} หน่วย · ได้ ${C.fmtUnit(units)} หน่วย</p>
         </div>
         ${canEditAgreement() ? `<button class="btn-teal" type="button" data-add-ag="${g.id}">เพิ่มรายการ</button>` : ""}
       </header>
@@ -2028,9 +2029,18 @@ function viewPA() {
       </div>
       <div class="weight-box ${wcls}">น้ำหนักตามประกาศ : ${w}</div>
     </div>
-    <div class="toolbar">
-      <button type="button" class="btn-ghost${S.paLayout === "plan" ? " on" : ""}" data-pa-layout="plan">จัดทำข้อตกลง (กระชับ)</button>
-      <button type="button" class="btn-ghost${S.paLayout === "eval" ? " on" : ""}" data-pa-layout="eval">รายงานผลงาน (กรอกเชิงลึก)</button>
+    <div class="pa-period">
+      <p class="period-lab">PA มี 2 ช่วง ให้เลือกก่อนกรอกตาราง</p>
+      <div class="period-switch">
+        <button type="button" class="${S.paLayout === "plan" ? "on" : ""}" data-pa-layout="plan">
+          <b>PA ล่วงหน้า (ก่อนทำงาน)</b>
+          <small>ตารางกระชับ 3 คอลัมน์ · จัดแถวและวางแผนหน่วยที่คาดว่าจะได้รับ · ลูกศร ↑↓ ย้ายลำดับรายการ</small>
+        </button>
+        <button type="button" class="${S.paLayout === "eval" ? "on" : ""}" data-pa-layout="eval">
+          <b>หน้าประเมินจริง</b>
+          <small>ตารางครบ 7 ช่องตามแบบ SHPA · กรอกชั่วโมง บทบาท DOI คะแนนตนเอง และหลักฐาน</small>
+        </button>
+      </div>
     </div>
     ${paStatus() === "back" ? `<div class="warn-box">ส่งกลับแก้ไข: ${esc(reject)}</div>` : ""}
     ${chairBar}
