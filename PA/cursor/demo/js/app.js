@@ -438,9 +438,14 @@ function hydrate(raw) {
   return s;
 }
 
+function isFileMode() {
+  return typeof location !== "undefined" && location.protocol === "file:";
+}
+
 function persist() {
   const copy = { ...S, modal: null, users: undefined };
   try { localStorage.setItem(KEY, JSON.stringify(copy)); } catch { /* ignore */ }
+  if (isFileMode()) return;
   if (DB && S.user && S.loggedIn) {
     Promise.resolve()
       .then(() => DB.saveRecord(S.user.id, S.year, copy))
@@ -519,7 +524,7 @@ function go(view) {
     S.view = "modules";
     S.modal = null;
     persist();
-    location.hash = "modules";
+    if (!isFileMode()) location.hash = "modules";
     render();
     window.scrollTo(0, 0);
     return;
@@ -527,7 +532,7 @@ function go(view) {
   S.view = view;
   S.modal = null;
   persist();
-  location.hash = view;
+  if (!isFileMode()) location.hash = view;
   render();
   window.scrollTo(0, 0);
 }
@@ -602,7 +607,7 @@ async function enterUser(user) {
   S.account = user.id;
   S.focus = user.track || S.focus || "faculty";
   let rec = null;
-  if (DB) {
+  if (DB && !isFileMode()) {
     try { rec = await DB.loadRecord(user.id, S.year); } catch { rec = null; }
   }
   if (rec) {
@@ -613,7 +618,7 @@ async function enterUser(user) {
   S.view = "home";
   S.round = "รอบประเมินปีงบประมาณ " + S.year;
   persist();
-  location.hash = "home";
+  if (!isFileMode()) location.hash = "home";
   render();
   window.scrollTo(0, 0);
 }
@@ -2677,6 +2682,7 @@ function viewReport() {
 
 function render() {
   const root = document.getElementById("app");
+  if (!root) return;
   const v = S.loggedIn ? (S.view || "home") : "login";
   const map = {
     login: viewLogin, home: viewHome, period: viewPeriod, profile: viewProfile, rounds: viewRounds,
@@ -2688,8 +2694,12 @@ function render() {
     paStaff: viewPaStaff, follow: viewFollow, scoreSum: viewScoreSum, pledge: viewPledge,
     users: viewUsers, kpi2570: viewKpi2570, researchTrack: viewResearchTrack
   };
-  root.innerHTML = (map[v] || viewHome)();
-  bind();
+  try {
+    root.innerHTML = (map[v] || viewHome)();
+    bind();
+  } catch (err) {
+    root.innerHTML = `<div class="warn-box">เปิดหน้าไม่สำเร็จ ${esc(err && err.message ? err.message : err)}</div>`;
+  }
 }
 
 function readCcFc() {
@@ -3244,6 +3254,11 @@ applyQuery();
 render();
 
 async function boot() {
+  if (isFileMode()) {
+    applyQuery();
+    render();
+    return;
+  }
   try {
     if (DB) {
       await DB.open();
