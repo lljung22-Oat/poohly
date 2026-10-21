@@ -17,6 +17,8 @@ assert.match(row, /facultyTeachOrCrit/);
 assert.match(src, /function facultyTeachPick\(/);
 assert.match(src, /data-teach-lv/);
 assert.match(src, /ป\.ที่สอน/);
+assert.match(src, /หน่วย\/ชม/);
+assert.match(src, /คะแนนข้อนี้/);
 assert.match(src, /function facultyCriteriaSelect\(/);
 assert.match(src, /data-crit-sel/);
 assert.match(src, /function facultyHoursCell\(/);
