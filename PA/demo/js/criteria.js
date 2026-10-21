@@ -36,7 +36,7 @@
   }
 
   const MAIN_SECTIONS = [
-    { id: "teach", no: "1.1", name: "ภาระงานหลักด้านการเรียนการสอน", item: "วิชา", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", planQty: "จำนวนชั่วโมง", addCrit: "teach_grad_main" },
+    { id: "teach", no: "1.1", name: "ภาระงานหลักด้านการเรียนการสอน", item: "วิชา", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", planQty: "จำนวนชั่วโมง", addCrit: "" },
     { id: "research", no: "1.2.1", name: "ภาระงานหลักด้านการวิจัย", item: "ชื่อเรื่องงานวิจัย", detail: "ภาระความรับผิดชอบ", col3: "หน่วยภาระงานด้านกระบวนการวิจัย", addCrit: "res_proc_1" },
     { id: "book", no: "1.2.2", name: "การผลิตหนังสือ และผลงานทางวิชาการในลักษณะอื่นที่เปรียบเทียบเท่างานวิจัย", item: "ชื่อผลงาน", detail: "ภาระความรับผิดชอบ", col3: "หน่วยภาระงานด้านกระบวนการดำเนินงาน", addCrit: "res_book" },
     { id: "service", no: "1.3", name: "ภาระงานด้านการบริการวิชาการ", item: "การบริการวิชาการ", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", planQty: "จำนวนชั่วโมง", addCrit: "svc_consult" }
@@ -45,7 +45,7 @@
     const id = String((t && t.criteriaId) || "");
     if (id === "res_book") return "book";
     if (id.startsWith("res_")) return "research";
-    if (id.startsWith("svc_")) return "service";
+    if (id === "course_proj" || id.startsWith("svc_")) return "service";
     return "teach";
   }
   function sectionHeaders(sec, layout) {

@@ -111,6 +111,7 @@ assert.strictEqual(S.PA_PLAN_HEADERS[1], "วิชา");
 assert.strictEqual(S.PA_PLAN_HEADERS[3], "ผลการประเมินตนเอง");
 assert.ok(!S.PA_PLAN_HEADERS.includes("รายละเอียดเกณฑ์"));
 assert.strictEqual(S.mainSectionOf({ criteriaId: "res_book" }), "book");
+assert.strictEqual(S.mainSectionOf({ criteriaId: "course_proj" }), "service");
 assert.ok(S.MAIN_SECTIONS.some((x) => x.no === "1.2.2"));
 assert.deepStrictEqual(
   S.sectionHeaders(S.MAIN_SECTIONS.find((x) => x.id === "teach"), "plan"),

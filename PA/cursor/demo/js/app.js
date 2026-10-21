@@ -1,4 +1,4 @@
-const KEY = "mu-pms-demo-v7";
+const KEY = "mu-pms-demo-v8";
 const C = PAScore;
 const DB = window.PMSDB;
 
@@ -220,19 +220,9 @@ function defaultGroups() {
             id: uid(), code: "2.1.1", title: "ชั่วโมงสอน",
             targets: [{
               ...emptyTarget("2.1.1.1", 15),
-              title: "SHSS 501 ทฤษฎีสังคมศาสตร์ (ป.โท/เอก)",
-              criteriaId: "teach_grad_main", teachFormula: "grad_main",
+              title: "SHSS 501 ทฤษฎีสังคมศาสตร์",
+              criteriaId: "teach_grad_main", teachFormula: "grad_main", teachLevel: "grad",
               syllabusId: "SHSS501", hours: "45", kpiType: "quantity"
-            }, {
-              ...emptyTarget("2.1.1.2", 10),
-              title: "SHSS 201 สังคมวิทยาเบื้องต้น (ป.ตรี บรรยาย)",
-              criteriaId: "teach_ug_lec", teachFormula: "ug_lec",
-              syllabusId: "SHSS201", hours: "30", kpiType: "quantity"
-            }, {
-              ...emptyTarget("2.1.1.3", 5),
-              title: "SHSS 215 ปฏิบัติการวิจัยภาคสนาม (ป.ตรี ปฏิบัติ)",
-              criteriaId: "teach_ug_lab", teachFormula: "ug_lab",
-              syllabusId: "SHSS215", hours: "24", kpiType: "quantity"
             }]
           }]
         },
@@ -462,32 +452,9 @@ function hydrate(raw) {
   const main = (s.groups || []).find((g) => g.id === "main");
   if (main) {
     let hasBook = false;
-    let hasUg = false;
     (main.agreements || []).forEach((a) => (a.kpis || []).forEach((k) => (k.targets || []).forEach((t) => {
       if (t.criteriaId === "res_book") hasBook = true;
-      if (t.criteriaId === "teach_ug_lec" || t.criteriaId === "teach_ug_lab") hasUg = true;
     })));
-    if (!hasUg) {
-      const teachAg = (main.agreements || []).find((a) => (a.kpis || []).some((k) =>
-        (k.targets || []).some((t) => String(t.criteriaId || "").startsWith("teach_"))
-      ));
-      const kpi = teachAg && (teachAg.kpis || [])[0];
-      if (kpi) {
-        kpi.targets = kpi.targets || [];
-        kpi.targets.push({
-          ...emptyTarget("2.1.1.2", 10),
-          title: "SHSS 201 สังคมวิทยาเบื้องต้น (ป.ตรี บรรยาย)",
-          criteriaId: "teach_ug_lec", teachFormula: "ug_lec",
-          syllabusId: "SHSS201", hours: "30"
-        });
-        kpi.targets.push({
-          ...emptyTarget("2.1.1.3", 5),
-          title: "SHSS 215 ปฏิบัติการวิจัยภาคสนาม (ป.ตรี ปฏิบัติ)",
-          criteriaId: "teach_ug_lab", teachFormula: "ug_lab",
-          syllabusId: "SHSS215", hours: "24"
-        });
-      }
-    }
     if (!hasBook) {
       main.agreements.push({
         id: uid(), code: "2.4", title: "ผลงานทางวิชาการที่เทียบเท่างานวิจัย",
@@ -1930,6 +1897,45 @@ function applyTeachPick(t, level, cond) {
   t.teachFormula = f ? f.id : "";
 }
 
+function applySyllabusCourse(t, courseId) {
+  if (!courseId || courseId === "other") {
+    t.syllabusId = courseId === "other" ? "other" : "";
+    if (courseId === "other") t.title = t.title || "";
+    else t.title = "";
+    return;
+  }
+  const hit = C.findSyllabus(courseId);
+  if (!hit) { t.syllabusId = courseId; return; }
+  t.syllabusId = hit.id;
+  t.title = `${hit.code} ${hit.title}`;
+  t.hours = hit.hours;
+  if (hit.formulaId) {
+    t.teachFormula = hit.formulaId;
+    const f = C.findTeachFormula(hit.formulaId);
+    if (f) {
+      t.criteriaId = f.criteriaId;
+      t.teachLevel = (C.teachPickOf(f.criteriaId) || {}).level || "";
+    }
+  }
+}
+
+function facultyCoursePick(t, lock) {
+  const list = C.searchSyllabus("") || [];
+  const known = list.some((c) => c.id === t.syllabusId);
+  const other = t.syllabusId === "other" || (!!t.title && !known && !t.syllabusId);
+  const dis = lock ? "disabled" : "";
+  return `<div class="teach-fields">
+    <select data-teach-course="${t.id}" ${dis}>
+      <option value="">เลือกวิชา</option>
+      ${list.map((c) =>
+        `<option value="${esc(c.id)}" ${t.syllabusId === c.id ? "selected" : ""}>${esc(c.code)} ${esc(c.title)}</option>`
+      ).join("")}
+      <option value="other" ${other || (t.syllabusId && !known) ? "selected" : ""}>อื่นๆ (กรอกเอง)</option>
+    </select>
+    ${other || (t.syllabusId && !known) ? `<input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="กรอกชื่อวิชา" ${dis} />` : ""}
+  </div>`;
+}
+
 function facultyTeachPick(t, lock) {
   const pick = C.teachPickOf(t.criteriaId);
   const level = t.teachLevel || pick.level;
@@ -2069,8 +2075,10 @@ function facultyItemRow(t, g, lock, seq, sec) {
     return `<tr>
       <td class="seq-cell">${seq}${seqTools(g, t)}</td>
       <td>
-        <input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""} />
-        ${facultyTeachOrCrit(t, g, lock, sec)}
+        ${(sec && sec.id === "teach") || C.mainSectionOf(t) === "teach"
+          ? `${facultyCoursePick(t, lock)}${facultyTeachPick(t, lock)}`
+          : `<input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""} />
+        ${facultyTeachOrCrit(t, g, lock, sec)}`}
       </td>
       ${qtyHead ? `<td>${facultyQtyCell(t, g, lock)}</td>` : ""}
       <td class="auto">${esc(prev.label)}${prev.units ? `<div class="hint">ข้อนี้ ${C.fmtUnit(prev.units)} หน่วย</div>` : ""}</td>
@@ -2086,7 +2094,9 @@ function facultyItemRow(t, g, lock, seq, sec) {
   return `<tr>
     <td class="seq-cell">${seq}${seqTools(g, t)}</td>
     <td class="title-cell">
-      <textarea data-pa="t:${t.id}:title" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
+      ${(sec && sec.id === "teach") || C.mainSectionOf(t) === "teach"
+        ? facultyCoursePick(t, lock)
+        : `<textarea data-pa="t:${t.id}:title" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>`}
       ${teachLike ? "" : `<label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
       ${showPubDoi(t, g) ? doiBox(t, lock) : ""}
@@ -3185,6 +3195,15 @@ function bind() {
       if (String(el.value).startsWith("pub_")) t.amount = "";
       const f = (C.TEACH_FORMULAS || []).find((x) => x.criteriaId === el.value);
       if (f) t.teachFormula = f.id;
+      persist();
+      render();
+    });
+  });
+  document.querySelectorAll("[data-teach-course]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const t = findTarget(el.getAttribute("data-teach-course"));
+      if (!t) return;
+      applySyllabusCourse(t, el.value);
       persist();
       render();
     });

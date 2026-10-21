@@ -291,8 +291,9 @@ table.pa.pa-faculty.pa-plan { min-width: 920px; }
 table.pa.pa-faculty.pa-plan td:nth-child(3) { min-width: 120px; }
 table.pa.pa-faculty.pa-plan td:last-child { min-width: 100px; }
 input.plan-title { width: 100%; margin-bottom: 8px; padding: 8px 10px; border: 1px solid #c5d0dc; border-radius: 8px; }
-.teach-pick { display: flex; flex-wrap: wrap; gap: 8px; }
-.teach-pick select { min-width: 108px; width: auto; }
+.teach-fields, .teach-pick { display: grid; gap: 8px; margin-top: 0; }
+.teach-fields { margin-bottom: 8px; }
+.teach-fields select, .teach-pick select, .teach-fields .plan-title { width: 100%; min-width: 0; }
 .hours-cell input[type="number"] { width: 100%; max-width: 120px; }
 .hours-cell .hint { margin-top: 6px; }
 .pa-order h3 { margin-bottom: 4px; }
