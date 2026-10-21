@@ -1,0 +1,20 @@
+ดับเบิลคลิกไฟล์นี้ในโฟลเดอร์เดียวกัน
+
+  เปิดตรงนี้.html
+  หรือ เปิดโปรแกรม-PA-พรีเซ็น.html
+
+อย่าเปิดโฟลเดอร์ที่ชื่อขึ้นต้นด้วยจุด (.PA cursor) Windows ซ่อนไว้
+
+เข้าสู่ระบบพรีเซ็นสายวิชาการ
+  เลือก อาจารย์
+  ชื่อผู้ใช้  porntipa.c
+  รหัสผ่าน    123456
+
+ถ้าอยู่บนเครื่องที่โคลนรีโปมาแล้ว ไฟล์ชุดนี้คือ
+  C:\Users\poohl\appscript\PA\เปิดโปรแกรม-PA-พรีเซ็น\เปิดตรงนี้.html
+
+ดาวน์โหลดทั้งสาขาจาก GitHub
+  https://github.com/lljung22-Oat/poohly/archive/refs/heads/cursor/pa-meeting-ui-7c6d.zip
+
+หน้าไฟล์ในพูล
+  https://github.com/lljung22-Oat/poohly/tree/cursor/pa-meeting-ui-7c6d/เปิดโปรแกรม-PA-พรีเซ็น

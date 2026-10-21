@@ -43,6 +43,39 @@ assert.strictEqual(g1.score, 8);
 const teach = S.calcTarget({ criteriaId: "teach_grad_main", hours: 15 }, "main");
 assert.strictEqual(teach.units, 60);
 
+const teachLab = S.calcTarget({ criteriaId: "teach_ug_lab", hours: 10 }, "main");
+assert.strictEqual(teachLab.units, 15);
+assert.strictEqual(S.calcTarget({ criteriaId: "teach_ug_lec", teachFormula: "ug_lab", hours: 10 }, "main").units, 30);
+
+const custom = S.calcTarget({ criteriaId: "asg_other", proposedUnits: 22, proposedScore: 7 }, "assign");
+assert.strictEqual(custom.units, 22);
+assert.strictEqual(custom.score, 7);
+
+assert.strictEqual(S.TEACH_FORMULAS.length, 3);
+assert.strictEqual(S.teachCriteriaFromPick("ug", "lec"), "teach_ug_lec");
+assert.strictEqual(S.teachCriteriaFromPick("grad", ""), "teach_grad_main");
+assert.strictEqual(S.teachPickOf("teach_ug_lab").level, "ug");
+assert.strictEqual(S.TEACH_PICK.length, 2);
+assert.strictEqual(S.TEACH_PICK.find((x) => x.id === "ug").conds.find((c) => c.id === "lec").label, "บรรยาย");
+assert.strictEqual(S.MAX_EVIDENCE_FILES, 3);
+assert.ok(S.searchProjects("เหลื่อมล้ำ").some((p) => p.code === "INT-2570-01"));
+assert.strictEqual(S.findProject("INT-2570-01").contractDate, "2569-10-01");
+assert.strictEqual(S.findProject("INT-2570-02").contractDate, "");
+assert.strictEqual(S.PROJECT_REGISTRY.length, 9);
+assert.strictEqual(S.findSyllabus("SHSS501").hours, 45);
+assert.strictEqual(S.doiStatus("10.1234/abc").ok, true);
+assert.strictEqual(S.doiStatus("https://doi.org/10.1234/abc").ok, true);
+assert.strictEqual(S.normalizeDoi("https://doi.org/10.1234/abc"), "10.1234/abc");
+assert.strictEqual(S.doiStatus("not-a-doi").ok, false);
+assert.strictEqual(S.doiUrl("https://doi.org/10.1234/abc"), "https://doi.org/10.1234/abc");
+assert.strictEqual(S.doiUrl(""), "");
+assert.ok(S.SCORE_COND.doi.includes("แนบลิงก์ DOI"));
+const ev = S.attachEvidence({ files: ["a.pdf", "b.pdf"] }, ["c.pdf", "d.pdf"]);
+assert.strictEqual(ev.files.length, 3);
+assert.strictEqual(ev.blocked, true);
+const prev = S.expectedPreview({ criteriaId: "pub_q1", inDb: false }, "strat");
+assert.strictEqual(prev.units, 364);
+
 const asg = S.calcTarget({ criteriaId: "asg_chair", qty: 2 }, "assign");
 assert.strictEqual(asg.units, 40);
 
@@ -55,6 +88,57 @@ assert.strictEqual(mupsf.score, 7);
 
 assert.strictEqual(S.GROUPS.reduce((s, g) => s + g.pct, 0), 100);
 assert.strictEqual(S.GROUPS.reduce((s, g) => s + g.cap, 0), 1820);
+assert.strictEqual(S.GROUPS[0].id, "strat");
+assert.strictEqual(S.GROUPS[0].no, 1);
+assert.strictEqual(S.GROUPS[0].pct, 25);
+assert.strictEqual(S.GROUPS[1].id, "main");
+assert.strictEqual(S.GROUPS[1].no, 2);
+assert.strictEqual(S.GROUPS[1].pct, 55);
+assert.strictEqual(S.GROUPS[2].id, "assign");
+assert.strictEqual(S.GROUPS[3].id, "community");
+assert.ok(S.GROUPS[0].name.includes("ยุทธศาสตร์"));
+assert.strictEqual(S.WORK_TYPES[0].id, "strat");
+assert.strictEqual(S.STRAT_BUCKETS.length, 3);
+assert.strictEqual(S.STRAT_BUCKETS[0].title, "ยุทธศาสตร์ตีพิมพ์");
+assert.strictEqual(S.STRAT_BUCKETS[1].title, "ยุทธศาสตร์ทุนวิจัย");
+assert.strictEqual(S.STRAT_BUCKETS[2].title, "ยุทธศาสตร์อื่นๆ");
+assert.strictEqual(S.PA_HEADERS.length, 7);
+assert.strictEqual(S.PA_HEADERS[1], "วิชา");
+assert.strictEqual(S.PA_HEADERS[2], "รายละเอียด");
+assert.strictEqual(S.GROUP_HEADERS.assign.item, "กิจกรรม");
+assert.strictEqual(S.GROUP_HEADERS.community.item, "ชื่อกิจกรรม");
+assert.strictEqual(S.GROUP_HEADERS.strat.item, "ชื่อบทความ");
+assert.strictEqual(S.GROUP_HEADERS.strat.eval[2], "ภาระงาน");
+assert.strictEqual(S.GROUP_HEADERS.strat.eval[3], "หน่วยภาระงานด้าน");
+assert.deepStrictEqual(S.paHeaders("assign", "plan"), ["ลำดับ", "รายละเอียดเกณฑ์", "หน่วยภาระงานที่คาดว่าจะได้รับ"]);
+assert.deepStrictEqual(S.paHeaders("strat", "plan"), ["ลำดับ", "รายละเอียดเกณฑ์", "หน่วยภาระงานที่คาดว่าจะได้รับ"]);
+assert.ok(S.PA_HEADERS[6].includes("9 – 10"));
+assert.strictEqual(S.PA_PLAN_HEADERS.length, 3);
+assert.strictEqual(S.PA_PLAN_HEADERS[1], "รายละเอียดเกณฑ์");
+assert.strictEqual(S.PA_PLAN_HEADERS[2], "หน่วยภาระงานที่คาดว่าจะได้รับ");
+assert.ok(S.PA_PLAN_HEADERS.includes("รายละเอียดเกณฑ์"));
+assert.strictEqual(S.mainSectionOf({ criteriaId: "res_book" }), "book");
+assert.strictEqual(S.mainSectionOf({ criteriaId: "course_proj" }), "service");
+assert.ok(S.MAIN_SECTIONS.some((x) => x.no === "1.2.2"));
+assert.deepStrictEqual(
+  S.sectionHeaders(S.MAIN_SECTIONS.find((x) => x.id === "teach"), "plan"),
+  ["ลำดับ", "รายละเอียดเกณฑ์", "หน่วยภาระงานที่คาดว่าจะได้รับ"]
+);
+assert.deepStrictEqual(
+  S.sectionHeaders(S.MAIN_SECTIONS.find((x) => x.id === "research"), "plan"),
+  ["ลำดับ", "รายละเอียดเกณฑ์", "หน่วยภาระงานที่คาดว่าจะได้รับ"]
+);
+const emptyHours = S.expectedPreview({ criteriaId: "teach_grad_main", hours: "" }, "main");
+assert.strictEqual(emptyHours.units, 0);
+assert.strictEqual(emptyHours.label, "1 ชม. = 4 หน่วย");
+assert.strictEqual(S.calcTarget({ criteriaId: "teach_grad_main", hours: 45 }, "main").units, 180);
+assert.strictEqual(S.calcTarget({ criteriaId: "teach_ug_lec", hours: 30 }, "main").units, 90);
+assert.strictEqual(S.calcTarget({ criteriaId: "teach_ug_lab", hours: 24 }, "main").units, 36);
+assert.strictEqual(S.calcTarget({ criteriaId: "course_proj", hours: 12 }, "main").units, 36);
+assert.strictEqual(S.sectionHeaders(S.MAIN_SECTIONS.find((x) => x.id === "research"), "eval")[2], "ภาระความรับผิดชอบ");
+assert.strictEqual(S.sectionHeaders(S.MAIN_SECTIONS.find((x) => x.id === "research"), "eval")[3], "หน่วยภาระงานด้านกระบวนการวิจัย");
+assert.strictEqual(S.sectionHeaders(S.MAIN_SECTIONS.find((x) => x.id === "book"), "eval")[1], "ชื่อผลงาน");
+assert.strictEqual(S.sectionHeaders(S.MAIN_SECTIONS.find((x) => x.id === "book"), "eval")[3], "หน่วยภาระงานด้านกระบวนการดำเนินงาน");
 assert.strictEqual(S.CC_ITEMS.length, 7);
 assert.strictEqual(S.IDP_MAX, 2);
 
@@ -108,9 +192,20 @@ assert.strictEqual(S.SUPPORT_FC_ITEMS.length, 2);
 assert.strictEqual(S.WORK_TYPES.length, 4);
 
 assert.strictEqual(S.PUB[0].formLabel.includes("Top1"), true);
+assert.ok(!S.PUB[0].formLabel.includes("SciVal/Scopus"));
+assert.ok(S.PUB[0].hint.includes("SciVal/Scopus"));
+assert.ok(S.PUB[2].hint.includes("Qurtile 1"));
 assert.strictEqual(S.GRANT_SOURCES.grant_th.label.includes("ภายในประเทศ"), true);
 assert.strictEqual(S.GRANT_SOURCES.grant_en.label.includes("ต่างประเทศ"), true);
 assert.strictEqual(S.GRANT_SOURCES.grant_mu.label.includes("มหาวิทยาลัย"), true);
 assert.strictEqual(S.GRANT_SOURCES.grant_th.tiers[0].amount, 3000000);
+assert.ok(S.GRANT_SOURCES.grant_th.note.includes("นับจำนวนเงินที่ระบุในสัญญา"));
+assert.ok(S.GRANT_SOURCES.grant_th.note.includes("ไม่นับ Fundamental Fund"));
+assert.ok(S.SCORE_COND.inDb.includes("SciVal หรือ Scopus"));
+assert.ok(S.SCORE_COND.evidence.includes("3 ไฟล์"));
+assert.ok(S.CATALOG.strat.find((x) => x.id === "mupsf3").hint.includes("ข้ามศาสตร์"));
+assert.ok(S.CATALOG.strat.find((x) => x.id === "policy_intl").hint.includes("ไม่นับสะสมปีก่อน"));
+assert.ok(!S.PUB[2].formLabel.includes("นับเฉพาะที่ปรากฏในฐาน"));
+assert.strictEqual(S.grantUnits("grant_th", 3000000).units, 455);
 
 console.log("criteria tests ok");
