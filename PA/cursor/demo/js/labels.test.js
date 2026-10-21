@@ -23,11 +23,11 @@ assert.doesNotMatch(src, /roleLabel: "กรรมการประเมิน
 assert.doesNotMatch(src, /roleLabel: "ประธานกรรมการประเมิน"/);
 
 const pa = sliceFn("viewPA");
-assert.match(pa, /แบบรายงานผลการปฏิบัติงาน \(SHPA\)/);
+assert.match(pa, /PA ล่วงหน้า/);
 assert.match(src, /data-crit-sel/);
 assert.match(src, /function facultyTable\(/);
 assert.match(src, /sectionHeaders/);
-assert.doesNotMatch(pa, /h2>PA ล่วงหน้า/);
+assert.match(pa, /h2>\$\{S\.paLayout === "plan" \? "PA ล่วงหน้า" : "หน้าประเมิน PA"\}/);
 assert.doesNotMatch(pa, /data-pa-layout/);
 assert.doesNotMatch(pa, /data-move-row/);
 assert.doesNotMatch(pa, /จัดทำข้อตกลง \(กระชับ\)/);
@@ -92,12 +92,17 @@ assert.doesNotMatch(src, /พิมพ์คำอธิบายรายงา
 
 const facDash = sliceFn("facultyDashCards");
 assert.match(facDash, /PA ภาระงานอาจารย์/);
+assert.match(facDash, /next: true/);
 assert.doesNotMatch(facDash, /สายสนับสนุน/);
 assert.doesNotMatch(facDash, /ข้อมูลวันลา/);
 assert.doesNotMatch(facDash, /paStaff/);
+assert.match(sliceFn("flowTabs"), /PA ล่วงหน้า/);
+assert.doesNotMatch(sliceFn("flowTabs"), /วงจร PMS/);
+assert.match(src, /function isNextPlan\(/);
+assert.match(src, /data-next-plan/);
 const supDash = sliceFn("supportDashCards");
 assert.match(supDash, /paStaff/);
-assert.match(supDash, /สายสนับสนุน/);
+assert.match(supDash, /แบบข้อตกลง/);
 assert.doesNotMatch(supDash, /PA ภาระงานอาจารย์/);
 assert.doesNotMatch(supDash, /kpi2570/);
 
