@@ -1935,7 +1935,6 @@ function facultyTeachPick(t, lock) {
   const level = t.teachLevel || pick.level;
   const lv = (C.TEACH_PICK || []).find((x) => x.id === level);
   const conds = lv ? lv.conds : [];
-  const needCond = conds.length > 1;
   const dis = lock ? "disabled" : "";
   return `<div class="teach-pick">
     <select data-teach-lv="${t.id}" ${dis}>
@@ -1944,8 +1943,8 @@ function facultyTeachPick(t, lock) {
         `<option value="${esc(x.id)}" ${level === x.id ? "selected" : ""}>${esc(x.label)}</option>`
       ).join("")}
     </select>
-    ${needCond ? `<select data-teach-cond="${t.id}" ${dis}>
-      <option value="">เงื่อนไข</option>
+    ${level ? `<select data-teach-cond="${t.id}" ${!conds.length || lock ? "disabled" : ""}>
+      <option value="">เงื่อนไข / หน่วยต่อชั่วโมง</option>
       ${conds.map((x) =>
         `<option value="${esc(x.id)}" ${pick.cond === x.id ? "selected" : ""}>${esc(x.label)}</option>`
       ).join("")}
@@ -2004,9 +2003,11 @@ function facultyHoursCell(t, g, lock) {
   const ready = !!(c && c.kind === "hours");
   const dis = lock || !ready ? "disabled" : "";
   const per = c && c.per;
+  const h = Number(t.hours) || 0;
+  const units = ready && per ? +(h * per).toFixed(2) : 0;
   const hint = !ready
     ? "เลือก ป. และเงื่อนไข แล้วกรอกชั่วโมง"
-    : (per ? `× ${per}` : "กรอกชั่วโมง");
+    : (h ? `${h} ชม. × ${per} = ${units} หน่วย` : `กรอกชั่วโมง × ${per} หน่วย`);
   return `<div class="hours-cell">
     <input type="number" min="0" step="0.5" data-pa="t:${t.id}:hours" value="${esc(t.hours)}" placeholder="ชั่วโมง" ${dis} />
     <div class="hint">${esc(hint)}</div>
@@ -2072,10 +2073,10 @@ function facultyItemRow(t, g, lock, seq, sec) {
         ${facultyTeachOrCrit(t, g, lock, sec)}
       </td>
       ${qtyHead ? `<td>${facultyQtyCell(t, g, lock)}</td>` : ""}
-      <td class="auto">${esc(prev.label)}</td>
+      <td class="auto">${esc(prev.label)}${prev.units ? `<div class="hint">ข้อนี้ ${C.fmtUnit(prev.units)} หน่วย</div>` : ""}</td>
       <td>
         <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? self : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
-        <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
+        <div class="hint">${self ? `คะแนนข้อนี้ ${C.fmtScore(self)}` : ""}</div>
       </td>
     </tr>`;
   }
@@ -2096,7 +2097,7 @@ function facultyItemRow(t, g, lock, seq, sec) {
     <td class="auto">${C.fmtUnit(cal.units)}</td>
     <td>
       <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? self : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
-      <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
+      <div class="hint">${self ? `คะแนนข้อนี้ ${C.fmtScore(self)}` : ""}</div>
     </td>
     <td>
       <textarea data-pa="t:${t.id}:report" placeholder="กรณีให้คะแนนระดับ 9 – 10 และ 0 – 2 ระบุเหตุผลเชิงรูปธรรมหรือหลักฐานเชิงประจักษ์" ${lock ? "disabled" : ""}>${esc(t.report)}</textarea>
