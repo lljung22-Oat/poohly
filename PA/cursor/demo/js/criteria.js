@@ -458,8 +458,7 @@
     }
 
     if (c.kind === "hours") {
-      const formula = findTeachFormula(t.teachFormula);
-      const per = formula ? formula.per : (c.per || 0);
+      const per = c.per || 0;
       const h = Number(t.hours) || 0;
       const units = +(h * per).toFixed(2);
       const autoScore = units > 0 ? 8 : 0;
@@ -499,8 +498,7 @@
       return { units: gres.units, label: gres.units ? fmtUnit(gres.units) : "—" };
     }
     if (c.kind === "hours") {
-      const formula = findTeachFormula(t.teachFormula) || TEACH_FORMULAS.find((f) => f.criteriaId === c.id);
-      const per = formula ? formula.per : (c.per || 0);
+      const per = c.per || 0;
       const h = Number(t.hours) || 0;
       if (h) return { units: +(h * per).toFixed(2), label: fmtUnit(+(h * per).toFixed(2)) };
       return { units: 0, label: per ? `กรอกชั่วโมง (1 ชม. = ${per} หน่วย)` : "กรอกชั่วโมง" };

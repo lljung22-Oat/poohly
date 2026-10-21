@@ -1001,8 +1001,7 @@ table.pa .auto {
     }
 
     if (c.kind === "hours") {
-      const formula = findTeachFormula(t.teachFormula);
-      const per = formula ? formula.per : (c.per || 0);
+      const per = c.per || 0;
       const h = Number(t.hours) || 0;
       const units = +(h * per).toFixed(2);
       const autoScore = units > 0 ? 8 : 0;
@@ -1042,8 +1041,7 @@ table.pa .auto {
       return { units: gres.units, label: gres.units ? fmtUnit(gres.units) : "—" };
     }
     if (c.kind === "hours") {
-      const formula = findTeachFormula(t.teachFormula) || TEACH_FORMULAS.find((f) => f.criteriaId === c.id);
-      const per = formula ? formula.per : (c.per || 0);
+      const per = c.per || 0;
       const h = Number(t.hours) || 0;
       if (h) return { units: +(h * per).toFixed(2), label: fmtUnit(+(h * per).toFixed(2)) };
       return { units: 0, label: per ? `กรอกชั่วโมง (1 ชม. = ${per} หน่วย)` : "กรอกชั่วโมง" };
@@ -3770,29 +3768,27 @@ function facultyCriteriaCell(t, g, lock) {
   return facultyCriteriaSelect(t, g, lock);
 }
 
-function facultyHoursCell(t, g, lock, compact) {
+function facultyHoursCell(t, g, lock) {
   const c = C.findCrit(g.id, t.criteriaId);
   const ready = !!(c && c.kind === "hours");
   const dis = lock || !ready ? "disabled" : "";
-  const formula = C.findTeachFormula(t.teachFormula) || (c && (C.TEACH_FORMULAS || []).find((f) => f.criteriaId === c.id));
-  const per = formula ? formula.per : (c && c.per);
+  const per = c && c.per;
   const hint = !ready
     ? "เลือกเกณฑ์ก่อน แล้วกรอกชั่วโมง"
     : (per ? `หน่วย = จำนวนชั่วโมง × ${per}` : "กรอกชั่วโมงแล้วระบบคำนวณหน่วย");
   return `<div class="hours-cell">
-    ${compact ? "" : syllabusPick(t, lock)}
     <input type="number" min="0" step="0.5" data-pa="t:${t.id}:hours" value="${esc(t.hours)}" placeholder="ชั่วโมง" ${dis} />
     <div class="hint">${esc(hint)}</div>
   </div>`;
 }
 
-function facultyQtyCell(t, g, lock, compact) {
+function facultyQtyCell(t, g, lock) {
   const c = C.findCrit(g.id, t.criteriaId);
   const dis = lock ? "disabled" : "";
   if (!c || !c.id) {
     return `<div class="hours-cell"><div class="hint">เลือกเกณฑ์ก่อน แล้วกรอกจำนวน</div></div>`;
   }
-  if (c.kind === "hours") return facultyHoursCell(t, g, lock, compact);
+  if (c.kind === "hours") return facultyHoursCell(t, g, lock);
   if (c.kind === "count") {
     const per = c.per || 0;
     return `<div class="hours-cell">
@@ -3844,7 +3840,7 @@ function facultyItemRow(t, g, lock, seq, sec) {
         <input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""} />
         ${facultyCriteriaSelect(t, g, lock)}
       </td>
-      ${qtyHead ? `<td>${facultyQtyCell(t, g, lock, true)}</td>` : ""}
+      ${qtyHead ? `<td>${facultyQtyCell(t, g, lock)}</td>` : ""}
       <td class="auto">${esc(prev.label)}</td>
       <td>
         <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
@@ -3853,18 +3849,19 @@ function facultyItemRow(t, g, lock, seq, sec) {
     </tr>`;
   }
   const c = C.findCrit(g.id, t.criteriaId);
-  const useQty = c && (c.kind === "hours" || c.kind === "count" || c.kind === "custom");
+  const useQty = g.id !== "strat";
+  const teachLike = (sec && (sec.id === "teach" || sec.id === "service")) || (c && (c.kind === "hours" || c.kind === "count" || c.kind === "custom"));
   return `<tr>
     <td class="seq-cell">${seq}${seqTools(g, t)}</td>
     <td class="title-cell">
       <textarea data-pa="t:${t.id}:title" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>
-      <label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
+      ${teachLike ? "" : `<label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
       ${showPubDoi(t, g) ? doiBox(t, lock) : ""}
-      ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint has-hint" data-hint="${esc(C.SCORE_COND.contractAmount)}">${esc(C.SCORE_COND.contractAmountShort)}</div>` : ""}
+      ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint has-hint" data-hint="${esc(C.SCORE_COND.contractAmount)}">${esc(C.SCORE_COND.contractAmountShort)}</div>` : ""}`}
     </td>
     <td>${facultyCriteriaCell(t, g, lock)}</td>
-    <td>${useQty ? facultyQtyCell(t, g, lock, false) : facultyRoleCell(t, g, lock)}${warn}</td>
+    <td>${useQty ? facultyQtyCell(t, g, lock) : facultyRoleCell(t, g, lock)}${warn}</td>
     <td class="auto">${C.fmtUnit(cal.units)}</td>
     <td>
       <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
@@ -4267,18 +4264,6 @@ function projectSearchBox(t, lock) {
     <div class="hint">${t.contractDate
       ? `วันที่จากฐานกลาง ${esc(t.contractDate)}${t.contractDateNote ? " · " + esc(t.contractDateNote) : ""}`
       : (t.contractDateNote || "เลือกแล้วระบบดึงชื่อโครงการและวันที่จากฐานกลางให้อัตโนมัติ")}</div>
-  </div>`;
-}
-
-function syllabusPick(t, lock) {
-  const dis = lock ? "disabled" : "";
-  const opts = C.searchSyllabus("").map((c) =>
-    `<option value="${esc(c.id)}">${esc(c.code)} · ${esc(c.title)}</option>`
-  ).join("");
-  return `<div class="search-box fill-box">
-    <label class="date-lab">รหัส / ชื่อรายวิชา (เลือกแล้วเติมชั่วโมงได้ แล้วยังแก้ต่อได้)</label>
-    <input list="syl-${t.id}" data-syl-q="${t.id}" value="${esc(t.syllabusId || "")}" placeholder="กรอกรหัสหรือชื่อรายวิชา" ${dis} />
-    <datalist id="syl-${t.id}">${opts}</datalist>
   </div>`;
 }
 
@@ -5062,25 +5047,6 @@ function bind() {
       t.contractDate = hit.contractDate || "";
       t.contractDateNote = hit.contractDateNote || "";
       if (hit.amount) t.amount = hit.amount;
-      persist();
-      render();
-    });
-  });
-  document.querySelectorAll("[data-syl-q]").forEach((el) => {
-    el.addEventListener("change", () => {
-      const t = findTarget(el.getAttribute("data-syl-q"));
-      if (!t) return;
-      const q = el.value;
-      const hit = C.findSyllabus(q) || (C.searchSyllabus(q).length === 1 ? C.searchSyllabus(q)[0] : null);
-      if (!hit) { t.syllabusId = q; persist(); return; }
-      t.syllabusId = hit.id;
-      t.title = `${hit.code} ${hit.title}`;
-      t.hours = hit.hours;
-      if (hit.formulaId) {
-        t.teachFormula = hit.formulaId;
-        const f = C.findTeachFormula(hit.formulaId);
-        if (f) t.criteriaId = f.criteriaId;
-      }
       persist();
       render();
     });

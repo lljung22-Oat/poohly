@@ -45,6 +45,9 @@ assert.match(src, /ยุทธศาสตร์อื่นๆ/);
 assert.match(src, /หน่วย = จำนวนชั่วโมง/);
 assert.match(src, /เลือกเกณฑ์ก่อน แล้วกรอกชั่วโมง/);
 assert.doesNotMatch(src, /function syllabusBox\(/);
+assert.doesNotMatch(src, /function syllabusPick\(/);
+assert.doesNotMatch(src, /สูตรคำนวณ 3 แบบตามประกาศคณะฯ/);
+assert.doesNotMatch(src, /data-syl-q/);
 assert.doesNotMatch(src, /ไม่ต้องพิมพ์เอง/);
 
 console.log("meeting-ui tests ok");

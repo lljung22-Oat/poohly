@@ -43,8 +43,9 @@ assert.strictEqual(g1.score, 8);
 const teach = S.calcTarget({ criteriaId: "teach_grad_main", hours: 15 }, "main");
 assert.strictEqual(teach.units, 60);
 
-const teachLab = S.calcTarget({ criteriaId: "teach_ug_lec", teachFormula: "ug_lab", hours: 10 }, "main");
+const teachLab = S.calcTarget({ criteriaId: "teach_ug_lab", hours: 10 }, "main");
 assert.strictEqual(teachLab.units, 15);
+assert.strictEqual(S.calcTarget({ criteriaId: "teach_ug_lec", teachFormula: "ug_lab", hours: 10 }, "main").units, 30);
 
 const custom = S.calcTarget({ criteriaId: "asg_other", proposedUnits: 22, proposedScore: 7 }, "assign");
 assert.strictEqual(custom.units, 22);
