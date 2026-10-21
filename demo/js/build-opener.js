@@ -53,6 +53,7 @@ function copyDirFile(src, dest) {
 
 const sourceFiles = [
   "sources/คำอธิบายตัวชี้วัด-PA-2570-ฉบับจัดทำ-PA.pdf",
+  "sources/PA-2570-KPI-guide-en.pdf",
   "sources/แบบติดตามข้อมูลโครงการวิจัย-ปี-2570.xlsx",
   "sources/โครงการวิจัย-ปี-2570.json",
   "sources/001-แบบฟอร์ม-SHPA-ร่าง.doc",

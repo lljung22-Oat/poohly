@@ -126,6 +126,7 @@
   const api = {
     UNIT_KPI_2570, INT_COLS, NOTIFY_COLS, STATUS_FOUND, REMARK_FOUND, RESEARCH_SAMPLE,
     SOURCE_PDF: "sources/คำอธิบายตัวชี้วัด-PA-2570-ฉบับจัดทำ-PA.pdf",
+    SOURCE_PDF_EN: "sources/PA-2570-KPI-guide-en.pdf",
     SOURCE_XLSX: "sources/แบบติดตามข้อมูลโครงการวิจัย-ปี-2570.xlsx",
     SOURCE_JSON: "sources/โครงการวิจัย-ปี-2570.json"
   };

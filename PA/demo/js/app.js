@@ -341,6 +341,7 @@ function defaultState() {
     account: "",
     focus: "faculty",
     year: "2570",
+    uiLang: "th",
     round: "รอบประเมินปีงบประมาณ 2570",
     view: "login",
     paLayout: "eval",
@@ -424,6 +425,7 @@ function hydrate(raw) {
   if (s.paLayout !== "plan" && s.paLayout !== "eval") s.paLayout = "plan";
   if (!s.supportItems || !s.supportItems.length) s.supportItems = defaultSupportItems();
   if (!s.year || !["2569", "2570"].includes(String(s.year))) s.year = "2570";
+  if (s.uiLang !== "en" && s.uiLang !== "th") s.uiLang = "th";
   if (!s.supportFollow) s.supportFollow = [];
   if (!s.supportPledge) s.supportPledge = defaultState().supportPledge;
   if (!s.leaveRows || !s.leaveRows.length) s.leaveRows = defaultLeaveRows();
@@ -1271,7 +1273,12 @@ function chrome(inner) {
           <select id="yearSel">${yearOptions()}</select>
         </label>
         <span class="sep">|</span>
-        <button type="button" id="btnOut">ออกจากระบบ</button>
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button type="button" data-lang="th" class="${S.uiLang !== "en" ? "on" : ""}">ไทย</button>
+          <button type="button" data-lang="en" class="${S.uiLang === "en" ? "on" : ""}">EN</button>
+        </div>
+        <span class="sep">|</span>
+        <button type="button" id="btnOut">${S.uiLang === "en" ? "Sign out" : "ออกจากระบบ"}</button>
       </div>
     </header>
     ${home ? "" : `<div class="subbar">
@@ -2294,28 +2301,29 @@ function viewSupportPA() {
 
 function viewKpi2570() {
   if (track() === "support") {
-    return chrome(`<div class="warn-box">คำอธิบายตัวชี้วัด PA 2570 เป็นของสายวิชาการ</div>
-      <button class="btn-navy" type="button" data-go="home">กลับหน้าหลักระบบงาน</button>`);
+    return chrome(`<div class="warn-box">${S.uiLang === "en" ? "The PA 2570 KPI guide is for academic staff." : "คำอธิบายตัวชี้วัด PA 2570 เป็นของสายวิชาการ"}</div>
+      <button class="btn-navy" type="button" data-go="home">${S.uiLang === "en" ? "Back to home" : "กลับหน้าหลักระบบงาน"}</button>`);
   }
   const F = window.Faculty2570;
-  const rows = (F.UNIT_KPI_2570 || []).map((k) => `<tr>
-    <td>${esc(k.id)}</td>
-    <td>${esc(k.title)}</td>
-    <td>${k.inUnitPa ? "จัดทำ PA กับส่วนงาน" : "ไม่จัดทำ PA กับส่วนงาน"}</td>
-    <td>${esc(k.unit)}</td>
-    <td>${esc(k.year)}</td>
-    <td>${esc(k.note || "")}</td>
-  </tr>`).join("");
+  const en = S.uiLang === "en";
+  const pdf = en ? (F.SOURCE_PDF_EN || F.SOURCE_PDF) : F.SOURCE_PDF;
+  const title = en ? "PA 2570 KPI Explanation (unit PA booklet)" : "คำอธิบายตัวชี้วัด PA 2570 (ฉบับจัดทำ PA)";
+  const hint = en
+    ? "Official booklet is in Thai. English is a working edition for international faculty. Unit-level denominators must not be multiplied by the 1,820 individual workload base."
+    : "เปิดไฟล์ PDF ตามเล่มทันที · มีฉบับภาษาอังกฤษสำหรับอาจารย์ต่างประเทศ · ห้ามนำตัวหารระดับมหาวิทยาลัยไปคูณฐานหน่วย 1,820";
   return chrome(`
-    <p class="crumb">สายวิชาการ</p>
-    <h1 class="page-title">คำอธิบายตัวชี้วัด PA 2570 (ฉบับจัดทำ PA)</h1>
-    <div class="card">
-      <p class="hint">ปกเล่มเขียนว่าข้อตกลงการปฏิบัติงานของส่วนงาน เจ้าของงานใช้ฝั่งอาจารย์ อ่านนิยามตอนกรอกงานวิจัย ห้ามนำตัวหารระดับมหาวิทยาลัยไปคูณฐานหน่วย 1,820</p>
-      <p><a href="${esc(F.SOURCE_PDF)}" target="_blank" rel="noopener">เปิดไฟล์ต้นฉบับ PDF</a></p>
-      <div class="pa-wrap"><table class="data">
-        <thead><tr><th>รหัส</th><th>ชื่อตามเล่ม</th><th>จัดทำ PA กับส่วนงาน</th><th>หน่วยนับ</th><th>ปีที่เก็บ</th><th>หมายเหตุตามเล่ม</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table></div>
+    <p class="crumb">${en ? "Academic staff" : "สายวิชาการ"}</p>
+    <h1 class="page-title">${esc(title)}</h1>
+    <div class="card kpi-pdf-card">
+      <div class="kpi-pdf-bar">
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button type="button" data-lang="th" class="${en ? "" : "on"}">ไทย</button>
+          <button type="button" data-lang="en" class="${en ? "on" : ""}">English</button>
+        </div>
+        <a class="btn-navy" href="${esc(pdf)}" target="_blank" rel="noopener">${en ? "Open PDF in a new tab" : "เปิด PDF แท็บใหม่"}</a>
+      </div>
+      <p class="hint">${esc(hint)}</p>
+      <iframe class="kpi-pdf" src="${esc(pdf)}" title="${esc(title)}"></iframe>
     </div>`);
 }
 
@@ -3161,6 +3169,15 @@ function bind() {
     });
   }
   document.querySelectorAll("#btnOut").forEach((out) => out.addEventListener("click", logout));
+  document.querySelectorAll("[data-lang]").forEach((b) => {
+    b.addEventListener("click", () => {
+      const lang = b.getAttribute("data-lang") === "en" ? "en" : "th";
+      if (S.uiLang === lang) return;
+      S.uiLang = lang;
+      persist();
+      render();
+    });
+  });
   document.querySelectorAll("#btnSwitch").forEach((sw) => sw.addEventListener("click", logout));
   document.querySelectorAll("#btnReset").forEach((rst) => rst.addEventListener("click", resetDemo));
 
