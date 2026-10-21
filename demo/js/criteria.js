@@ -259,14 +259,11 @@
   /* เลือก ป. ที่สอน แล้วเลือกเงื่อนไข ไม่โชว์ข้อความประกาศยาว */
   const TEACH_PICK = [
     { id: "ug", label: "ป.ตรี", conds: [
-      { id: "lec", label: "บรรยาย · 3 หน่วย/ชม.", criteriaId: "teach_ug_lec" },
-      { id: "lab", label: "ปฏิบัติ · 1.5 หน่วย/ชม.", criteriaId: "teach_ug_lab" }
+      { id: "lec", label: "บรรยาย", criteriaId: "teach_ug_lec" },
+      { id: "lab", label: "ปฏิบัติ", criteriaId: "teach_ug_lab" }
     ] },
     { id: "grad", label: "ป.โท/เอก", conds: [
-      { id: "main", label: "ผู้สอนหลัก · 4 หน่วย/ชม.", criteriaId: "teach_grad_main" }
-    ] },
-    { id: "prog", label: "หลักสูตร", conds: [
-      { id: "proj", label: "โครงการ · 3 หน่วย/ชม.", criteriaId: "course_proj" }
+      { id: "main", label: "ผู้สอนหลัก", criteriaId: "teach_grad_main" }
     ] }
   ];
 
@@ -530,7 +527,7 @@
       const per = c.per || 0;
       const h = Number(t.hours) || 0;
       if (h) return { units: +(h * per).toFixed(2), label: fmtUnit(+(h * per).toFixed(2)) };
-      return { units: 0, label: per ? `กรอกชั่วโมง (1 ชม. = ${per} หน่วย)` : "กรอกชั่วโมง" };
+      return { units: 0, label: "—" };
     }
     if (c.kind === "count") {
       const n = Number(t.qty) || 0;

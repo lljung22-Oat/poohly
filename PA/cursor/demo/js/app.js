@@ -220,9 +220,9 @@ function defaultGroups() {
             id: uid(), code: "2.1.1", title: "ชั่วโมงสอน",
             targets: [{
               ...emptyTarget("2.1.1.1", 15),
-              title: "SHSS 501 ทฤษฎีสังคมศาสตร์",
-              criteriaId: "teach_grad_main", teachFormula: "grad_main", teachLevel: "grad",
-              syllabusId: "SHSS501", hours: "45", kpiType: "quantity"
+              title: "",
+              criteriaId: "", teachFormula: "", teachLevel: "",
+              syllabusId: "", hours: "", kpiType: "quantity"
             }]
           }]
         },
@@ -1908,7 +1908,6 @@ function applySyllabusCourse(t, courseId) {
   if (!hit) { t.syllabusId = courseId; return; }
   t.syllabusId = hit.id;
   t.title = `${hit.code} ${hit.title}`;
-  t.hours = hit.hours;
   if (hit.formulaId) {
     t.teachFormula = hit.formulaId;
     const f = C.findTeachFormula(hit.formulaId);
@@ -1949,8 +1948,8 @@ function facultyTeachPick(t, lock) {
         `<option value="${esc(x.id)}" ${level === x.id ? "selected" : ""}>${esc(x.label)}</option>`
       ).join("")}
     </select>
-    ${level ? `<select data-teach-cond="${t.id}" ${!conds.length || lock ? "disabled" : ""}>
-      <option value="">เงื่อนไข / หน่วยต่อชั่วโมง</option>
+    ${conds.length > 1 ? `<select data-teach-cond="${t.id}" ${dis}>
+      <option value="">เงื่อนไข</option>
       ${conds.map((x) =>
         `<option value="${esc(x.id)}" ${pick.cond === x.id ? "selected" : ""}>${esc(x.label)}</option>`
       ).join("")}
@@ -2009,11 +2008,9 @@ function facultyHoursCell(t, g, lock) {
   const ready = !!(c && c.kind === "hours");
   const dis = lock || !ready ? "disabled" : "";
   const per = c && c.per;
-  const h = Number(t.hours) || 0;
-  const units = ready && per ? +(h * per).toFixed(2) : 0;
   const hint = !ready
-    ? "เลือก ป. และเงื่อนไข แล้วกรอกชั่วโมง"
-    : (h ? `${h} ชม. × ${per} = ${units} หน่วย` : `กรอกชั่วโมง × ${per} หน่วย`);
+    ? "เลือก ป. แล้วกรอกชั่วโมง"
+    : `1 ชม. = ${per} หน่วย`;
   return `<div class="hours-cell">
     <input type="number" min="0" step="0.5" data-pa="t:${t.id}:hours" value="${esc(t.hours)}" placeholder="ชั่วโมง" ${dis} />
     <div class="hint">${esc(hint)}</div>
@@ -2081,10 +2078,9 @@ function facultyItemRow(t, g, lock, seq, sec) {
         ${facultyTeachOrCrit(t, g, lock, sec)}`}
       </td>
       ${qtyHead ? `<td>${facultyQtyCell(t, g, lock)}</td>` : ""}
-      <td class="auto">${esc(prev.label)}${prev.units ? `<div class="hint">ข้อนี้ ${C.fmtUnit(prev.units)} หน่วย</div>` : ""}</td>
+      <td class="auto">${esc(prev.label)}</td>
       <td>
-        <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? self : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
-        <div class="hint">${self ? `คะแนนข้อนี้ ${C.fmtScore(self)}` : ""}</div>
+        <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? (self || "") : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
       </td>
     </tr>`;
   }
@@ -2106,8 +2102,7 @@ function facultyItemRow(t, g, lock, seq, sec) {
     <td>${useQty ? facultyQtyCell(t, g, lock) : facultyRoleCell(t, g, lock)}${warn}</td>
     <td class="auto">${C.fmtUnit(cal.units)}</td>
     <td>
-      <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? self : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
-      <div class="hint">${self ? `คะแนนข้อนี้ ${C.fmtScore(self)}` : ""}</div>
+      <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? (self || "") : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
     </td>
     <td>
       <textarea data-pa="t:${t.id}:report" placeholder="กรณีให้คะแนนระดับ 9 – 10 และ 0 – 2 ระบุเหตุผลเชิงรูปธรรมหรือหลักฐานเชิงประจักษ์" ${lock ? "disabled" : ""}>${esc(t.report)}</textarea>
