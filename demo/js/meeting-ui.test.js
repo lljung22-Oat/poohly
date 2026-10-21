@@ -45,7 +45,7 @@ assert.match(src, /แบบรายงานผลการปฏิบัต�
 assert.match(src, /ยุทธศาสตร์ตีพิมพ์/);
 assert.match(src, /ยุทธศาสตร์ทุนวิจัย/);
 assert.match(src, /ยุทธศาสตร์อื่นๆ/);
-assert.match(src, /หน่วย = จำนวนชั่วโมง/);
+assert.match(src, /เลือก ป\. และเงื่อนไข แล้วกรอกชั่วโมง/);
 assert.match(src, /เลือก ป\. และเงื่อนไข แล้วกรอกชั่วโมง/);
 assert.doesNotMatch(src, /function syllabusBox\(/);
 assert.doesNotMatch(src, /function syllabusPick\(/);

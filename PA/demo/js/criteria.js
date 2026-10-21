@@ -256,6 +256,35 @@
     { id: "ug_lab", criteriaId: "teach_ug_lab", label: "สูตรป.ตรี ปฏิบัติ ผู้สอนหลัก", per: 1.5, hint: "1 ชั่วโมง = 1.5 หน่วย" }
   ];
 
+  /* เลือก ป. ที่สอน แล้วเลือกเงื่อนไข ไม่โชว์ข้อความประกาศยาว */
+  const TEACH_PICK = [
+    { id: "ug", label: "ป.ตรี", conds: [
+      { id: "lec", label: "บรรยาย", criteriaId: "teach_ug_lec" },
+      { id: "lab", label: "ปฏิบัติ", criteriaId: "teach_ug_lab" }
+    ] },
+    { id: "grad", label: "ป.โท/เอก", conds: [
+      { id: "main", label: "ผู้สอนหลัก", criteriaId: "teach_grad_main" }
+    ] },
+    { id: "prog", label: "หลักสูตร", conds: [
+      { id: "proj", label: "โครงการ", criteriaId: "course_proj" }
+    ] }
+  ];
+
+  function teachPickOf(criteriaId) {
+    for (const lv of TEACH_PICK) {
+      const cond = lv.conds.find((x) => x.criteriaId === criteriaId);
+      if (cond) return { level: lv.id, cond: cond.id, criteriaId: cond.criteriaId, per: (findCrit("main", cond.criteriaId) || {}).per };
+    }
+    return { level: "", cond: "", criteriaId: "", per: 0 };
+  }
+
+  function teachCriteriaFromPick(levelId, condId) {
+    const lv = TEACH_PICK.find((x) => x.id === levelId);
+    if (!lv) return "";
+    const cond = lv.conds.find((x) => x.id === condId) || (lv.conds.length === 1 ? lv.conds[0] : null);
+    return cond ? cond.criteriaId : "";
+  }
+
   const MAX_EVIDENCE_FILES = 3;
 
   const SCORE_COND = {
@@ -686,7 +715,7 @@
     GROUP_HEADERS, paHeaders, paItemHeader, MAIN_SECTIONS, mainSectionOf, sectionHeaders,
     GROUPS, ROLES, KPI_TYPES, SCALE5, LEVELS, CC_ITEMS, FC_ITEMS, SUPPORT_FC_ITEMS,
     WORK_TYPES, IDP_METHODS,
-    PUB, GRANT_SOURCES, CATALOG, STRAT_BUCKETS, TEACH_FORMULAS, MAX_EVIDENCE_FILES, SCORE_COND,
+    PUB, GRANT_SOURCES, CATALOG, STRAT_BUCKETS, TEACH_FORMULAS, TEACH_PICK, teachPickOf, teachCriteriaFromPick, MAX_EVIDENCE_FILES, SCORE_COND,
     PROJECT_REGISTRY, SYLLABUS_REGISTRY,
     searchProjects, findProject, searchSyllabus, findSyllabus, findTeachFormula,
     doiStatus, normalizeDoi, doiUrl, evidenceFiles, attachEvidence, expectedPreview,

@@ -172,7 +172,7 @@ function emptyTarget(code, weight) {
     criteriaId: "", role: "", inDb: false, withStudent: false,
     amount: "", hours: "", qty: 1, report: "", file: "", files: [],
     doi: "", projectCode: "", contractDate: "", contractDateNote: "",
-    teachFormula: "", syllabusId: "",
+    teachFormula: "", teachLevel: "", syllabusId: "",
     customTitle: "", proposedUnits: "", proposedScore: "",
     fileError: "",
     selfScore: "", committeeComment: "", committeeScore: "",
@@ -450,6 +450,7 @@ function hydrate(raw) {
           if (t.contractDate == null) t.contractDate = "";
           if (t.contractDateNote == null) t.contractDateNote = "";
           if (t.teachFormula == null) t.teachFormula = "";
+          if (!t.teachLevel) t.teachLevel = (C.teachPickOf && C.teachPickOf(t.criteriaId).level) || "";
           if (t.syllabusId == null) t.syllabusId = "";
           if (t.customTitle == null) t.customTitle = "";
           if (t.proposedUnits == null) t.proposedUnits = "";
@@ -1921,8 +1922,44 @@ function facultyCriteriaSelect(t, g, lock) {
   </select>`;
 }
 
+function applyTeachPick(t, level, cond) {
+  t.teachLevel = level || "";
+  const crit = C.teachCriteriaFromPick(level, cond);
+  t.criteriaId = crit || "";
+  const f = (C.TEACH_FORMULAS || []).find((x) => x.criteriaId === t.criteriaId);
+  t.teachFormula = f ? f.id : "";
+}
+
+function facultyTeachPick(t, lock) {
+  const pick = C.teachPickOf(t.criteriaId);
+  const level = t.teachLevel || pick.level;
+  const lv = (C.TEACH_PICK || []).find((x) => x.id === level);
+  const conds = lv ? lv.conds : [];
+  const needCond = conds.length > 1;
+  const dis = lock ? "disabled" : "";
+  return `<div class="teach-pick">
+    <select data-teach-lv="${t.id}" ${dis}>
+      <option value="">ป.ที่สอน</option>
+      ${(C.TEACH_PICK || []).map((x) =>
+        `<option value="${esc(x.id)}" ${level === x.id ? "selected" : ""}>${esc(x.label)}</option>`
+      ).join("")}
+    </select>
+    ${needCond ? `<select data-teach-cond="${t.id}" ${dis}>
+      <option value="">เงื่อนไข</option>
+      ${conds.map((x) =>
+        `<option value="${esc(x.id)}" ${pick.cond === x.id ? "selected" : ""}>${esc(x.label)}</option>`
+      ).join("")}
+    </select>` : ""}
+  </div>`;
+}
+
+function facultyTeachOrCrit(t, g, lock, sec) {
+  if ((sec && sec.id === "teach") || C.mainSectionOf(t) === "teach") return facultyTeachPick(t, lock);
+  return facultyCriteriaSelect(t, g, lock);
+}
+
 function facultyCriteriaCell(t, g, lock) {
-  if (S.paLayout === "plan" || g.id !== "strat") return facultyCriteriaSelect(t, g, lock);
+  if (S.paLayout === "plan" || g.id !== "strat") return facultyTeachOrCrit(t, g, lock);
   if (g.id === "strat") {
     const pubs = C.PUB.map((p) =>
       critRadio(t, lock, p.id, p.formLabel || `${p.label} (${p.units} หน่วย / ${p.score} คะแนน)`, p.hint)
@@ -1968,8 +2005,8 @@ function facultyHoursCell(t, g, lock) {
   const dis = lock || !ready ? "disabled" : "";
   const per = c && c.per;
   const hint = !ready
-    ? "เลือกเกณฑ์ก่อน แล้วกรอกชั่วโมง"
-    : (per ? `หน่วย = จำนวนชั่วโมง × ${per}` : "กรอกชั่วโมงแล้วระบบคำนวณหน่วย");
+    ? "เลือก ป. และเงื่อนไข แล้วกรอกชั่วโมง"
+    : (per ? `× ${per}` : "กรอกชั่วโมง");
   return `<div class="hours-cell">
     <input type="number" min="0" step="0.5" data-pa="t:${t.id}:hours" value="${esc(t.hours)}" placeholder="ชั่วโมง" ${dis} />
     <div class="hint">${esc(hint)}</div>
@@ -2032,7 +2069,7 @@ function facultyItemRow(t, g, lock, seq, sec) {
       <td class="seq-cell">${seq}${seqTools(g, t)}</td>
       <td>
         <input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""} />
-        ${facultyCriteriaSelect(t, g, lock)}
+        ${facultyTeachOrCrit(t, g, lock, sec)}
       </td>
       ${qtyHead ? `<td>${facultyQtyCell(t, g, lock)}</td>` : ""}
       <td class="auto">${esc(prev.label)}</td>
@@ -3147,6 +3184,25 @@ function bind() {
       if (String(el.value).startsWith("pub_")) t.amount = "";
       const f = (C.TEACH_FORMULAS || []).find((x) => x.criteriaId === el.value);
       if (f) t.teachFormula = f.id;
+      persist();
+      render();
+    });
+  });
+  document.querySelectorAll("[data-teach-lv]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const t = findTarget(el.getAttribute("data-teach-lv"));
+      if (!t) return;
+      const lv = (C.TEACH_PICK || []).find((x) => x.id === el.value);
+      applyTeachPick(t, el.value, lv && lv.conds.length === 1 ? lv.conds[0].id : "");
+      persist();
+      render();
+    });
+  });
+  document.querySelectorAll("[data-teach-cond]").forEach((el) => {
+    el.addEventListener("change", () => {
+      const t = findTarget(el.getAttribute("data-teach-cond"));
+      if (!t) return;
+      applyTeachPick(t, t.teachLevel || C.teachPickOf(t.criteriaId).level, el.value);
       persist();
       render();
     });

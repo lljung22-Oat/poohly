@@ -52,6 +52,10 @@ assert.strictEqual(custom.units, 22);
 assert.strictEqual(custom.score, 7);
 
 assert.strictEqual(S.TEACH_FORMULAS.length, 3);
+assert.strictEqual(S.teachCriteriaFromPick("ug", "lec"), "teach_ug_lec");
+assert.strictEqual(S.teachCriteriaFromPick("grad", ""), "teach_grad_main");
+assert.strictEqual(S.teachPickOf("teach_ug_lab").level, "ug");
+assert.strictEqual(S.TEACH_PICK.length, 3);
 assert.strictEqual(S.MAX_EVIDENCE_FILES, 3);
 assert.ok(S.searchProjects("เหลื่อมล้ำ").some((p) => p.code === "INT-2570-01"));
 assert.strictEqual(S.findProject("INT-2570-01").contractDate, "2569-10-01");
