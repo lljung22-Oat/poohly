@@ -26,6 +26,7 @@ assert.match(row, /sec\.planQty/);
 assert.match(row, /facultyRoleCell/);
 assert.match(row, /fmtUnit/);
 assert.match(row, /selfScore/);
+assert.match(row, /selfScore == null \? self : t\.selfScore/);
 assert.match(row, /หลักฐาน/);
 assert.match(row, /evidenceBox/);
 assert.match(row, /doiBox/);

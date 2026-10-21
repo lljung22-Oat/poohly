@@ -297,6 +297,8 @@ a { color: #1565a8; }
 .period-switch button.on { background: #163a5f; border-color: #163a5f; }
 .period-switch button.on b, .period-switch button.on small { color: #fff; }
 table.pa.pa-faculty.pa-plan { min-width: 920px; }
+table.pa.pa-faculty.pa-plan td:nth-child(3) { min-width: 120px; }
+table.pa.pa-faculty.pa-plan td:last-child { min-width: 100px; }
 input.plan-title { width: 100%; margin-bottom: 8px; padding: 8px 10px; border: 1px solid #c5d0dc; border-radius: 8px; }
 .teach-pick { display: flex; flex-wrap: wrap; gap: 8px; }
 .teach-pick select { min-width: 108px; width: auto; }
@@ -3911,7 +3913,7 @@ function facultyItemRow(t, g, lock, seq, sec) {
       ${qtyHead ? `<td>${facultyQtyCell(t, g, lock)}</td>` : ""}
       <td class="auto">${esc(prev.label)}</td>
       <td>
-        <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
+        <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? self : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
         <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
       </td>
     </tr>`;
@@ -3932,7 +3934,7 @@ function facultyItemRow(t, g, lock, seq, sec) {
     <td>${useQty ? facultyQtyCell(t, g, lock) : facultyRoleCell(t, g, lock)}${warn}</td>
     <td class="auto">${C.fmtUnit(cal.units)}</td>
     <td>
-      <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
+      <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? self : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
       <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
     </td>
     <td>

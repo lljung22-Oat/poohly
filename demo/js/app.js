@@ -2074,7 +2074,7 @@ function facultyItemRow(t, g, lock, seq, sec) {
       ${qtyHead ? `<td>${facultyQtyCell(t, g, lock)}</td>` : ""}
       <td class="auto">${esc(prev.label)}</td>
       <td>
-        <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
+        <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? self : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
         <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
       </td>
     </tr>`;
@@ -2095,7 +2095,7 @@ function facultyItemRow(t, g, lock, seq, sec) {
     <td>${useQty ? facultyQtyCell(t, g, lock) : facultyRoleCell(t, g, lock)}${warn}</td>
     <td class="auto">${C.fmtUnit(cal.units)}</td>
     <td>
-      <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
+      <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? self : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
       <div class="hint">${self ? `คำนวณ ${C.fmtScore(self)}` : ""}</div>
     </td>
     <td>
