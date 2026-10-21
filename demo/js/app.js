@@ -2020,9 +2020,7 @@ function facultyHoursCell(t, g, lock) {
 function facultyQtyCell(t, g, lock) {
   const c = C.findCrit(g.id, t.criteriaId);
   const dis = lock ? "disabled" : "";
-  if (!c || !c.id) {
-    return `<div class="hours-cell"><div class="hint">เลือกเกณฑ์ก่อน แล้วกรอกจำนวน</div></div>`;
-  }
+  if (!c || !c.id) return facultyHoursCell(t, g, lock);
   if (c.kind === "hours") return facultyHoursCell(t, g, lock);
   if (c.kind === "count") {
     const per = c.per || 0;
