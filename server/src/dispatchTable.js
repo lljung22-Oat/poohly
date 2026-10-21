@@ -9,7 +9,7 @@ export const dispatchTable = {
   ],
   prompt: "ทำเฉพาะซอง Sxx — อ่าน 00-กฏเหล็ก.md และ pa-config.example.json ถ้า SOURCE_MISSING ให้หยุด ห้ามแตะ C1–C7 C10 C11",
   rows: [
-    { id: "C1", owner: "Cursor หัวหน้าชุด", send: ["ประกาศหลักเกณฑ์ PDF", "ประกาศหลักเกณฑ์ Word", "คู่มือหลักเกณฑ์", "demo/js/criteria.js"], keys: ["faculty.totalUnits", "faculty.groups"], blocked: "ตารางคะแนนบทความยังไม่มีไฟล์ จึงคืน SOURCE_MISSING ไม่สร้างแถว", open: false },
+    { id: "C1", owner: "Cursor หัวหน้าชุด", send: ["ประกาศหลักเกณฑ์ PDF", "ประกาศหลักเกณฑ์ Word", "คู่มือหลักเกณฑ์", "demo/js/criteria.js"], keys: ["faculty.totalUnits", "faculty.groups"], blocked: "ลำดับเกณฑ์ล็อกใน facultyCriteria.js ตามโค้ดอ้างอิง (1.1 คือ Top1 ไม่ใช่ Q1 ของเล่มส่วนงาน) คะแนนรายคนยัง SOURCE_MISSING จนกว่าผู้รู้ยืนยัน", open: false },
     { id: "C2", owner: "Cursor หัวหน้าชุด", send: ["ประกาศทั้งคู่", "แบบฟอร์ม SHPA_ ร่าง.doc"], keys: ["tracks"], blocked: "คอลัมน์ SHPA = SOURCE_MISSING จนกว่าจะมีไฟล์ 001", open: false },
     { id: "C3", owner: "Cursor หัวหน้าชุด", send: ["UM-03", "แนะนำระบบ PMS1", "แนะนำระบบ PMS2"], keys: ["lockAfterSend"], blocked: "เขียนใน server/src/state.js แล้ว", open: true },
     { id: "C4", owner: "Cursor หัวหน้าชุด", send: ["PA/dev-plan/02-บทบาทและหน้าจอ.md"], keys: ["tracks", "roles"], blocked: "เขียนใน server/src/acl.js แล้ว", open: true },

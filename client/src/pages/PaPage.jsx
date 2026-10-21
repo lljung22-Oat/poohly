@@ -17,6 +17,7 @@ export default function PaPage() {
 
   if (!data) return <p>{message || "กำลังโหลด"}</p>;
   const locked = ["reported", "firstHead", "head", "ack", "disagree"].includes(data.status);
+  const workloads = [...data.workloads].sort((a, b) => a.groupNo - b.groupNo);
 
   function updateWorkload(groupId, patch) {
     setData({
@@ -29,7 +30,7 @@ export default function PaPage() {
     const saved = await api("/api/pa/me", {
       method: "PUT",
       body: {
-        workloads: data.workloads.map((workload) => ({
+        workloads: workloads.map((workload) => ({
           groupId: workload.groupId,
           weight: workload.weight,
           agreements: workload.agreements.map((agreement) => ({
@@ -78,14 +79,27 @@ export default function PaPage() {
       ) : null}
       {data.announcementUnits === "SOURCE_MISSING" ? (
         <p className="rounded bg-[#f6f1e4] px-3 py-2 text-sm">
-          ฐานหน่วยที่ config ระบุคือ {data.totalUnits} และเพดานกลุ่มแสดงไว้ข้างภาระงาน ตารางคะแนนบทความจากประกาศยัง SOURCE_MISSING จึงไม่คิดหน่วยรายคน
+          ฐานหน่วยที่ config ระบุคือ {data.totalUnits} ลำดับเกณฑ์ด้านล่างยึดโค้ดอ้างอิง ยังไม่นำไปคูณคะแนนรายคนจนกว่าผู้รู้จะยืนยัน รหัส 1.1 ของเล่มส่วนงานคือ Q1 คนละชุดกับ 1.1 Top1 ของประกาศคณะ
         </p>
       ) : null}
       {data.staffForms ? <p className="rounded bg-[#f6f1e4] px-3 py-2 text-sm">แบบ 05 ถึง 09: SOURCE_MISSING — หน้านี้คือโครงสร้างข้อตกลงตาม PMS ไม่ใช่แบบพิมพ์ที่ยังไม่มีไฟล์</p> : null}
-      {data.workloads.map((workload) => (
+      {workloads.map((workload) => {
+        const named = (data.facultyGroups || []).find((group) => group.id === workload.groupId);
+        const criteria = (data.facultyCriteria || []).filter((item) => item.groupId === workload.groupId);
+        return (
         <section key={workload.groupId} className="grid gap-3 rounded border border-[#e4ded2] p-3">
-          <h3 className="font-medium">{workload.groupNo}. {workload.title}</h3>
+          <h3 className="font-medium">{named ? `${named.title} · ${named.name}` : `${workload.groupNo}. ${workload.title}`}</h3>
           {workload.cap ? <p className="text-sm">เพดานกลุ่ม {workload.cap.pct}% ({workload.cap.cap} หน่วย) อ่านอย่างเดียว</p> : null}
+          {criteria.length ? (
+            <ol className="grid gap-1 text-sm">
+              {criteria.map((item, itemIndex) => (
+                <li key={item.id}>
+                  {itemIndex + 1}. {item.label}
+                  {itemIndex === 0 || criteria[itemIndex - 1].bucket !== item.bucket ? ` · ${item.bucket}` : ""}
+                </li>
+              ))}
+            </ol>
+          ) : null}
           <label className="grid max-w-xs gap-1 text-sm">
             น้ำหนักภาระงาน
             <input className="rounded border px-2 py-1" disabled={locked} value={workload.weight ?? ""} onChange={(event) => updateWorkload(workload.groupId, { weight: event.target.value })} />
@@ -106,6 +120,12 @@ export default function PaPage() {
                   </select>
                   <input className="rounded border px-2 py-1" disabled={locked || agreement.status === "wait" || agreement.status === "approved"} placeholder="น้ำหนักตัวชี้วัด" value={indicator.weight ?? ""} onChange={(event) => editIndicator(workload, index, indicatorIndex, { weight: event.target.value })} />
                   <input className="rounded border px-2 py-1" disabled={locked || agreement.status === "wait" || agreement.status === "approved"} placeholder="เป้าหมาย" value={indicator.target || ""} onChange={(event) => editIndicator(workload, index, indicatorIndex, { target: event.target.value })} />
+                  {criteria.length ? (
+                    <select className="rounded border px-2 py-1 md:col-span-2" disabled={locked || agreement.status === "wait" || agreement.status === "approved"} value={criteria.some((item) => item.id === indicator.indicatorRef) ? indicator.indicatorRef : ""} onChange={(event) => editIndicator(workload, index, indicatorIndex, { indicatorRef: event.target.value })}>
+                      <option value="">เกณฑ์ตามลำดับประกาศคณะ</option>
+                      {criteria.map((item, itemIndex) => <option key={item.id} value={item.id}>{itemIndex + 1}. {item.label}</option>)}
+                    </select>
+                  ) : null}
                   {data.status === "approved" || indicator.selfLocked ? (
                     <label className="grid gap-1 text-sm">
                       คะแนนตนเอง 0–10
@@ -129,7 +149,8 @@ export default function PaPage() {
             </button>
           ) : null}
         </section>
-      ))}
+        );
+      })}
       {message ? <p className="text-sm">{message}</p> : null}
       {!locked && data.status !== "wait" ? (
         <div className="flex gap-2">

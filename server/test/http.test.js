@@ -78,6 +78,9 @@ test("วงจร PA CC แยกสาย และไม่คิดหน่
   assert.equal(saved.status, 200);
   assert.equal(saved.body.announcementUnits, "SOURCE_MISSING");
   assert.equal(saved.body.totalUnits, 1820);
+  assert.deepEqual(saved.body.workloads.map((workload) => workload.groupId), ["strat", "main", "assign", "community"]);
+  assert.equal(saved.body.facultyCriteria[0].id, "pub_top1");
+  assert.equal(saved.body.facultyCriteria.find((item) => item.id === "pub_q1").label.startsWith("1.3"), true);
   const submitted = await call(token, "POST", "/api/pa/me/submit");
   assert.equal(submitted.status, 200);
   assert.equal(submitted.body.status, "wait");

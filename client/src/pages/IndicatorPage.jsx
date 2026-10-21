@@ -17,6 +17,7 @@ export default function IndicatorPage() {
       <p className="text-sm">{data.title}</p>
       <p className="text-sm">ปกเล่ม: ข้อตกลงส่วนงาน · คำสั่งเจ้าของงาน: ใช้ฝั่งอาจารย์ · เก็บทั้งคู่</p>
       <p className="rounded bg-[#f6f1e4] px-3 py-2 text-sm">{data.note} · การเชื่อมหน่วยอาจารย์: {data.facultyUnitLink}</p>
+      <p className="rounded bg-[#f6f1e4] px-3 py-2 text-sm">ลำดับในตารางนี้เป็นลำดับเล่มส่วนงาน รหัส 1.1 คือ Q1 ไม่ใช่ลำดับภาระงานอาจารย์ ภาระงานที่ 1 ตามประกาศคณะเรียง Top1 แล้ว Top10 แล้ว Q1</p>
       <p className="text-sm">ติดต่อ {data.contact.email} โทร {data.contact.phone}</p>
       <div className="max-w-full overflow-x-auto">
         <table className="min-w-full border text-sm">

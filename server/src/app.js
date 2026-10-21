@@ -16,6 +16,7 @@ import {
   weightedTotal,
   SOURCE_MISSING,
 } from "./formulas.js";
+import { FACULTY_CRITERIA, FACULTY_GROUPS, findFacultyCriterion } from "./facultyCriteria.js";
 import {
   INDICATOR_KINDS,
   LOGIN_LOCK,
@@ -253,9 +254,16 @@ export function createApp(pool) {
             if (indicator.kind && !INDICATOR_KINDS.includes(indicator.kind)) throw fail(400, "ชนิดตัวชี้วัดไม่อยู่ในคู่มือ");
             const ref = indicator.indicatorRef || null;
             if (ref) {
-              if (target.track !== "faculty" || spec.id !== "strat") throw fail(400, "อ้างอิงตัวชี้วัดได้เฉพาะภาระงานยุทธศาสตร์ฝั่งอาจารย์");
-              const row = config.unitPaFy2570.catalog.find((item) => item.id === ref);
-              if (!row || row.kind === "heading" || row.inUnitPa !== true) throw fail(400, "อ้างอิงได้เฉพาะตัวชี้วัดที่จัดทำ PA");
+              const criterion = findFacultyCriterion(ref);
+              if (criterion) {
+                if (target.track !== "faculty") throw fail(400, "เกณฑ์ประกาศคณะใช้กับสายวิชาการ");
+                if (criterion.groupId !== spec.id) throw fail(400, "เกณฑ์ไม่อยู่ในภาระงานนี้");
+              } else if (target.track === "faculty" && spec.id === "strat") {
+                const row = config.unitPaFy2570.catalog.find((item) => item.id === ref);
+                if (!row || row.kind === "heading" || row.inUnitPa !== true) throw fail(400, "อ้างอิงได้เฉพาะตัวชี้วัดที่จัดทำ PA");
+              } else {
+                throw fail(400, "อ้างอิงตัวชี้วัดได้เฉพาะภาระงานยุทธศาสตร์ฝั่งอาจารย์");
+              }
             }
             await pool.query(
               `INSERT INTO indicators (agreement_id, title, kind, weight, target_text, indicator_ref)
@@ -1136,8 +1144,10 @@ export function createApp(pool) {
       kinds: INDICATOR_KINDS,
       shpaColumns: target.track === "faculty" ? SOURCE_MISSING : null,
       announcementUnits: target.track === "faculty" ? facultyUnitsFromAnnouncement() : null,
+      facultyGroups: target.track === "faculty" ? FACULTY_GROUPS : null,
+      facultyCriteria: target.track === "faculty" ? FACULTY_CRITERIA : null,
       totalUnits: target.track === "faculty" ? config.faculty.totalUnits : null,
-      workloads: tree,
+      workloads: tree.sort((a, b) => a.groupNo - b.groupNo),
       staffForms: target.track === "support" ? config.staffFormFields : null,
     };
   }
