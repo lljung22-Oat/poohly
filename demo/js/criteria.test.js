@@ -103,27 +103,27 @@ assert.strictEqual(S.GROUP_HEADERS.community.item, "ชื่อกิจกร�
 assert.strictEqual(S.GROUP_HEADERS.strat.item, "ชื่อบทความ");
 assert.strictEqual(S.GROUP_HEADERS.strat.eval[2], "ภาระงาน");
 assert.strictEqual(S.GROUP_HEADERS.strat.eval[3], "หน่วยภาระงานด้าน");
-assert.deepStrictEqual(S.paHeaders("assign", "plan"), ["ลำดับ", "กิจกรรม", "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง"]);
-assert.deepStrictEqual(S.paHeaders("strat", "plan"), ["ลำดับ", "ชื่อบทความ", "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง"]);
+assert.deepStrictEqual(S.paHeaders("assign", "plan"), ["ลำดับ", "รายละเอียดเกณฑ์", "หน่วยภาระงานที่คาดว่าจะได้รับ"]);
+assert.deepStrictEqual(S.paHeaders("strat", "plan"), ["ลำดับ", "รายละเอียดเกณฑ์", "หน่วยภาระงานที่คาดว่าจะได้รับ"]);
 assert.ok(S.PA_HEADERS[6].includes("9 – 10"));
-assert.strictEqual(S.PA_PLAN_HEADERS.length, 4);
-assert.strictEqual(S.PA_PLAN_HEADERS[1], "วิชา");
-assert.strictEqual(S.PA_PLAN_HEADERS[3], "ผลการประเมินตนเอง");
-assert.ok(!S.PA_PLAN_HEADERS.includes("รายละเอียดเกณฑ์"));
+assert.strictEqual(S.PA_PLAN_HEADERS.length, 3);
+assert.strictEqual(S.PA_PLAN_HEADERS[1], "รายละเอียดเกณฑ์");
+assert.strictEqual(S.PA_PLAN_HEADERS[2], "หน่วยภาระงานที่คาดว่าจะได้รับ");
+assert.ok(S.PA_PLAN_HEADERS.includes("รายละเอียดเกณฑ์"));
 assert.strictEqual(S.mainSectionOf({ criteriaId: "res_book" }), "book");
 assert.strictEqual(S.mainSectionOf({ criteriaId: "course_proj" }), "service");
 assert.ok(S.MAIN_SECTIONS.some((x) => x.no === "1.2.2"));
 assert.deepStrictEqual(
   S.sectionHeaders(S.MAIN_SECTIONS.find((x) => x.id === "teach"), "plan"),
-  ["ลำดับ", "วิชา", "จำนวนชั่วโมง", "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง"]
+  ["ลำดับ", "รายละเอียดเกณฑ์", "หน่วยภาระงานที่คาดว่าจะได้รับ"]
 );
 assert.deepStrictEqual(
   S.sectionHeaders(S.MAIN_SECTIONS.find((x) => x.id === "research"), "plan"),
-  ["ลำดับ", "ชื่อเรื่องงานวิจัย", "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง"]
+  ["ลำดับ", "รายละเอียดเกณฑ์", "หน่วยภาระงานที่คาดว่าจะได้รับ"]
 );
 const emptyHours = S.expectedPreview({ criteriaId: "teach_grad_main", hours: "" }, "main");
 assert.strictEqual(emptyHours.units, 0);
-assert.strictEqual(emptyHours.label, "—");
+assert.strictEqual(emptyHours.label, "1 ชม. = 4 หน่วย");
 assert.strictEqual(S.calcTarget({ criteriaId: "teach_grad_main", hours: 45 }, "main").units, 180);
 assert.strictEqual(S.calcTarget({ criteriaId: "teach_ug_lec", hours: 30 }, "main").units, 90);
 assert.strictEqual(S.calcTarget({ criteriaId: "teach_ug_lab", hours: 24 }, "main").units, 36);

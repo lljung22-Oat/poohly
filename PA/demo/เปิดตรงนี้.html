@@ -443,13 +443,20 @@ table.pa .title-cell textarea { min-height: 72px; }
   display: flex; align-items: flex-start; gap: 8px;
   font-weight: 600; line-height: 1.4;
 }
-.has-hint { cursor: help; }
-.hint-float {
-  position: fixed; z-index: 90; max-width: min(420px, 88vw);
-  background: #163a5f; color: #fff; padding: 10px 12px; border-radius: 10px;
-  font-size: 15px; font-weight: 600; line-height: 1.45;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, .28); pointer-events: none;
+.hint-i {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; margin-left: 6px; padding: 0;
+  border: 1px solid #8aa4bd; border-radius: 999px; background: #fff;
+  color: #163a5f; font-size: 13px; font-weight: 800; line-height: 1; cursor: pointer;
+  vertical-align: middle;
 }
+.hint-i[aria-expanded="true"] { background: #163a5f; color: #fff; }
+.hint-read {
+  display: block; margin: 6px 0 0; padding: 8px 10px; border-radius: 8px;
+  background: #f4f8fb; color: #163a5f; font-size: 14px; font-weight: 600;
+  line-height: 1.45; max-width: 420px;
+}
+.hint-read[hidden] { display: none !important; }
 .crit-list input[type="radio"], .role-stack input[type="radio"] { margin-top: 4px; flex: none; }
 .grant-stack { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .grant-stack select { width: 100%; }
@@ -561,17 +568,17 @@ table.pa .auto {
   function evalHeads(item, detail, col3) {
     return ["ลำดับ", item, detail, col3, "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง", REASON_H];
   }
-  function planHeads(item, qtyLabel) {
-    return qtyLabel
-      ? ["ลำดับ", item, qtyLabel, "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง"]
-      : ["ลำดับ", item, "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง"];
+  function planHeads() {
+    return ["ลำดับ", "รายละเอียดเกณฑ์", "หน่วยภาระงานที่คาดว่าจะได้รับ"];
   }
-  /* ชื่อหัวตารางตามแบบ SHPA ร่าง คนละชุดต่อภาระงาน ไม่ทำแบบฟอร์มทั้งใบ */
+  /* ชื่อหัวตารางตามแบบ SHPA ร่าง คนละชุดต่อภาระงาน ไม่ทำแบบฟอร์มทั้งใบ
+     หน้าล่วงหน้าโครงเดียวกับหน้าประเมิน แต่กระชับ 3 คอลัมน์ตามบันทึกประชุม */
+  const PLAN_HEADERS = planHeads();
   const GROUP_HEADERS = {
-    main: { item: "วิชา", plan: planHeads("วิชา"), eval: evalHeads("วิชา", "รายละเอียด", "จำนวนชั่วโมง") },
-    assign: { item: "กิจกรรม", plan: planHeads("กิจกรรม"), eval: evalHeads("กิจกรรม", "รายละเอียด", "จำนวนชั่วโมง") },
-    community: { item: "ชื่อกิจกรรม", plan: planHeads("ชื่อกิจกรรม"), eval: evalHeads("ชื่อกิจกรรม", "รายละเอียด", "จำนวนชั่วโมง") },
-    strat: { item: "ชื่อบทความ", plan: planHeads("ชื่อบทความ"), eval: evalHeads("ชื่อบทความ", "ภาระงาน", "หน่วยภาระงานด้าน") }
+    main: { item: "วิชา", plan: PLAN_HEADERS, eval: evalHeads("วิชา", "รายละเอียด", "จำนวนชั่วโมง") },
+    assign: { item: "กิจกรรม", plan: PLAN_HEADERS, eval: evalHeads("กิจกรรม", "รายละเอียด", "จำนวนชั่วโมง") },
+    community: { item: "ชื่อกิจกรรม", plan: PLAN_HEADERS, eval: evalHeads("ชื่อกิจกรรม", "รายละเอียด", "จำนวนชั่วโมง") },
+    strat: { item: "ชื่อบทความ", plan: PLAN_HEADERS, eval: evalHeads("ชื่อบทความ", "ภาระงาน", "หน่วยภาระงานด้าน") }
   };
   const PA_HEADERS = GROUP_HEADERS.main.eval;
   const PA_PLAN_HEADERS = GROUP_HEADERS.main.plan;
@@ -584,10 +591,10 @@ table.pa .auto {
   }
 
   const MAIN_SECTIONS = [
-    { id: "teach", no: "1.1", name: "ภาระงานหลักด้านการเรียนการสอน", item: "วิชา", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", planQty: "จำนวนชั่วโมง", addCrit: "" },
+    { id: "teach", no: "1.1", name: "ภาระงานหลักด้านการเรียนการสอน", item: "วิชา", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", addCrit: "" },
     { id: "research", no: "1.2.1", name: "ภาระงานหลักด้านการวิจัย", item: "ชื่อเรื่องงานวิจัย", detail: "ภาระความรับผิดชอบ", col3: "หน่วยภาระงานด้านกระบวนการวิจัย", addCrit: "res_proc_1" },
     { id: "book", no: "1.2.2", name: "การผลิตหนังสือ และผลงานทางวิชาการในลักษณะอื่นที่เปรียบเทียบเท่างานวิจัย", item: "ชื่อผลงาน", detail: "ภาระความรับผิดชอบ", col3: "หน่วยภาระงานด้านกระบวนการดำเนินงาน", addCrit: "res_book" },
-    { id: "service", no: "1.3", name: "ภาระงานด้านการบริการวิชาการ", item: "การบริการวิชาการ", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", planQty: "จำนวนชั่วโมง", addCrit: "svc_consult" }
+    { id: "service", no: "1.3", name: "ภาระงานด้านการบริการวิชาการ", item: "การบริการวิชาการ", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", addCrit: "svc_consult" }
   ];
   function mainSectionOf(t) {
     const id = String((t && t.criteriaId) || "");
@@ -598,7 +605,7 @@ table.pa .auto {
   }
   function sectionHeaders(sec, layout) {
     if (!sec) return layout === "plan" ? PA_PLAN_HEADERS : PA_HEADERS;
-    return layout === "plan" ? planHeads(sec.item, sec.planQty) : evalHeads(sec.item, sec.detail, sec.col3);
+    return layout === "plan" ? PLAN_HEADERS : evalHeads(sec.item, sec.detail, sec.col3);
   }
 
   /* ลำดับหัวข้อตามแบบฟอร์ม SHPA ร่าง หน่วย/ร้อยละตามประกาศคณะฯ */
@@ -1075,7 +1082,7 @@ table.pa .auto {
       const per = c.per || 0;
       const h = Number(t.hours) || 0;
       if (h) return { units: +(h * per).toFixed(2), label: fmtUnit(+(h * per).toFixed(2)) };
-      return { units: 0, label: "—" };
+      return { units: 0, label: per ? `1 ชม. = ${per} หน่วย` : "—" };
     }
     if (c.kind === "count") {
       const n = Number(t.qty) || 0;
@@ -3695,11 +3702,13 @@ function viewModules() {
     </div>`);
 }
 
+function hintMark(short, full) {
+  if (!full) return esc(short);
+  return `${esc(short)}<button type="button" class="hint-i" data-explain-toggle aria-label="กดเพื่อดูคำอธิบาย">ⓘ</button><span class="hint-read" hidden>${esc(full)}</span>`;
+}
+
 function critRadio(t, lock, value, label, hint) {
-  const extra = hint
-    ? ` class="opt has-hint" data-hint="${esc(hint)}"`
-    : ` class="opt"`;
-  return `<label${extra}><input type="radio" name="crit-${t.id}" data-crit="${t.id}" value="${esc(value)}" ${t.criteriaId === value ? "checked" : ""} ${lock ? "disabled" : ""} /><span>${esc(label)}</span></label>`;
+  return `<label class="opt"><input type="radio" name="crit-${t.id}" data-crit="${t.id}" value="${esc(value)}" ${t.criteriaId === value ? "checked" : ""} ${lock ? "disabled" : ""} /><span>${hintMark(label, hint)}</span></label>`;
 }
 
 function grantTierValue(kind, amount) {
@@ -3799,8 +3808,7 @@ function facultyTeachOrCrit(t, g, lock, sec) {
   return facultyCriteriaSelect(t, g, lock);
 }
 
-function facultyCriteriaCell(t, g, lock) {
-  if (S.paLayout === "plan" || g.id !== "strat") return facultyTeachOrCrit(t, g, lock);
+function facultyCriteriaCell(t, g, lock, sec) {
   if (g.id === "strat") {
     const pubs = C.PUB.map((p) =>
       critRadio(t, lock, p.id, p.formLabel || `${p.label} (${p.units} หน่วย / ${p.score} คะแนน)`, p.hint)
@@ -3809,27 +3817,30 @@ function facultyCriteriaCell(t, g, lock) {
       const src = C.GRANT_SOURCES[kind];
       const sel = t.criteriaId === kind ? grantTierValue(kind, t.amount) : "";
       const grantHint = src.note || "";
-      return `<select class="has-hint" data-grant="${t.id}" data-hint="${esc(grantHint)}" ${lock ? "disabled" : ""}>
-        <option value="">${esc(src.label)}</option>
-        ${src.tiers.map((x) =>
-          `<option value="${kind}|${x.amount}" ${sel === `${kind}|${x.amount}` ? "selected" : ""}>${esc(x.label)}</option>`
-        ).join("")}
-      </select>`;
+      return `<div class="grant-pick">
+        <select data-grant="${t.id}" ${lock ? "disabled" : ""}>
+          <option value="">${esc(src.label)}</option>
+          ${src.tiers.map((x) =>
+            `<option value="${kind}|${x.amount}" ${sel === `${kind}|${x.amount}` ? "selected" : ""}>${esc(x.label)}</option>`
+          ).join("")}
+        </select>
+        ${grantHint ? `<div class="hint">${hintMark("คำอธิบายขั้นทุน", grantHint)}</div>` : ""}
+      </div>`;
     }).join("");
     const otherBucket = (C.STRAT_BUCKETS || []).find((b) => b.id === "other");
     const others = (C.CATALOG.strat || []).filter((c) => c.id && otherBucket && otherBucket.match(c)).map((c) =>
-      `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""} data-hint="${esc(c.hint || "")}">${esc(c.label)}</option>`
+      `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""}>${esc(c.label)}</option>`
     ).join("");
     return `<div class="crit-buckets">
       <div class="bucket"><h4>${esc((C.STRAT_BUCKETS.find((b) => b.id === "pub") || {}).title || "ยุทธศาสตร์ตีพิมพ์")}</h4>
         <div class="crit-list">${pubs}</div>
-        <div class="hint has-hint" data-hint="${esc(C.SCORE_COND.corp)}">${esc(C.SCORE_COND.corpShort)}</div>
+        <div class="hint">${hintMark(C.SCORE_COND.corpShort, C.SCORE_COND.corp)}</div>
       </div>
       <div class="bucket"><h4>${esc((C.STRAT_BUCKETS.find((b) => b.id === "grant") || {}).title || "ยุทธศาสตร์ทุนวิจัย")}</h4>
         <div class="grant-stack">${grants}</div>
       </div>
       <div class="bucket"><h4>${esc((otherBucket || {}).title || "ยุทธศาสตร์อื่นๆ")}</h4>
-        <div class="hint has-hint" data-hint="${esc(C.SCORE_COND.cta)}">${esc(C.SCORE_COND.ctaShort)}</div>
+        <div class="hint">${hintMark(C.SCORE_COND.ctaShort, C.SCORE_COND.cta)}</div>
         <select data-crit-other="${t.id}" ${lock ? "disabled" : ""}>
           <option value="">เกณฑ์ยุทธศาสตร์อื่นตามประกาศ</option>
           ${others}
@@ -3837,7 +3848,7 @@ function facultyCriteriaCell(t, g, lock) {
       </div>
     </div>`;
   }
-  return facultyCriteriaSelect(t, g, lock);
+  return facultyTeachOrCrit(t, g, lock, sec);
 }
 
 function facultyHoursCell(t, g, lock) {
@@ -3880,8 +3891,8 @@ function facultyRoleCell(t, g, lock) {
   const dis = lock ? "disabled" : "";
   const role = `<select data-pa="t:${t.id}:role" ${dis}>${C.ROLES.map((r) =>
     `<option value="${r.id}" ${t.role === r.id ? "selected" : ""}>${esc(r.label)}</option>`).join("")}</select>`;
-  const cond = `<label class="opt has-hint" data-hint="${esc(C.SCORE_COND.inDb)}"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="inDb" ${t.inDb && !t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.inDbShort)}</span></label>
-    <label class="opt has-hint" data-hint="${esc(C.SCORE_COND.student)}"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="student" ${t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.studentShort)}</span></label>`;
+  const cond = `<label class="opt"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="inDb" ${t.inDb && !t.withStudent ? "checked" : ""} ${dis} /><span>${hintMark(C.SCORE_COND.inDbShort, C.SCORE_COND.inDb)}</span></label>
+    <label class="opt"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="student" ${t.withStudent ? "checked" : ""} ${dis} /><span>${hintMark(C.SCORE_COND.studentShort, C.SCORE_COND.student)}</span></label>`;
   if (g.id === "strat") return `<div class="role-stack">${role}${cond}</div>`;
   return `<div class="role-stack">${role}</div>`;
 }
@@ -3903,20 +3914,16 @@ function facultyItemRow(t, g, lock, seq, sec) {
       : "";
   if (S.paLayout === "plan") {
     const prev = C.expectedPreview(t, g.id);
-    const qtyHead = sec && sec.planQty;
+    const teach = (sec && sec.id === "teach") || C.mainSectionOf(t) === "teach";
     return `<tr>
       <td class="seq-cell">${seq}${seqTools(g, t)}</td>
-      <td>
-        ${(sec && sec.id === "teach") || C.mainSectionOf(t) === "teach"
+      <td class="plan-crit">
+        ${teach
           ? `${facultyCoursePick(t, lock)}${facultyTeachPick(t, lock)}`
           : `<input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""} />
-        ${facultyTeachOrCrit(t, g, lock, sec)}`}
+        ${facultyCriteriaCell(t, g, lock, sec)}`}
       </td>
-      ${qtyHead ? `<td>${facultyQtyCell(t, g, lock)}</td>` : ""}
       <td class="auto">${esc(prev.label)}</td>
-      <td>
-        <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? (self || "") : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
-      </td>
     </tr>`;
   }
   const c = C.findCrit(g.id, t.criteriaId);
@@ -3931,9 +3938,9 @@ function facultyItemRow(t, g, lock, seq, sec) {
       ${teachLike ? "" : `<label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
       ${showPubDoi(t, g) ? doiBox(t, lock) : ""}
-      ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint has-hint" data-hint="${esc(C.SCORE_COND.contractAmount)}">${esc(C.SCORE_COND.contractAmountShort)}</div>` : ""}`}
+      ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint">${hintMark(C.SCORE_COND.contractAmountShort, C.SCORE_COND.contractAmount)}</div>` : ""}`}
     </td>
-    <td>${facultyCriteriaCell(t, g, lock)}</td>
+    <td>${facultyCriteriaCell(t, g, lock, sec)}</td>
     <td>${useQty ? facultyQtyCell(t, g, lock) : facultyRoleCell(t, g, lock)}${warn}</td>
     <td class="auto">${C.fmtUnit(cal.units)}</td>
     <td>
@@ -3983,7 +3990,7 @@ function viewPA() {
       <header class="sec-head">
         <div>
           <h2>${esc(meta.title)} · ${esc(meta.name)}</h2>
-          <p>${S.paLayout === "plan" ? "ช่วง PA ล่วงหน้า (ก่อนทำงาน)" : "ช่วงหน้าประเมิน PA"} · น้ำหนักตามประกาศ ${meta.pct}% · เพดาน ${meta.cap} หน่วย · ได้ ${C.fmtUnit(units)} หน่วย</p>
+          <p>${S.paLayout === "plan" ? "ช่วง PA ล่วงหน้า (ก่อนทำงาน) · ลำดับ รายละเอียดเกณฑ์ หน่วยที่คาดว่าจะได้รับ" : "ช่วงหน้าประเมิน PA · โครงเดียวกัน เพิ่มชั่วโมง DOI หลักฐาน"} · น้ำหนักตามประกาศ ${meta.pct}% · เพดาน ${meta.cap} หน่วย · ได้ ${C.fmtUnit(units)} หน่วย</p>
         </div>
         ${canEditAgreement() && g.id !== "main" ? `<button class="btn-teal" type="button" data-add-ag="${g.id}">เพิ่มรายการ</button>` : ""}
       </header>
@@ -4014,7 +4021,7 @@ function viewPA() {
     <div class="pa-banner">
       <div>
         <h2>แบบรายงานผลการปฏิบัติงาน (SHPA)</h2>
-        <p class="sub">ส่วนที่ 2 แยก 4 ภาระงานตามแบบ SHPA ร่าง · ${statusPill(paStatus())} · ปี ${esc(S.year)} · ${S.paLayout === "plan" ? "ช่วง PA ล่วงหน้า (ก่อนทำงาน) ตารางกระชับ" : "ช่วงหน้าประเมิน PA ตารางเต็ม"}</p>
+        <p class="sub">ส่วนที่ 2 แยก 4 ภาระงานตามแบบ SHPA ร่าง · ${statusPill(paStatus())} · ปี ${esc(S.year)} · ${S.paLayout === "plan" ? "ช่วง PA ล่วงหน้า (ก่อนทำงาน) ตารางกระชับ 3 คอลัมน์" : "ช่วงหน้าประเมิน PA ตารางเต็ม ใส่หลักฐาน DOI ชั่วโมง"}</p>
       </div>
       <div class="weight-box ${wcls}">น้ำหนักตามประกาศ : ${w}</div>
     </div>
@@ -4027,7 +4034,7 @@ function viewPA() {
       <button class="btn-navy" type="button" id="btnAsk">ขออนุมัติ</button>` : ""}
       <button class="btn-ghost" type="button" data-go="${isEval() ? "evalHome" : "modules"}">กลับ</button>
     </div>
-    <p class="hint">ออนไลน์จากแบบฟอร์ม SHPA ร่าง · แยกภาระงานที่ 1–4 · ล่วงหน้ากรอกชื่อรายการ เลือกเกณฑ์ กรอกชั่วโมงแล้วคำนวณหน่วย และผลการประเมินตนเอง · หน้าประเมินเพิ่ม DOI หลักฐาน และยุทธศาสตร์ 3 ก้อน · ปี ${esc(S.year)}</p>
+    <p class="hint">ออนไลน์จากแบบฟอร์ม SHPA ร่าง · แยกภาระงานที่ 1–4 · PA ล่วงหน้ากับหน้าประเมินใช้โครงเดียวกัน · ล่วงหน้าเลือกเกณฑ์ดูหน่วยที่คาดว่าจะได้รับ · หน้าประเมินใส่ชั่วโมง DOI หลักฐาน และผลการประเมินตนเอง · ยุทธศาสตร์แบ่ง 3 ก้อน · กด ⓘ ท้ายข้อความเพื่ออ่านคำอธิบาย · ปี ${esc(S.year)}</p>
   `);
 }
 
@@ -4733,42 +4740,21 @@ function readCcFc() {
   });
 }
 
-function bindHoverHints() {
-  let tip = document.getElementById("hint-float");
-  if (!tip) {
-    tip = document.createElement("div");
-    tip.id = "hint-float";
-    tip.className = "hint-float";
-    tip.hidden = true;
-    document.body.appendChild(tip);
-  }
-  const hide = () => { tip.hidden = true; };
-  const place = (ev, el) => {
-    const text = el.getAttribute("data-hint");
-    if (!text) return;
-    tip.textContent = text;
-    tip.hidden = false;
-    const pad = 16;
-    const w = 420;
-    let x = (ev && ev.clientX != null ? ev.clientX : el.getBoundingClientRect().left) + 14;
-    let y = (ev && ev.clientY != null ? ev.clientY : el.getBoundingClientRect().bottom) + 12;
-    if (x + w > window.innerWidth - pad) x = window.innerWidth - w - pad;
-    if (y > window.innerHeight - 140) y = Math.max(pad, y - 160);
-    tip.style.left = Math.max(pad, x) + "px";
-    tip.style.top = Math.max(pad, y) + "px";
-  };
-  document.querySelectorAll("[data-hint]").forEach((el) => {
-    el.removeAttribute("title");
-    el.addEventListener("mouseenter", (ev) => place(ev, el));
-    el.addEventListener("mousemove", (ev) => { if (!tip.hidden) place(ev, el); });
-    el.addEventListener("mouseleave", hide);
-    el.addEventListener("focus", () => place(null, el));
-    el.addEventListener("blur", hide);
+function bindExplainToggles() {
+  document.querySelectorAll("[data-explain-toggle]").forEach((btn) => {
+    btn.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      const box = btn.parentElement && btn.parentElement.querySelector(".hint-read");
+      if (!box) return;
+      box.hidden = !box.hidden;
+      btn.setAttribute("aria-expanded", box.hidden ? "false" : "true");
+    });
   });
 }
 
 function bind() {
-  bindHoverHints();
+  bindExplainToggles();
   document.querySelectorAll("[data-lock]").forEach((b) => {
     b.addEventListener("click", () => toast(b.getAttribute("data-lock")));
   });

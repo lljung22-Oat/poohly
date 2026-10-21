@@ -61,7 +61,7 @@ assert.match(src, /function facultyItemRow\(/);
 assert.match(src, /function facultyHoursCell\(/);
 assert.match(src, /function facultyTeachPick\(/);
 assert.match(src, /ป\.ที่สอน/);
-assert.match(crit, /planQty: "จำนวนชั่วโมง"/);
+assert.match(crit, /รายละเอียดเกณฑ์/);
 assert.doesNotMatch(src, /function shpa122Form\(/);
 assert.match(crit, /ภาระความรับผิดชอบ/);
 assert.match(crit, /หน่วยภาระงานด้านกระบวนการวิจัย/);

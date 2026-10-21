@@ -13,17 +13,17 @@
   function evalHeads(item, detail, col3) {
     return ["ลำดับ", item, detail, col3, "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง", REASON_H];
   }
-  function planHeads(item, qtyLabel) {
-    return qtyLabel
-      ? ["ลำดับ", item, qtyLabel, "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง"]
-      : ["ลำดับ", item, "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง"];
+  function planHeads() {
+    return ["ลำดับ", "รายละเอียดเกณฑ์", "หน่วยภาระงานที่คาดว่าจะได้รับ"];
   }
-  /* ชื่อหัวตารางตามแบบ SHPA ร่าง คนละชุดต่อภาระงาน ไม่ทำแบบฟอร์มทั้งใบ */
+  /* ชื่อหัวตารางตามแบบ SHPA ร่าง คนละชุดต่อภาระงาน ไม่ทำแบบฟอร์มทั้งใบ
+     หน้าล่วงหน้าโครงเดียวกับหน้าประเมิน แต่กระชับ 3 คอลัมน์ตามบันทึกประชุม */
+  const PLAN_HEADERS = planHeads();
   const GROUP_HEADERS = {
-    main: { item: "วิชา", plan: planHeads("วิชา"), eval: evalHeads("วิชา", "รายละเอียด", "จำนวนชั่วโมง") },
-    assign: { item: "กิจกรรม", plan: planHeads("กิจกรรม"), eval: evalHeads("กิจกรรม", "รายละเอียด", "จำนวนชั่วโมง") },
-    community: { item: "ชื่อกิจกรรม", plan: planHeads("ชื่อกิจกรรม"), eval: evalHeads("ชื่อกิจกรรม", "รายละเอียด", "จำนวนชั่วโมง") },
-    strat: { item: "ชื่อบทความ", plan: planHeads("ชื่อบทความ"), eval: evalHeads("ชื่อบทความ", "ภาระงาน", "หน่วยภาระงานด้าน") }
+    main: { item: "วิชา", plan: PLAN_HEADERS, eval: evalHeads("วิชา", "รายละเอียด", "จำนวนชั่วโมง") },
+    assign: { item: "กิจกรรม", plan: PLAN_HEADERS, eval: evalHeads("กิจกรรม", "รายละเอียด", "จำนวนชั่วโมง") },
+    community: { item: "ชื่อกิจกรรม", plan: PLAN_HEADERS, eval: evalHeads("ชื่อกิจกรรม", "รายละเอียด", "จำนวนชั่วโมง") },
+    strat: { item: "ชื่อบทความ", plan: PLAN_HEADERS, eval: evalHeads("ชื่อบทความ", "ภาระงาน", "หน่วยภาระงานด้าน") }
   };
   const PA_HEADERS = GROUP_HEADERS.main.eval;
   const PA_PLAN_HEADERS = GROUP_HEADERS.main.plan;
@@ -36,10 +36,10 @@
   }
 
   const MAIN_SECTIONS = [
-    { id: "teach", no: "1.1", name: "ภาระงานหลักด้านการเรียนการสอน", item: "วิชา", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", planQty: "จำนวนชั่วโมง", addCrit: "" },
+    { id: "teach", no: "1.1", name: "ภาระงานหลักด้านการเรียนการสอน", item: "วิชา", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", addCrit: "" },
     { id: "research", no: "1.2.1", name: "ภาระงานหลักด้านการวิจัย", item: "ชื่อเรื่องงานวิจัย", detail: "ภาระความรับผิดชอบ", col3: "หน่วยภาระงานด้านกระบวนการวิจัย", addCrit: "res_proc_1" },
     { id: "book", no: "1.2.2", name: "การผลิตหนังสือ และผลงานทางวิชาการในลักษณะอื่นที่เปรียบเทียบเท่างานวิจัย", item: "ชื่อผลงาน", detail: "ภาระความรับผิดชอบ", col3: "หน่วยภาระงานด้านกระบวนการดำเนินงาน", addCrit: "res_book" },
-    { id: "service", no: "1.3", name: "ภาระงานด้านการบริการวิชาการ", item: "การบริการวิชาการ", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", planQty: "จำนวนชั่วโมง", addCrit: "svc_consult" }
+    { id: "service", no: "1.3", name: "ภาระงานด้านการบริการวิชาการ", item: "การบริการวิชาการ", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", addCrit: "svc_consult" }
   ];
   function mainSectionOf(t) {
     const id = String((t && t.criteriaId) || "");
@@ -50,7 +50,7 @@
   }
   function sectionHeaders(sec, layout) {
     if (!sec) return layout === "plan" ? PA_PLAN_HEADERS : PA_HEADERS;
-    return layout === "plan" ? planHeads(sec.item, sec.planQty) : evalHeads(sec.item, sec.detail, sec.col3);
+    return layout === "plan" ? PLAN_HEADERS : evalHeads(sec.item, sec.detail, sec.col3);
   }
 
   /* ลำดับหัวข้อตามแบบฟอร์ม SHPA ร่าง หน่วย/ร้อยละตามประกาศคณะฯ */
@@ -527,7 +527,7 @@
       const per = c.per || 0;
       const h = Number(t.hours) || 0;
       if (h) return { units: +(h * per).toFixed(2), label: fmtUnit(+(h * per).toFixed(2)) };
-      return { units: 0, label: "—" };
+      return { units: 0, label: per ? `1 ชม. = ${per} หน่วย` : "—" };
     }
     if (c.kind === "count") {
       const n = Number(t.qty) || 0;
