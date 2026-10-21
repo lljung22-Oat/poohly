@@ -633,12 +633,14 @@ table.pa .auto {
     return layout === "plan" ? PLAN_HEADERS : evalHeads(sec.item, sec.detail, sec.col3);
   }
 
-  /* ลำดับหัวข้อตามแบบฟอร์ม SHPA ร่าง หน่วย/ร้อยละตามประกาศคณะฯ */
+  /* ลำดับบนจอตาม PMS / UM-03 ห้ามสลับตามเลขในแบบ SHPA ร่าง
+     1 ยุทธศาสตร์ 25% · 2 ภาระงานหลัก 55% · 3 มอบหมาย 15% · 4 ส่วนรวม 5%
+     หน่วยและเพดานยังตามประกาศคณะฯ ฐาน 1,820 */
   const GROUPS = [
-    { id: "main", no: 1, pct: 55, cap: 1000, title: "ภาระงานที่ 1", name: "ภาระงานหลัก" },
-    { id: "assign", no: 2, pct: 15, cap: 273, title: "ภาระงานที่ 2", name: "ภาระงานที่ได้รับมอบหมาย" },
-    { id: "community", no: 3, pct: 5, cap: 92, title: "ภาระงานที่ 3", name: "ภาระงานเพื่อส่วนรวม" },
-    { id: "strat", no: 4, pct: 25, cap: 455, title: "ภาระงานที่ 4", name: "ภาระงานที่สอดคล้องยุทธศาสตร์" }
+    { id: "strat", no: 1, pct: 25, cap: 455, title: "ภาระงานที่ 1", name: "งานตามภารกิจที่สอดคล้องกับประเด็นยุทธศาสตร์ของมหาวิทยาลัยและแผนกลยุทธ์ของส่วนงาน" },
+    { id: "main", no: 2, pct: 55, cap: 1000, title: "ภาระงานที่ 2", name: "งานตามภารกิจหลักของตำแหน่งงาน ตามหน้าที่ความรับผิดชอบ ตามคำบรรยายลักษณะงาน" },
+    { id: "assign", no: 3, pct: 15, cap: 273, title: "ภาระงานที่ 3", name: "งานที่ได้รับมอบหมาย" },
+    { id: "community", no: 4, pct: 5, cap: 92, title: "ภาระงานที่ 4", name: "งานเพื่อส่วนรวม" }
   ];
 
   const ROLES = [
@@ -2053,7 +2055,7 @@ function emptyTarget(code, weight) {
 function defaultGroups() {
   return [
     {
-      id: "strat", no: 4,
+      id: "strat", no: 1,
       agreements: [
         {
           id: uid(), code: "1.1", title: "ยุทธศาสตร์การวิจัย",
@@ -2082,7 +2084,7 @@ function defaultGroups() {
       ]
     },
     {
-      id: "main", no: 1,
+      id: "main", no: 2,
       agreements: [
         {
           id: uid(), code: "2.1", title: "ภาระงานสอน",
@@ -2134,7 +2136,7 @@ function defaultGroups() {
       ]
     },
     {
-      id: "assign", no: 2,
+      id: "assign", no: 3,
       agreements: [
         {
           id: uid(), code: "3.1", title: "งานที่ได้รับมอบหมายตามแผนปฏิบัติการ",
@@ -2150,7 +2152,7 @@ function defaultGroups() {
       ]
     },
     {
-      id: "community", no: 3,
+      id: "community", no: 4,
       agreements: [
         {
           id: uid(), code: "4.1", title: "งานเพื่อส่วนรวม",

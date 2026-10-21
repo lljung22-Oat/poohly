@@ -183,7 +183,7 @@ function emptyTarget(code, weight) {
 function defaultGroups() {
   return [
     {
-      id: "strat", no: 4,
+      id: "strat", no: 1,
       agreements: [
         {
           id: uid(), code: "1.1", title: "ยุทธศาสตร์การวิจัย",
@@ -212,7 +212,7 @@ function defaultGroups() {
       ]
     },
     {
-      id: "main", no: 1,
+      id: "main", no: 2,
       agreements: [
         {
           id: uid(), code: "2.1", title: "ภาระงานสอน",
@@ -264,7 +264,7 @@ function defaultGroups() {
       ]
     },
     {
-      id: "assign", no: 2,
+      id: "assign", no: 3,
       agreements: [
         {
           id: uid(), code: "3.1", title: "งานที่ได้รับมอบหมายตามแผนปฏิบัติการ",
@@ -280,7 +280,7 @@ function defaultGroups() {
       ]
     },
     {
-      id: "community", no: 3,
+      id: "community", no: 4,
       agreements: [
         {
           id: uid(), code: "4.1", title: "งานเพื่อส่วนรวม",
