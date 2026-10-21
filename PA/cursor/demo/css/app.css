@@ -413,6 +413,10 @@ table.pa {
 }
 table.pa.pa-faculty { min-width: 1680px; }
 table.pa.pa-faculty.pa-pre { min-width: 980px; }
+table.pa.pa-faculty.pa-plan { min-width: 980px; }
+.topic-pick { display: flex; flex-direction: column; gap: 8px; min-width: 280px; }
+.topic-label { font-weight: 800; color: #163a5f; font-size: 14px; }
+.topic-detail { margin-top: 2px; }
 table.pa.pa-faculty.pa-eval td:nth-child(3) { min-width: 380px; }
 table.pa.pa-faculty td:nth-child(3) { min-width: 380px; }
 .crit-buckets { display: flex; flex-direction: column; gap: 4px; }

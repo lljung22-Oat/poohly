@@ -1875,18 +1875,23 @@ function grantTierValue(kind, amount) {
   return hit ? `${kind}|${hit.amount}` : "";
 }
 
-function catalogItems(g, t) {
+function catalogItems(g, t, sec) {
   if (g.id === "main") {
-    const sec = C.mainSectionOf(t);
-    return (C.CATALOG.main || []).filter((c) => c.id && C.mainSectionOf({ criteriaId: c.id }) === sec);
+    const sid = (sec && sec.id) || C.mainSectionOf(t);
+    return (C.CATALOG.main || []).filter((c) => c.id && C.mainSectionOf({ criteriaId: c.id }) === sid);
   }
   return (C.CATALOG[g.id] || []).filter((c) => c.id);
 }
 
-function facultyCriteriaSelect(t, g, lock) {
-  const items = catalogItems(g, t);
+function needsCourseName(t) {
+  const id = String((t && t.criteriaId) || "");
+  return id.startsWith("teach_") || id === "course_proj" || id === "thesis_ug";
+}
+
+function facultyCriteriaSelect(t, g, lock, sec) {
+  const items = catalogItems(g, t, sec);
   return `<select data-crit-sel="${t.id}" ${lock ? "disabled" : ""}>
-    <option value="">เลือกเกณฑ์ตามประกาศ</option>
+    <option value="">เลือกหัวข้อ</option>
     ${items.map((c) => `<option value="${esc(c.id)}" ${t.criteriaId === c.id ? "selected" : ""}>${esc(c.label)}</option>`).join("")}
   </select>`;
 }
@@ -1902,38 +1907,52 @@ function applyTeachPick(t, level, cond) {
 function applySyllabusCourse(t, courseId) {
   if (!courseId || courseId === "other") {
     t.syllabusId = courseId === "other" ? "other" : "";
-    if (courseId === "other") t.title = t.title || "";
-    else t.title = "";
+    if (courseId !== "other") t.title = "";
     return;
   }
   const hit = C.findSyllabus(courseId);
   if (!hit) { t.syllabusId = courseId; return; }
   t.syllabusId = hit.id;
   t.title = `${hit.code} ${hit.title}`;
-  if (hit.formulaId) {
-    t.teachFormula = hit.formulaId;
-    const f = C.findTeachFormula(hit.formulaId);
-    if (f) {
-      t.criteriaId = f.criteriaId;
-      t.teachLevel = (C.teachPickOf(f.criteriaId) || {}).level || "";
-    }
-  }
 }
 
 function facultyCoursePick(t, lock) {
   const list = C.searchSyllabus("") || [];
   const known = list.some((c) => c.id === t.syllabusId);
-  const other = t.syllabusId === "other" || (!!t.title && !known && !t.syllabusId);
+  const other = t.syllabusId === "other" || (t.syllabusId && !known) || (!t.syllabusId && !!t.title);
   const dis = lock ? "disabled" : "";
   return `<div class="teach-fields">
     <select data-teach-course="${t.id}" ${dis}>
-      <option value="">เลือกวิชา</option>
+      <option value="">เลือกรายวิชา</option>
       ${list.map((c) =>
         `<option value="${esc(c.id)}" ${t.syllabusId === c.id ? "selected" : ""}>${esc(c.code)} ${esc(c.title)}</option>`
       ).join("")}
-      <option value="other" ${other || (t.syllabusId && !known) ? "selected" : ""}>อื่นๆ (กรอกเอง)</option>
+      <option value="other" ${other ? "selected" : ""}>ไม่มีในรายการ (กรอกรายวิชา)</option>
     </select>
-    ${other || (t.syllabusId && !known) ? `<input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="กรอกชื่อวิชา" ${dis} />` : ""}
+    ${other ? `<input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="กรอกรายวิชา" ${dis} />` : ""}
+  </div>`;
+}
+
+function facultyTopicDetails(t, g, lock, sec) {
+  if (needsCourseName(t)) return facultyCoursePick(t, lock);
+  return `<input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""} />`;
+}
+
+function facultyTopicPick(t, g, lock, sec, withDetails) {
+  const items = catalogItems(g, t, sec);
+  const useRadios = items.length > 0 && items.length <= 6;
+  const list = useRadios
+    ? `<div class="crit-list">${items.map((c) => critRadio(t, lock, c.id, c.label, c.hint)).join("")}</div>`
+    : facultyCriteriaSelect(t, g, lock, sec);
+  const details = !withDetails
+    ? ""
+    : t.criteriaId
+      ? `<div class="topic-detail">${facultyTopicDetails(t, g, lock, sec)}</div>`
+      : `<div class="hint">เลือกหัวข้อแล้วจะขึ้นรายละเอียดที่ต้องกรอก</div>`;
+  return `<div class="topic-pick">
+    <div class="topic-label">เลือกหัวข้อ</div>
+    ${list}
+    ${details}
   </div>`;
 }
 
@@ -1961,7 +1980,7 @@ function facultyTeachPick(t, lock) {
 
 function facultyTeachOrCrit(t, g, lock, sec) {
   if ((sec && sec.id === "teach") || C.mainSectionOf(t) === "teach") return facultyTeachPick(t, lock);
-  return facultyCriteriaSelect(t, g, lock);
+  return facultyCriteriaSelect(t, g, lock, sec);
 }
 
 function facultyCriteriaCell(t, g, lock, sec) {
@@ -2004,7 +2023,7 @@ function facultyCriteriaCell(t, g, lock, sec) {
       </div>
     </div>`;
   }
-  return facultyTeachOrCrit(t, g, lock, sec);
+  return facultyTopicPick(t, g, lock, sec, S.paLayout === "plan");
 }
 
 function facultyHoursCell(t, g, lock) {
@@ -2013,7 +2032,7 @@ function facultyHoursCell(t, g, lock) {
   const dis = lock || !ready ? "disabled" : "";
   const per = c && c.per;
   const hint = !ready
-    ? "เลือก ป. แล้วกรอกชั่วโมง"
+    ? "เลือกหัวข้อแล้วกรอกชั่วโมง"
     : `1 ชม. = ${per} หน่วย`;
   return `<div class="hours-cell">
     <input type="number" min="0" step="0.5" data-pa="t:${t.id}:hours" value="${esc(t.hours)}" placeholder="ชั่วโมง" ${dis} />
@@ -2070,14 +2089,11 @@ function facultyItemRow(t, g, lock, seq, sec) {
       : "";
   if (S.paLayout === "plan") {
     const prev = C.expectedPreview(t, g.id);
-    const teach = (sec && sec.id === "teach") || C.mainSectionOf(t) === "teach";
     return `<tr>
       <td class="seq-cell">${seq}${seqTools(g, t)}</td>
       <td class="plan-crit">
-        ${teach
-          ? `${facultyCoursePick(t, lock)}${facultyTeachPick(t, lock)}`
-          : `<input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""} />
-        ${facultyCriteriaCell(t, g, lock, sec)}`}
+        ${g.id === "strat" ? `<input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="${esc(C.paItemHeader(g.id))}" ${lock ? "disabled" : ""} />` : ""}
+        ${facultyCriteriaCell(t, g, lock, sec)}
       </td>
       <td class="auto">${esc(prev.label)}</td>
     </tr>`;
@@ -2088,9 +2104,11 @@ function facultyItemRow(t, g, lock, seq, sec) {
   return `<tr>
     <td class="seq-cell">${seq}${seqTools(g, t)}</td>
     <td class="title-cell">
-      ${(sec && sec.id === "teach") || C.mainSectionOf(t) === "teach"
+      ${needsCourseName(t)
         ? facultyCoursePick(t, lock)
-        : `<textarea data-pa="t:${t.id}:title" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>`}
+        : (sec && sec.id === "teach") || C.mainSectionOf(t) === "teach"
+          ? `<div class="hint">เลือกหัวข้อก่อน แล้วเลือกรายวิชาจากลิสต์ หรือกรอกรายวิชาเอง</div>`
+          : `<textarea data-pa="t:${t.id}:title" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""}>${esc(t.title)}</textarea>`}
       ${teachLike ? "" : `<label class="date-lab">วันที่ตีพิมพ์ / วันที่เริ่มโครงการ</label>
       <input type="date" data-pa="t:${t.id}:date" value="${esc(t.date || "")}" ${lock ? "disabled" : ""} />
       ${showPubDoi(t, g) ? doiBox(t, lock) : ""}

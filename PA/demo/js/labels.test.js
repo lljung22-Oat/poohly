@@ -39,7 +39,7 @@ assert.match(src, /title: "PA ล่วงหน้า \(ก่อนทำง�
 assert.match(src, /title: "หน้าประเมิน PA"/);
 assert.match(crit, /teach_ug_lec/);
 assert.match(src, /function facultyCoursePick\(/);
-assert.match(src, /เลือกวิชา/);
+assert.match(src, /เลือกรายวิชา/);
 assert.match(crit, /ป\.ตรี/);
 assert.match(crit, /บรรยาย/);
 assert.match(crit, /ปฏิบัติ/);
@@ -60,7 +60,9 @@ assert.match(crit, /GROUP_HEADERS/);
 assert.match(src, /function facultyItemRow\(/);
 assert.match(src, /function facultyHoursCell\(/);
 assert.match(src, /function facultyTeachPick\(/);
+assert.match(src, /function facultyTopicPick\(/);
 assert.match(src, /ป\.ที่สอน/);
+assert.match(src, /กรอกรายวิชา/);
 assert.match(crit, /รายละเอียดเกณฑ์/);
 assert.doesNotMatch(src, /function shpa122Form\(/);
 assert.match(crit, /ภาระความรับผิดชอบ/);
