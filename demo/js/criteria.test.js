@@ -106,6 +106,21 @@ assert.strictEqual(S.PA_PLAN_HEADERS[3], "ผลการประเมิน�
 assert.ok(!S.PA_PLAN_HEADERS.includes("รายละเอียดเกณฑ์"));
 assert.strictEqual(S.mainSectionOf({ criteriaId: "res_book" }), "book");
 assert.ok(S.MAIN_SECTIONS.some((x) => x.no === "1.2.2"));
+assert.deepStrictEqual(
+  S.sectionHeaders(S.MAIN_SECTIONS.find((x) => x.id === "teach"), "plan"),
+  ["ลำดับ", "วิชา", "จำนวนชั่วโมง", "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง"]
+);
+assert.deepStrictEqual(
+  S.sectionHeaders(S.MAIN_SECTIONS.find((x) => x.id === "research"), "plan"),
+  ["ลำดับ", "ชื่อเรื่องงานวิจัย", "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง"]
+);
+const emptyHours = S.expectedPreview({ criteriaId: "teach_grad_main", hours: "" }, "main");
+assert.strictEqual(emptyHours.units, 0);
+assert.ok(emptyHours.label.includes("กรอกชั่วโมง"));
+assert.strictEqual(S.calcTarget({ criteriaId: "teach_grad_main", hours: 45 }, "main").units, 180);
+assert.strictEqual(S.calcTarget({ criteriaId: "teach_ug_lec", hours: 30 }, "main").units, 90);
+assert.strictEqual(S.calcTarget({ criteriaId: "teach_ug_lab", hours: 24 }, "main").units, 36);
+assert.strictEqual(S.calcTarget({ criteriaId: "course_proj", hours: 12 }, "main").units, 36);
 assert.strictEqual(S.sectionHeaders(S.MAIN_SECTIONS.find((x) => x.id === "research"), "eval")[2], "ภาระความรับผิดชอบ");
 assert.strictEqual(S.sectionHeaders(S.MAIN_SECTIONS.find((x) => x.id === "research"), "eval")[3], "หน่วยภาระงานด้านกระบวนการวิจัย");
 assert.strictEqual(S.sectionHeaders(S.MAIN_SECTIONS.find((x) => x.id === "book"), "eval")[1], "ชื่อผลงาน");

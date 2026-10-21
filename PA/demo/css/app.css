@@ -287,8 +287,10 @@ a { color: #1565a8; }
 .period-switch button small { display: block; margin-top: 4px; color: #475569; font-weight: 600; }
 .period-switch button.on { background: #163a5f; border-color: #163a5f; }
 .period-switch button.on b, .period-switch button.on small { color: #fff; }
-table.pa.pa-faculty.pa-plan { min-width: 760px; }
+table.pa.pa-faculty.pa-plan { min-width: 920px; }
 input.plan-title { width: 100%; margin-bottom: 8px; padding: 8px 10px; border: 1px solid #c5d0dc; border-radius: 8px; }
+.hours-cell input[type="number"] { width: 100%; max-width: 120px; }
+.hours-cell .hint { margin-top: 6px; }
 .pa-order h3 { margin-bottom: 4px; }
 .pa-order .order-group { margin-top: 12px; }
 .pa-order h4 { margin: 0 0 6px; color: var(--navy); font-size: 16px; }

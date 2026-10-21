@@ -16,6 +16,10 @@ assert.doesNotMatch(src, /data-move-row/);
 assert.match(row, /facultyCriteriaSelect/);
 assert.match(src, /function facultyCriteriaSelect\(/);
 assert.match(src, /data-crit-sel/);
+assert.match(src, /function facultyHoursCell\(/);
+assert.match(src, /function facultyQtyCell\(/);
+assert.match(row, /facultyQtyCell/);
+assert.match(row, /sec\.planQty/);
 assert.match(row, /facultyRoleCell/);
 assert.match(row, /fmtUnit/);
 assert.match(row, /selfScore/);
@@ -38,7 +42,9 @@ assert.match(src, /แบบรายงานผลการปฏิบัต�
 assert.match(src, /ยุทธศาสตร์ตีพิมพ์/);
 assert.match(src, /ยุทธศาสตร์ทุนวิจัย/);
 assert.match(src, /ยุทธศาสตร์อื่นๆ/);
-assert.match(src, /จำนวนชั่วโมงสอน \(กรอกได้\)/);
+assert.match(src, /หน่วย = จำนวนชั่วโมง/);
+assert.match(src, /เลือกเกณฑ์ก่อน แล้วกรอกชั่วโมง/);
+assert.doesNotMatch(src, /function syllabusBox\(/);
 assert.doesNotMatch(src, /ไม่ต้องพิมพ์เอง/);
 
 console.log("meeting-ui tests ok");

@@ -13,8 +13,10 @@
   function evalHeads(item, detail, col3) {
     return ["ลำดับ", item, detail, col3, "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง", REASON_H];
   }
-  function planHeads(item) {
-    return ["ลำดับ", item, "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง"];
+  function planHeads(item, qtyLabel) {
+    return qtyLabel
+      ? ["ลำดับ", item, qtyLabel, "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง"]
+      : ["ลำดับ", item, "รวมหน่วยภาระงาน", "ผลการประเมินตนเอง"];
   }
   /* ชื่อหัวตารางตามแบบ SHPA ร่าง คนละชุดต่อภาระงาน ไม่ทำแบบฟอร์มทั้งใบ */
   const GROUP_HEADERS = {
@@ -34,10 +36,10 @@
   }
 
   const MAIN_SECTIONS = [
-    { id: "teach", no: "1.1", name: "ภาระงานหลักด้านการเรียนการสอน", item: "วิชา", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", addCrit: "teach_grad_main" },
+    { id: "teach", no: "1.1", name: "ภาระงานหลักด้านการเรียนการสอน", item: "วิชา", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", planQty: "จำนวนชั่วโมง", addCrit: "teach_grad_main" },
     { id: "research", no: "1.2.1", name: "ภาระงานหลักด้านการวิจัย", item: "ชื่อเรื่องงานวิจัย", detail: "ภาระความรับผิดชอบ", col3: "หน่วยภาระงานด้านกระบวนการวิจัย", addCrit: "res_proc_1" },
     { id: "book", no: "1.2.2", name: "การผลิตหนังสือ และผลงานทางวิชาการในลักษณะอื่นที่เปรียบเทียบเท่างานวิจัย", item: "ชื่อผลงาน", detail: "ภาระความรับผิดชอบ", col3: "หน่วยภาระงานด้านกระบวนการดำเนินงาน", addCrit: "res_book" },
-    { id: "service", no: "1.3", name: "ภาระงานด้านการบริการวิชาการ", item: "การบริการวิชาการ", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", addCrit: "svc_consult" }
+    { id: "service", no: "1.3", name: "ภาระงานด้านการบริการวิชาการ", item: "การบริการวิชาการ", detail: "รายละเอียด", col3: "จำนวนชั่วโมง", planQty: "จำนวนชั่วโมง", addCrit: "svc_consult" }
   ];
   function mainSectionOf(t) {
     const id = String((t && t.criteriaId) || "");
@@ -48,7 +50,7 @@
   }
   function sectionHeaders(sec, layout) {
     if (!sec) return layout === "plan" ? PA_PLAN_HEADERS : PA_HEADERS;
-    return layout === "plan" ? planHeads(sec.item) : evalHeads(sec.item, sec.detail, sec.col3);
+    return layout === "plan" ? planHeads(sec.item, sec.planQty) : evalHeads(sec.item, sec.detail, sec.col3);
   }
 
   /* ลำดับหัวข้อตามแบบฟอร์ม SHPA ร่าง หน่วย/ร้อยละตามประกาศคณะฯ */
@@ -501,7 +503,7 @@
       const per = formula ? formula.per : (c.per || 0);
       const h = Number(t.hours) || 0;
       if (h) return { units: +(h * per).toFixed(2), label: fmtUnit(+(h * per).toFixed(2)) };
-      return { units: 0, label: `${per} หน่วย/ชม.` };
+      return { units: 0, label: per ? `กรอกชั่วโมง (1 ชม. = ${per} หน่วย)` : "กรอกชั่วโมง" };
     }
     if (c.kind === "count") {
       const n = Number(t.qty) || 0;

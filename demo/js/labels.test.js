@@ -55,6 +55,8 @@ assert.match(crit, /ชื่อบทความ/);
 assert.match(crit, /ชื่อกิจกรรม/);
 assert.match(crit, /GROUP_HEADERS/);
 assert.match(src, /function facultyItemRow\(/);
+assert.match(src, /function facultyHoursCell\(/);
+assert.match(crit, /planQty: "จำนวนชั่วโมง"/);
 assert.doesNotMatch(src, /function shpa122Form\(/);
 assert.match(crit, /ภาระความรับผิดชอบ/);
 assert.match(crit, /หน่วยภาระงานด้านกระบวนการวิจัย/);

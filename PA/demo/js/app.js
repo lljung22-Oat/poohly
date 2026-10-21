@@ -905,7 +905,11 @@ function addAgreement(gid, crit) {
   const g = S.groups.find((x) => x.id === gid);
   const n = g.agreements.length + 1;
   const t = emptyTarget(`${g.no}.${n}.1.1`, 0);
-  if (crit) t.criteriaId = crit;
+  if (crit) {
+    t.criteriaId = crit;
+    const f = (C.TEACH_FORMULAS || []).find((x) => x.criteriaId === crit);
+    if (f) t.teachFormula = f.id;
+  }
   g.agreements.push({
     id: uid(), code: `${g.no}.${n}`, title: "",
     kpis: [{
@@ -1958,27 +1962,54 @@ function facultyCriteriaCell(t, g, lock) {
   return facultyCriteriaSelect(t, g, lock);
 }
 
-function facultyRoleCell(t, g, lock) {
+function facultyHoursCell(t, g, lock, compact) {
   const c = C.findCrit(g.id, t.criteriaId);
+  const ready = !!(c && c.kind === "hours");
+  const dis = lock || !ready ? "disabled" : "";
+  const formula = C.findTeachFormula(t.teachFormula) || (c && (C.TEACH_FORMULAS || []).find((f) => f.criteriaId === c.id));
+  const per = formula ? formula.per : (c && c.per);
+  const hint = !ready
+    ? "เลือกเกณฑ์ก่อน แล้วกรอกชั่วโมง"
+    : (per ? `หน่วย = จำนวนชั่วโมง × ${per}` : "กรอกชั่วโมงแล้วระบบคำนวณหน่วย");
+  return `<div class="hours-cell">
+    ${compact ? "" : syllabusPick(t, lock)}
+    <input type="number" min="0" step="0.5" data-pa="t:${t.id}:hours" value="${esc(t.hours)}" placeholder="ชั่วโมง" ${dis} />
+    <div class="hint">${esc(hint)}</div>
+  </div>`;
+}
+
+function facultyQtyCell(t, g, lock, compact) {
+  const c = C.findCrit(g.id, t.criteriaId);
+  const dis = lock ? "disabled" : "";
+  if (!c || !c.id) {
+    return `<div class="hours-cell"><div class="hint">เลือกเกณฑ์ก่อน แล้วกรอกจำนวน</div></div>`;
+  }
+  if (c.kind === "hours") return facultyHoursCell(t, g, lock, compact);
+  if (c.kind === "count") {
+    const per = c.per || 0;
+    return `<div class="hours-cell">
+      <input type="number" min="0" step="1" data-pa="t:${t.id}:qty" value="${esc(t.qty)}" placeholder="จำนวน" ${dis} />
+      <div class="hint">${esc(per ? `หน่วย = จำนวน × ${per}` : "กรอกจำนวนแล้วระบบคำนวณหน่วย")}</div>
+    </div>`;
+  }
+  if (c.kind === "custom") {
+    return `<div class="hours-cell">
+      <input data-pa="t:${t.id}:customTitle" value="${esc(t.customTitle || "")}" placeholder="หัวข้องานอื่นตามที่ประชุม" ${dis} />
+      <input type="number" data-pa="t:${t.id}:proposedUnits" value="${esc(t.proposedUnits)}" placeholder="หน่วยที่เสนอ" ${dis} />
+      <input type="number" data-pa="t:${t.id}:proposedScore" value="${esc(t.proposedScore)}" placeholder="คะแนนที่เสนอ" ${dis} />
+    </div>`;
+  }
+  return `<div class="hint">—</div>`;
+}
+
+function facultyRoleCell(t, g, lock) {
   const dis = lock ? "disabled" : "";
   const role = `<select data-pa="t:${t.id}:role" ${dis}>${C.ROLES.map((r) =>
     `<option value="${r.id}" ${t.role === r.id ? "selected" : ""}>${esc(r.label)}</option>`).join("")}</select>`;
   const cond = `<label class="opt has-hint" data-hint="${esc(C.SCORE_COND.inDb)}"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="inDb" ${t.inDb && !t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.inDbShort)}</span></label>
     <label class="opt has-hint" data-hint="${esc(C.SCORE_COND.student)}"><input type="radio" name="cond-${t.id}" data-cond="${t.id}" value="student" ${t.withStudent ? "checked" : ""} ${dis} /><span>${esc(C.SCORE_COND.studentShort)}</span></label>`;
-  let extra = "";
-  if (c && c.kind === "hours") {
-    extra += syllabusBox(t, lock);
-  }
-  if (c && c.kind === "count") {
-    extra += `<input type="number" data-pa="t:${t.id}:qty" value="${esc(t.qty)}" placeholder="จำนวน" ${dis} />`;
-  }
-  if (c && c.kind === "custom") {
-    extra += `<input data-pa="t:${t.id}:customTitle" value="${esc(t.customTitle || "")}" placeholder="หัวข้องานอื่นตามที่ประชุม" ${dis} />
-      <input type="number" data-pa="t:${t.id}:proposedUnits" value="${esc(t.proposedUnits)}" placeholder="หน่วยที่เสนอ" ${dis} />
-      <input type="number" data-pa="t:${t.id}:proposedScore" value="${esc(t.proposedScore)}" placeholder="คะแนนที่เสนอ" ${dis} />`;
-  }
-  if (g.id === "strat") return `<div class="role-stack">${role}${cond}${extra}</div>`;
-  return `<div class="role-stack">${role}${extra}</div>`;
+  if (g.id === "strat") return `<div class="role-stack">${role}${cond}</div>`;
+  return `<div class="role-stack">${role}</div>`;
 }
 
 function seqTools(g, t) {
@@ -1998,12 +2029,14 @@ function facultyItemRow(t, g, lock, seq, sec) {
       : "";
   if (S.paLayout === "plan") {
     const prev = C.expectedPreview(t, g.id);
+    const qtyHead = sec && sec.planQty;
     return `<tr>
       <td class="seq-cell">${seq}${seqTools(g, t)}</td>
       <td>
         <input class="plan-title" data-pa="t:${t.id}:title" value="${esc(t.title)}" placeholder="${esc((sec && sec.item) || C.paItemHeader(g.id))}" ${lock ? "disabled" : ""} />
         ${facultyCriteriaSelect(t, g, lock)}
       </td>
+      ${qtyHead ? `<td>${facultyQtyCell(t, g, lock, true)}</td>` : ""}
       <td class="auto">${esc(prev.label)}</td>
       <td>
         <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
@@ -2011,6 +2044,8 @@ function facultyItemRow(t, g, lock, seq, sec) {
       </td>
     </tr>`;
   }
+  const c = C.findCrit(g.id, t.criteriaId);
+  const useQty = c && (c.kind === "hours" || c.kind === "count" || c.kind === "custom");
   return `<tr>
     <td class="seq-cell">${seq}${seqTools(g, t)}</td>
     <td class="title-cell">
@@ -2021,7 +2056,7 @@ function facultyItemRow(t, g, lock, seq, sec) {
       ${g.id === "strat" && (!t.criteriaId || String(t.criteriaId).startsWith("grant_")) ? `${projectSearchBox(t, lock)}<div class="hint has-hint" data-hint="${esc(C.SCORE_COND.contractAmount)}">${esc(C.SCORE_COND.contractAmountShort)}</div>` : ""}
     </td>
     <td>${facultyCriteriaCell(t, g, lock)}</td>
-    <td>${facultyRoleCell(t, g, lock)}${warn}</td>
+    <td>${useQty ? facultyQtyCell(t, g, lock, false) : facultyRoleCell(t, g, lock)}${warn}</td>
     <td class="auto">${C.fmtUnit(cal.units)}</td>
     <td>
       <input type="number" min="0" max="10" step="0.5" data-pa="t:${t.id}:selfScore" value="${esc(t.selfScore === "" || t.selfScore == null ? "" : t.selfScore)}" placeholder="-" ${lock ? "disabled" : ""} />
@@ -2115,7 +2150,7 @@ function viewPA() {
       <button class="btn-navy" type="button" id="btnAsk">ขออนุมัติ</button>` : ""}
       <button class="btn-ghost" type="button" data-go="${isEval() ? "evalHome" : "modules"}">กลับ</button>
     </div>
-    <p class="hint">ออนไลน์จากแบบฟอร์ม SHPA ร่าง · แยกภาระงานที่ 1–4 · ล่วงหน้ากรอกชื่อรายการ เกณฑ์ หน่วยที่คาดว่าจะได้ และผลการประเมินตนเอง · หน้าประเมินเพิ่ม DOI หลักฐาน และยุทธศาสตร์ 3 ก้อน · ปี ${esc(S.year)}</p>
+    <p class="hint">ออนไลน์จากแบบฟอร์ม SHPA ร่าง · แยกภาระงานที่ 1–4 · ล่วงหน้ากรอกชื่อรายการ เลือกเกณฑ์ กรอกชั่วโมงแล้วคำนวณหน่วย และผลการประเมินตนเอง · หน้าประเมินเพิ่ม DOI หลักฐาน และยุทธศาสตร์ 3 ก้อน · ปี ${esc(S.year)}</p>
   `);
 }
 
@@ -2427,26 +2462,15 @@ function projectSearchBox(t, lock) {
   </div>`;
 }
 
-function syllabusBox(t, lock) {
+function syllabusPick(t, lock) {
   const dis = lock ? "disabled" : "";
   const opts = C.searchSyllabus("").map((c) =>
     `<option value="${esc(c.id)}">${esc(c.code)} · ${esc(c.title)}</option>`
   ).join("");
-  const formula = (C.TEACH_FORMULAS || []).map((f) =>
-    `<option value="${esc(f.id)}" ${t.teachFormula === f.id ? "selected" : ""}>${esc(f.label)} · ${esc(f.hint)}</option>`
-  ).join("");
   return `<div class="search-box fill-box">
-    <label class="date-lab">รหัส / ชื่อรายวิชา (กรอกได้)</label>
+    <label class="date-lab">รหัส / ชื่อรายวิชา (เลือกแล้วเติมชั่วโมงได้ แล้วยังแก้ต่อได้)</label>
     <input list="syl-${t.id}" data-syl-q="${t.id}" value="${esc(t.syllabusId || "")}" placeholder="กรอกรหัสหรือชื่อรายวิชา" ${dis} />
     <datalist id="syl-${t.id}">${opts}</datalist>
-    <label class="date-lab">จำนวนชั่วโมงสอน (กรอกได้)</label>
-    <input type="number" min="0" step="0.5" data-pa="t:${t.id}:hours" value="${esc(t.hours)}" placeholder="ชั่วโมง" ${dis} />
-    <label class="date-lab">สูตรคำนวณ 3 แบบตามประกาศคณะฯ</label>
-    <select data-pa="t:${t.id}:teachFormula" ${dis}>
-      <option value="">-- เลือกสูตรตามลักษณะภาระงาน --</option>
-      ${formula}
-    </select>
-    <div class="hint">กรอกชั่วโมงเองได้ ถ้ามีในฐานประมวลรายวิชาเลือกแล้วระบบเติมชั่วโมงให้ แล้วยังแก้ต่อได้</div>
   </div>`;
 }
 
