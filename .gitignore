@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PA Demo</title>
+    <style>
+      :root {
+        --bg: #eef3f8;
+        --panel: #ffffff;
+        --ink: #1a355a;
+        --muted: #607a95;
+        --line: #dfe8f2;
+        --primary: #1d5d96;
+        --accent: #f0f6ff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+      }
+      .container {
+        max-width: 1100px;
+        margin: 32px auto 60px;
+        padding: 0 20px;
+      }
+      .header {
+        background: linear-gradient(135deg, #153d66, #1e5c8f);
+        color: white;
+        border-radius: 18px;
+        padding: 26px 28px;
+        box-shadow: 0 16px 30px rgba(18, 40, 66, 0.15);
+      }
+      .header h1 { margin: 0 0 10px; font-size: clamp(1.8rem, 2vw, 2.5rem); }
+      .header p { margin: 0; opacity: 0.9; }
+      .section-list {
+        display: grid;
+        gap: 18px;
+        margin-top: 28px;
+      }
+      .section-card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        box-shadow: 0 8px 18px rgba(16, 32, 49, 0.06);
+        padding: 20px 22px;
+      }
+      .section-card h2 {
+        margin: 0 0 8px;
+        font-size: 1.35rem;
+      }
+      .section-card p {
+        margin: 0 0 14px;
+        color: var(--muted);
+      }
+      .options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 42px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: var(--accent);
+        color: var(--primary);
+        border: 1px solid #cfe0f4;
+        font-weight: 600;
+      }
+      .chip small {
+        display: block;
+        color: var(--muted);
+        margin-top: 4px;
+        font-weight: 400;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <h1 id="page-title">PA Demo Preview</h1>
+        <p>ระบบแสดงตัวอย่างข้อมูล PA ล่วงหน้าแบบแยกจากระบบหลังบ้านหลัก</p>
+      </header>
+
+      <main id="demo-view" class="section-list"></main>
+    </div>
+
+    <script>
+      async function loadDemo() {
+        const response = await fetch('/api/demo');
+        const payload = await response.json();
+
+        if (payload.appName) {
+          document.title = payload.appName + ' Demo';
+          const title = document.getElementById('page-title');
+          title.textContent = payload.settings?.demoTitle || payload.appName;
+        }
+
+        const container = document.getElementById('demo-view');
+        const sections = payload.sections || [];
+
+        container.innerHTML = sections.map((section) => `
+          <section class="section-card">
+            <h2>${escapeHtml(section.title || 'Untitled section')}</h2>
+            <p>${escapeHtml(section.description || '')}</p>
+            <div class="options">
+              ${(section.options || []).map((option) => `
+                <div class="chip">
+                  <div>
+                    ${escapeHtml(option.label || option.value || 'Option')}
+                    <small>${escapeHtml(option.description || '')}</small>
+                  </div>
+                </div>
+              `).join('') || '<span class="chip">No options</span>'}
+            </div>
+          </section>
+        `).join('');
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      loadDemo().catch((error) => {
+        document.getElementById('demo-view').innerHTML = `<p>Unable to load demo content: ${error.message}</p>`;
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "pa-admin-demo",
+  "version": "1.0.0",
+  "description": "PA admin backend and demo management system",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

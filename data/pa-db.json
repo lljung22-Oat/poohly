@@ -1,0 +1,62 @@
+{
+  "appName": "PA Admin Backend",
+  "settings": {
+    "language": "th",
+    "theme": "default",
+    "demoTitle": "PA Demo Preview"
+  },
+  "sections": [
+    {
+      "id": 1,
+      "title": "แผน PA ล่วงหน้า",
+      "slug": "planning",
+      "description": "หัวข้อหลักสำหรับการกำหนดแผน PA ล่วงหน้า",
+      "sortOrder": 1,
+      "options": [
+        { "id": 101, "label": "การสอน", "value": "teaching", "description": "ภาระงานด้านการสอน" },
+        { "id": 102, "label": "งานวิจัย", "value": "research", "description": "ภาระงานด้านวิจัย" },
+        { "id": 103, "label": "บริการวิชาการ", "value": "service", "description": "ภาระงานด้านบริการ" },
+        { "id": 104, "label": "ภาระงานร่วม", "value": "shared", "description": "ภาระงานร่วมกับทีม" }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "หัวข้อผลงานหลัก",
+      "slug": "main-work",
+      "description": "รายการหลักที่ต้องประเมินและวิเคราะห์ตาม PA",
+      "sortOrder": 2,
+      "options": [
+        { "id": 201, "label": "ผลงานวิจัย", "value": "research-output", "description": "ผลงานที่นำเสนอและเผยแพร่" },
+        { "id": 202, "label": "การสอนแบบบูรณาการ", "value": "integrated-teaching", "description": "รูปแบบการสอนที่บูรณาการ" },
+        { "id": 203, "label": "ผลงานบริการ", "value": "community-service", "description": "งานบริการที่สร้างคุณค่า" },
+        { "id": 204, "label": "แผนพัฒนาระบบ", "value": "system-improvement", "description": "การปรับปรุงระบบและกระบวนการ" }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "ผลงานที่ได้รับมอบหมาย",
+      "slug": "assigned-work",
+      "description": "รายการ that is assigned by the faculty or committee",
+      "sortOrder": 3,
+      "options": [
+        { "id": 301, "label": "หลักสูตร", "value": "curriculum", "description": "การพัฒนาหลักสูตร" },
+        { "id": 302, "label": "กรรมการ", "value": "committee", "description": "การทำหน้าที่กรรมการ" },
+        { "id": 303, "label": "ประเมินภายใน", "value": "internal-review", "description": "การประเมินภายใน" },
+        { "id": 304, "label": "ส่งเสริมความร่วมมือ", "value": "partnership", "description": "ประสานความร่วมมือภายในและภายนอก" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "ชุมชนและการมีส่วนร่วม",
+      "slug": "community",
+      "description": "ภาระงานเสริมที่ส่งผลต่อชุมชนและสังคม",
+      "sortOrder": 4,
+      "options": [
+        { "id": 401, "label": "อาสาสมัคร", "value": "volunteer", "description": "การให้ความช่วยเหลือชุมชน" },
+        { "id": 402, "label": "เครือข่าย", "value": "network", "description": "เครือข่ายความร่วมมือ" },
+        { "id": 403, "label": "ถ่ายทอดความรู้", "value": "knowledge-sharing", "description": "การถ่ายทอดองค์ความรู้" },
+        { "id": 404, "label": "พัฒนาแนวปฏิบัติ", "value": "best-practice", "description": "พัฒนาแนวทางปฏิบัติ" }
+      ]
+    }
+  ]
+}
