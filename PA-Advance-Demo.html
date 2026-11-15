@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#183a60">
+<title>PA ล่วงหน้า · DEMO</title>
+<style>
+:root{font-family:"Sarabun","Segoe UI",Tahoma,sans-serif;color:#1b3554;background:#f3f6fa;--navy:#183a60;--teal:#087b73;--line:#dce5ed}*{box-sizing:border-box}body{margin:0}.top{background:var(--navy);color:white;padding:16px max(18px,calc((100% - 1180px)/2);display:flex;align-items:center;justify-content:space-between;gap:12px}.top strong{font-size:19px}.badge{background:#fff0d6;color:#82551c;border-radius:20px;padding:5px 12px;font-size:13px;font-weight:700}.wrap{max-width:1180px;margin:26px auto;padding:0 18px 50px}.intro,.panel{background:white;border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 4px 14px #193d600b}.intro h1{font-size:24px;margin:0 0 6px}.intro p{margin:0;color:#64798b;line-height:1.6}.notice{margin-top:12px;background:#fff8e9;border-left:4px solid #d59a42;padding:10px 12px;border-radius:5px;color:#684e2e;font-size:14px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.metric{border:1px solid var(--line);background:#f8fafc;border-radius:9px;padding:12px}.metric span{display:block;color:#607587;font-size:13px}.metric strong{display:block;color:var(--teal);font-size:21px;margin-top:3px}.panel h2{margin:0 0 14px;font-size:19px}.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.field{display:grid;gap:6px;color:#506a80;font-size:14px;font-weight:600}.field input,.field select{font:inherit;font-weight:400;color:#183a60;width:100%;min-height:42px;border:1px solid #bdcddb;border-radius:6px;padding:8px;background:white}.items{display:grid;gap:10px}.item{display:grid;grid-template-columns:1.2fr 1.6fr 150px 100px 40px;gap:9px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px}.item input,.item select{width:100%;min-height:39px;border:1px solid #bdcddb;border-radius:5px;padding:7px;font:inherit}.item output{font-weight:700;color:var(--teal)}.empty{color:#738596;text-align:center;padding:20px}.actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}button{font:inherit;border:0;border-radius:7px;padding:10px 15px;cursor:pointer;font-weight:700}.primary{background:#087b73;color:white}.secondary{background:#e8eef4;color:#214e76}.danger{background:#fff0ef;color:#a52c27}.remove{background:#fff0ef;color:#a52c27;padding:8px}.footer{color:#708397;font-size:12px;text-align:center;padding:18px}.status{min-height:1.4em;color:#087b73;font-size:13px;margin-top:8px}@media(max-width:760px){.summary{grid-template-columns:repeat(2,1fr)}.fields{grid-template-columns:1fr}.item{grid-template-columns:1fr 1fr}.item output,.item .remove{grid-column:auto}}@media print{.top,.actions,.remove,.notice{display:none}.wrap{margin:0;padding:0}.panel,.intro{box-shadow:none;break-inside:avoid}}
+</style>
+</head>
+<body>
+<header class="top"><strong>ระบบวางแผนภาระงาน · PA</strong><span class="badge">DEMO · เฉพาะ PA ล่วงหน้า</span></header>
+<main class="wrap">
+<section class="intro"><h1>ทดลองใช้งาน PA ล่วงหน้า</h1><p>เดโมแบบไฟล์เดียว เปิดใช้งานในเบราว์เซอร์ได้โดยไม่ต้องติดตั้งโปรแกรมหรือเชื่อมต่อเซิร์ฟเวอร์</p><div class="notice">โหมดทดลองนี้แยกจากระบบจริงและเปิดเฉพาะการวางแผนภาระงาน ข้อมูลบันทึกในเบราว์เซอร์ของเครื่องนี้เท่านั้น ไม่ส่งไปที่อื่น ผลคำนวณเป็นตัวอย่างเพื่อทดลองหน้าจอ ไม่ใช่ผลประเมินอย่างเป็นทางการ</div></section>
+<section class="summary" aria-live="polite"><div class="metric"><span>รายการวางแผน</span><strong id="count">0</strong></div><div class="metric"><span>รวมหน่วยภาระงานตัวอย่าง</span><strong id="total">0</strong></div><div class="metric"><span>ภาระงานด้านการสอน</span><strong id="teaching">0</strong></div><div class="metric"><span>ภาระงานด้านวิจัย</span><strong id="research">0</strong></div></section>
+<section class="panel"><h2>ข้อมูลแผน</h2><div class="fields"><label class="field">ชื่อผู้ทดลอง<input id="person" placeholder="กรอกชื่อ (ไม่บังคับ)"></label><label class="field">ปีประเมิน (พ.ศ.)<input id="year" type="number" min="2500" max="2700"></label><label class="field">หน่วยงาน / คณะ<input id="unit" placeholder="กรอกหน่วยงาน (ไม่บังคับ)"></label></div></section>
+<section class="panel"><h2>รายการภาระงาน</h2><div class="items" id="items"></div><div class="actions"><button class="secondary" id="add" type="button">+ เพิ่มรายการ</button></div><div class="actions"><button class="secondary" id="save" type="button">บันทึกในเครื่องนี้</button><button class="secondary" id="export" type="button">ดาวน์โหลดข้อมูลทดลอง</button><button class="danger" id="reset" type="button">ล้าง DEMO</button></div><div class="status" id="status" role="status"></div></section>
+<p class="footer">DEMO เท่านั้น · ข้อมูลตัวอย่าง · ใช้ทดลอง PA ล่วงหน้าเท่านั้น</p>
+</main>
+<script>
+(()=>{'use strict';
+const KEY='pa-advance-demo-v1';
+const activities=[
+ {id:'teaching',name:'การสอน',unit:'ชั่วโมง',rate:3},
+ {id:'research',name:'โครงการวิจัย',unit:'โครงการ',rate:80},
+ {id:'publication',name:'ผลงานวิจัยเผยแพร่',unit:'ผลงาน',rate:120},
+ {id:'service',name:'บริการวิชาการ',unit:'ครั้ง',rate:10},
+ {id:'committee',name:'กรรมการ / งานที่ได้รับมอบหมาย',unit:'ครั้ง',rate:5},
+ {id:'other',name:'ภาระงานอื่น ๆ',unit:'ชั่วโมง',rate:1}
+];
+let state={person:'',year:new Date().getFullYear()+543,unit:'',rows:[]};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&Array.isArray(x.rows))state={...state,...x}}catch(_){}}
+function calc(row){const a=activities.find(x=>x.id===row.activity);const qty=Math.max(0,Number(row.quantity)||0);return Math.round(qty*(a?.rate||0)*100)/100}
+function totals(){const result=Object.fromEntries(activities.map(a=>[a.id,0]));for(const row of state.rows)result[row.activity]=(result[row.activity]||0)+calc(row);return result}
+function refreshSummary(){const t=totals();$('count').textContent=state.rows.length;$('total').textContent=Object.values(t).reduce((a,b)=>a+b,0).toLocaleString('th-TH');$('teaching').textContent=(t.teaching||0).toLocaleString('th-TH');$('research').textContent=((t.research||0)+(t.publication||0)).toLocaleString('th-TH')}
+function renderRows(){const box=$('items');if(!state.rows.length){box.innerHTML='<div class="empty">ยังไม่มีรายการ กด “เพิ่มรายการ” เพื่อเริ่มวางแผน</div>';refreshSummary();return}box.innerHTML=state.rows.map((r,i)=>`<div class="item" data-index="${i}"><select data-field="activity" aria-label="ประเภทภาระงาน">${activities.map(a=>`<option value="${a.id}" ${r.activity===a.id?'selected':''}>${esc(a.name)}</option>`).join('')}</select><input data-field="title" aria-label="รายละเอียด" placeholder="รายละเอียด / ชื่อผลงาน" value="${esc(r.title)}"><input data-field="quantity" aria-label="จำนวน ${esc(activities.find(a=>a.id===r.activity)?.unit||'หน่วย')}" type="number" min="0" step="0.5" value="${esc(r.quantity)}"><output data-units>${calc(r)} หน่วย</output><button type="button" class="remove" data-remove="${i}" aria-label="ลบรายการ">×</button></div>`).join('');refreshSummary()}
+function persist(show=true){try{localStorage.setItem(KEY,JSON.stringify(state));if(show)$('status').textContent='บันทึกข้อมูล DEMO ในเบราว์เซอร์นี้แล้ว'}catch(_){$('status').textContent='บันทึกไม่ได้ เบราว์เซอร์อาจปิดการใช้งานพื้นที่จัดเก็บ'}}
+function setMeta(id,value){state[id]=value}
+$('items').addEventListener('input',e=>{const el=e.target.closest('[data-field]');if(!el)return;const i=Number(el.closest('[data-index]').dataset.index),row=state.rows[i];if(el.dataset.field==='quantity')row.quantity=el.value;else if(el.dataset.field==='title')row.title=el.value;const out=el.closest('.item').querySelector('[data-units]');out.textContent=calc(row)+' หน่วย';refreshSummary()});
+$('items').addEventListener('change',e=>{const el=e.target.closest('[data-field]');if(!el)return;const i=Number(el.closest('[data-index]').dataset.index),row=state.rows[i];row[el.dataset.field]=el.dataset.field==='quantity'?el.value:el.value;renderRows()});
+$('items').addEventListener('click',e=>{const b=e.target.closest('[data-remove]');if(b){state.rows.splice(Number(b.dataset.remove),1);renderRows()}});
+for(const id of ['person','year','unit'])$(id).addEventListener('input',e=>setMeta(id,e.target.value));
+$('add').onclick=()=>{state.rows.push({activity:'teaching',title:'',quantity:0});renderRows()};$('save').onclick=()=>persist();
+$('reset').onclick=()=>{if(confirm('ล้างรายการทดลองในเบราว์เซอร์นี้ทั้งหมด?')){localStorage.removeItem(KEY);state={person:'',year:new Date().getFullYear()+543,unit:'',rows:[]};$('status').textContent='ล้างข้อมูล DEMO ในเบราว์เซอร์นี้แล้ว';renderRows()}};
+$('export').onclick=()=>{const blob=new Blob([JSON.stringify({schema:'pa-advance-demo-v1',exportedAt:new Date().toISOString(),...state},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PA-advance-demo-data.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+function init(){load();$('person').value=state.person;$('year').value=state.year;$('unit').value=state.unit;renderRows()}
+init();
+})();
+</script>
+</body>
+</html>
